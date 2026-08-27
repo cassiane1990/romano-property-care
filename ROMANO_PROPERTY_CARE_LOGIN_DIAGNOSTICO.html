@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROMANO PROPERTY CARE — Test</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4eee5;color:#302820;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.app{max-width:780px;margin:auto;min-height:100vh;background:#fbf8f3}header{padding:18px;background:#eee0ca;border-bottom:1px solid #ddcdb5;text-align:center}
+.logo{font:28px Georgia;color:#a97b3d}.brand{font:18px Georgia;letter-spacing:2px}.brand small{display:block;font:11px Arial;letter-spacing:3px;color:#a97b3d;margin-top:3px}
+main{padding:18px 16px 100px}.page{display:none}.page.on{display:block}h1{font:28px Georgia;margin:3px 0 6px}h2{font-size:18px;margin:5px 0 12px}h3{margin:5px 0 10px}.muted{font-size:13px;color:#776e64}
+.card{background:#fff;border:1px solid #e2d8ca;border-radius:14px;padding:14px;margin:10px 0}.service{padding:0;overflow:hidden}.service-head{display:flex;align-items:center;gap:10px;padding:14px;cursor:pointer}.service-head input{width:20px;height:20px}.service-head b{flex:1}.service-body{padding:0 14px 14px;border-top:1px solid #eee5d9}
+label{display:block;font-weight:700;font-size:13px;margin:11px 0 5px}input,select,textarea{width:100%;padding:11px;border:1px solid #d4c7b7;border-radius:9px;background:#fff;font:inherit;color:#302820}textarea{min-height:70px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.line{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #eee7df}.price{color:#a47735;font-weight:800}.total{font-size:20px;font-weight:900;text-align:right;margin-top:12px}.notice{background:#fff7e7;border:1px solid #ead8b7;border-radius:9px;padding:10px;font-size:13px;margin-top:10px}
+.primary{width:100%;padding:13px;background:#ad8244;color:white;border:0;border-radius:10px;font-weight:800;margin-top:10px}.secondary{padding:10px;background:white;color:#8a642f;border:1px solid #ad8244;border-radius:9px;font-weight:700;margin-top:9px}.back{border:0;background:none;color:#936a34;font-weight:700;padding:0;margin-bottom:12px}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(780px,100%);background:#fff;border-top:1px solid #ddd3c7;display:grid;grid-template-columns:repeat(4,1fr);padding:7px 4px}.nav{border:0;background:none;font-size:11px;color:#766d63}.nav.on{color:#a47735;font-weight:800}
+.hidden{display:none!important}.bedrow{display:grid;grid-template-columns:1fr 80px 100px;gap:7px;align-items:end}.check{display:flex;align-items:center;gap:8px;font-weight:600}.check input{width:auto}
+@media(max-width:520px){.bedrow{grid-template-columns:1fr 70px}.bedrow .rate{grid-column:1/3}.grid2{grid-template-columns:1fr}}
+
+.today-service-card{border:1px solid #e7dcc8;border-radius:12px;padding:12px;margin:8px 0;background:#fff}
+.today-service-card .muted{font-size:13px}
+@media(max-width:700px){#todaySummary{grid-template-columns:repeat(2,minmax(0,1fr)) !important}}
+
+.history-card{background:#fff;border:1px solid #e2d8ca;border-radius:14px;padding:14px;margin:10px 0}
+.history-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.history-badge{font-size:12px;font-weight:800;padding:5px 8px;border-radius:999px;border:1px solid #d4c7b7}
+.history-inc{border-color:#c88}
+@media(max-width:520px){.history-head{display:block}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div id="accountBar" style="position:fixed;top:8px;right:10px;z-index:1000;display:none;background:#fff;border:1px solid #d7c29a;border-radius:14px;padding:6px 10px;font-size:12px">
+  <span id="accountName"></span>
+  <button type="button" class="secondary" style="margin-left:6px;padding:4px 8px" onclick="romanoLogout()">Sair</button>
+</div>
+
+<div id="authScreen" style="position:fixed;inset:0;background:#f6f1e8;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box">
+  <div class="card" style="width:min(430px,100%);box-sizing:border-box">
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:42px">👑</div>
+      <h1 style="margin:0">ROMANO PROPERTY CARE</h1>
+      <div class="muted">Acesso ao sistema</div>
+    </div>
+    <label>E-mail</label>
+    <input id="loginEmail" type="email" autocomplete="username" placeholder="seu@email.com">
+    <label style="display:block;margin-top:12px">Senha</label>
+    <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+    <button type="button" class="primary" style="width:100%;margin-top:16px" onclick="romanoLogin()">ENTRAR</button>
+    <div id="loginMessage" class="muted" style="margin-top:12px;text-align:center"></div>
+  </div>
+</div>
+<div class="app">
+<header style="position:relative"><div class="logo">♕</div><div class="brand">ROMANO PROPERTY CARE<small>SERVICIOS PROFESIONALES</small></div><div style="position:absolute;right:16px;top:14px">🔔 <b id="notifCount">0</b></div></header>
+<main>
+
+<section id="home" class="page on"><h1>Dashboard</h1><div class="muted">Resumen de la operación</div>
+<div class="grid2">
+<div class="card"><b id="dashApts">0</b><br><span class="muted">Apartamentos</span></div>
+<div class="card"><b id="dashToday">0</b><br><span class="muted">Hoy</span></div>
+<div class="card"><b id="dashProgress">0</b><br><span class="muted">En andamento</span></div>
+<div class="card"><b id="dashInc">0</b><br><span class="muted">Incidencias</span></div>
+<div class="card"><b id="dashActive">0</b><br><span class="muted">Apartamentos activos</span></div>
+</div>
+<div class="card"><h2>Servicios de hoy</h2><div id="todayServices"><div class="muted">No hay servicios registrados para hoy.</div></div></div>
+<div class="card"><h2>Actividades recientes</h2><div id="recentActivities"><div class="muted">Sin actividad reciente.</div></div></div>
+<button class="primary" onclick="newService()">＋ NUEVO SERVICIO</button>
+<button class="secondary" style="width:100%" onclick="newAdditional()">＋ SERVICIO ADICIONAL</button></section>
+
+<section id="clients" class="page"><h1>Clientes</h1><button class="primary" onclick="show('newClient')">＋ NUEVO CLIENTE</button>
+<div id="clientList"></div></section>
+
+<section id="apartments" class="page"><h1>Apartamentos</h1><div class="muted">Registre el número real de cada apartamento.</div><div id="aptList"></div></section>
+
+<section id="newClient" class="page"><button class="back" onclick="show('clients')">← Volver</button><h1>Nuevo cliente</h1>
+<div class="card"><label>Nombre / Razón social</label><input id="cn"><label>Responsable</label><input id="cc"><label>Teléfono</label><input id="cp"><label>Correo electrónico</label><input id="ce"><button class="primary" onclick="saveClient()">GUARDAR CLIENTE</button></div></section>
+
+<section id="aptDetail" class="page"><button class="back" onclick="show('apartments')">← Volver</button><h1 id="aptTitle"></h1><div class="muted" id="aptClient"></div>
+<div class="card"><h2>🏢 Datos del apartamento</h2><label>Número del apartamento</label><input id="aptNumber" inputmode="numeric" placeholder="101">
+<label>Tipología</label><select id="aptType"></select><button class="primary" onclick="saveApartment()">GUARDAR DATOS</button></div></section>
+
+<section id="newService" class="page"><button class="back" onclick="show('home')">← Volver</button><h1>Nuevo servicio</h1><div class="muted">Cada módulo funciona de forma independiente.</div>
+<div class="card"><div class="grid2"><div><label>Cliente</label><select id="sClient" onchange="loadAptsForService()"></select></div><div><label>Apartamento</label><select id="sApt" onchange="loadServiceApartment()"></select></div></div>
+<label>Funcionario responsable</label><select id="sEmployee"></select><div id="serviceAptInfo" class="notice"></div></div>
+
+<div class="card service"><label class="service-head"><input type="checkbox" id="cClean" onchange="toggleModule('cleanBody');calc()"><b>🧹 LIMPIEZA</b><span>＋</span></label>
+<div id="cleanBody" class="service-body hidden"><label>Tipología del apartamento</label><select id="cleanType" onchange="calc()"></select><div id="cleanPrice" class="notice"></div><label>Valor de limpieza sin IVA (€)</label><input id="cleanRate" type="number" min="0" step="0.01" oninput="calc()"></div></div>
+
+<div class="card service"><label class="service-head"><input type="checkbox" id="cMaint" onchange="toggleModule('maintBody');calc()"><b>🔧 MANTENIMIENTO</b><span>＋</span></label>
+<div id="maintBody" class="service-body hidden"><label>Servicio de mantenimiento</label><select id="maintType"><option>Electricidad</option><option>Fontanería</option><option>Pintura</option><option>Silicona</option><option>Montaje de muebles</option><option>Reparaciones</option><option>Instalaciones</option><option>Mantenimiento preventivo</option><option>Mantenimiento correctivo</option><option>Otro</option></select>
+<div class="grid2"><div><label>Horas</label><input id="maintHours" type="number" min="0" step="0.5" value="1" oninput="calc()"></div><div><label>Valor / hora con IVA (€)</label><input id="maintRate" type="number" min="0" step="0.01" value="45" oninput="calc()"></div></div><div id="maintTotal" class="notice"></div><label>Descripción del trabajo</label><textarea id="maintDesc"></textarea></div></div>
+
+<div class="card service"><label class="service-head"><input type="checkbox" id="cLaundry" onchange="calc()"><b>🧺 LAVANDERÍA</b><span>＋</span></label>
+<div id="laundryBody" class="service-body hidden"><label class="check"><input id="laundryYes" type="checkbox" onchange="calc()"> Servicio de lavandería requerido</label><div class="muted">Solo se registra como señal. Se acumula para el cierre del cliente.</div></div></div>
+
+<div class="card service"><label class="service-head"><input type="checkbox" id="cLinen" onchange="toggleModule('linenBody');calc()"><b>🛏️ ALQUILER DE ROPA</b><span>＋</span></label>
+<div id="linenBody" class="service-body hidden"><div class="muted">Seleccione las camas reales de este apartamento y las cantidades. Nada se suma si el módulo no está marcado.</div>
+<div class="bedrow"><div><label>Cama individual / soltero</label></div><div><label>Cantidad</label></div><div class="rate"><label>Valor unitario con IVA (€)</label></div></div>
+<div class="bedrow"><div class="check"><input id="lSingleOn" type="checkbox" onchange="calc()"> Cama individual</div><input id="lSingleQty" type="number" min="0" value="0" oninput="calc()"><input id="lSingleRate" class="rate" type="number" min="0" step=".01" value="18" oninput="calc()"></div>
+<div class="bedrow"><div class="check"><input id="lDoubleOn" type="checkbox" onchange="calc()"> Cama casal</div><input id="lDoubleQty" type="number" min="0" value="0" oninput="calc()"><input id="lDoubleRate" class="rate" type="number" min="0" step=".01" value="19.42" oninput="calc()"></div>
+<div class="bedrow"><div class="check"><input id="lKingOn" type="checkbox" onchange="calc()"> Cama King</div><input id="lKingQty" type="number" min="0" value="0" oninput="calc()"><input id="lKingRate" class="rate" type="number" min="0" step=".01" value="19.42" oninput="calc()"></div>
+<div class="bedrow"><div class="check"><input id="lSofaSingleOn" type="checkbox" onchange="calc()"> Sofá cama individual</div><input id="lSofaSingleQty" type="number" min="0" value="0" oninput="calc()"><input id="lSofaSingleRate" class="rate" type="number" min="0" step=".01" value="18" oninput="calc()"></div>
+<div class="bedrow"><div class="check"><input id="lSofaDoubleOn" type="checkbox" onchange="calc()"> Sofá cama casal</div><input id="lSofaDoubleQty" type="number" min="0" value="0" oninput="calc()"><input id="lSofaDoubleRate" class="rate" type="number" min="0" step=".01" value="19.42" oninput="calc()"></div>
+<div id="linenTotal" class="notice"></div></div></div>
+
+<div class="card service"><label class="service-head"><input type="checkbox" id="cAmen" onchange="toggleModule('amenBody');calc()"><b>🧴 AMENITIES</b><span>＋</span></label>
+<div id="amenBody" class="service-body hidden"><div class="grid2"><div><label>Producto</label><input id="amenProduct" placeholder="Ej. Kit de baño"></div><div><label>Cantidad</label><input id="amenQty" type="number" min="0" value="1" oninput="calc()"></div></div><label>Valor unitario con IVA (€)</label><input id="amenRate" type="number" min="0" step=".01" value="0" oninput="calc()"></div></div>
+
+<div class="card"><h2>💰 GENERADOR DE VALOR FINAL</h2><div id="summaryLines"></div><div id="summaryVAT"></div><div id="finalTotal" class="total">Total sin IVA: 0,00 €<br>IVA 21%: 0,00 €<br>Total con IVA: 0,00 €</div><button class="primary" onclick="saveService()">GUARDAR SERVICIO</button></div>
+</section>
+
+
+<section id="history" class="page">
+<button class="back" onclick="show('home')">← Volver</button>
+<h1>Historial de servicios</h1>
+<div class="muted">Consulte los servicios realizados y pendientes sin mezclar apartamentos.</div>
+<div class="card">
+  <div class="grid2">
+    <div><label>Periodo</label><select id="historyPeriod" onchange="renderHistory()">
+      <option value="today">Hoy</option><option value="yesterday">Ayer</option>
+      <option value="week">Esta semana</option><option value="month">Este mes</option><option value="all">Todos</option>
+    </select></div>
+    <div><label>Estado</label><select id="historyStatus" onchange="renderHistory()">
+      <option value="all">Todos</option><option value="Programado">Programado</option>
+      <option value="En andamento">En andamento</option><option value="Finalizado">Finalizado</option>
+    </select></div>
+  </div>
+  <label>Buscar apartamento o cliente</label>
+  <input id="historySearch" placeholder="Ej. Apt. 101 / Empresa ABC" oninput="renderHistory()">
+</div>
+<div id="historySummary"></div>
+<div id="historyList"></div>
+</section>
+
+<section id="employees" class="page">
+<button class="back" onclick="show('home')">← Volver</button>
+<h1>Área de funcionarios</h1>
+<div class="muted">Servicios asignados para hoy. Los valores comerciales no se muestran en esta área.</div>
+<div class="card">
+  <label>Buscar apartamento o cliente</label>
+  <input id="employeeSearch" placeholder="Ej. Apt. 101" oninput="renderEmployeeArea()">
+</div>
+<div id="employeeTodayList"></div>
+</section>
+
+<section id="clientPortal" class="page">
+<button class="back" onclick="show('home')">← Volver</button>
+<h1>Área del cliente</h1>
+<div class="muted">Consulta de sus servicios, evidencias e incidencias.</div>
+<div class="card">
+  <label>Cliente</label>
+  <select id="portalClient" onchange="renderClientPortal()"></select>
+</div>
+<div id="clientPortalSummary"></div>
+<div id="clientPortalList"></div>
+</section>
+
+<section id="reports" class="page">
+<button class="back" onclick="show('home')">← Volver</button>
+<h1>Relatórios operativos</h1>
+<div class="muted">Resumo da produção por funcionario y incidencias.</div>
+<div class="card">
+<label>Periodo</label>
+<select id="reportPeriod" onchange="renderReports()">
+<option value="today">Hoy</option><option value="week">Esta semana</option><option value="month">Este mes</option><option value="all">Todos</option>
+</select>
+</div>
+<div id="reportSummary"></div>
+<div id="reportEmployees"></div>
+</section>
+
+<section id="teamManagement" class="page">
+<button class="back" onclick="show('home')">← Volver</button>
+<h1>Gestión de funcionarios</h1>
+<div class="muted">Cadastre, organize e acompanhe a equipe responsável pelos apartamentos.</div>
+<div class="card">
+  <label>Novo funcionario</label>
+  <div style="display:flex;gap:8px">
+    <input id="newEmployeeName" placeholder="Nombre">
+    <button type="button" class="secondary" onclick="addEmployee()">+ Adicionar</button>
+  </div>
+</div>
+<div class="card">
+  <label>Buscar funcionario</label>
+  <input id="teamSearch" placeholder="Nombre" oninput="renderTeamManagement()">
+</div>
+<div id="teamList"></div>
+</section>
+
+<section id="agenda" class="page">
+<button class="back" onclick="show('home')">← Volver</button>
+<h1>Agenda operacional</h1>
+<div class="muted">Organização dos serviços por dia, apartamento e funcionário.</div>
+<div class="card">
+  <label>Data</label>
+  <input type="date" id="agendaDate" onchange="renderAgenda()">
+</div>
+<div id="agendaSummary"></div>
+<div id="agendaList"></div>
+</section>
+
+<section id="notifications" class="page">
+<button class="back" onclick="show('home')">← Volver</button>
+<h1>Notificaciones</h1>
+<div class="muted">Avisos operativos de servicios, incidencias y finalizaciones.</div>
+<div class="card" id="notificationSummary"></div>
+<div id="notificationList"></div>
+</section>
+
+<section id="dailyClosing" class="page">
+<button class="back" onclick="show('home')">← Volver</button>
+<h1>Fechamento diário</h1>
+<div class="muted">Resumo operacional do dia para conferência rápida.</div>
+<div class="card">
+  <label>Data</label>
+  <input type="date" id="closingDate" onchange="renderDailyClosing()">
+</div>
+<div id="closingSummary"></div>
+<div id="closingEmployees"></div>
+<div id="closingIncidents"></div>
+</section>
+
+<section id="exportReports" class="page">
+<button class="back" onclick="show('home')">← Volver</button>
+<h1>Exportar relatório</h1>
+<div class="muted">Prepare um resumo operacional para compartilhar com a direção.</div>
+<div class="card">
+<label>Data</label>
+<input type="date" id="exportDate" onchange="renderExportReports()">
+</div>
+<div id="exportPreview"></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button type="button" class="secondary" onclick="copyDailyReport()">📋 COPIAR RESUMO</button>
+<button type="button" class="secondary" onclick="window.print()">🖨️ IMPRIMIR / PDF</button>
+</div>
+</section>
+
+<section id="qualityPanel" class="page">
+<button class="back" onclick="show('home')">← Volver</button>
+<h1>Controle de qualidade</h1>
+<div class="muted">Incidências e acompanhamento dos apartamentos que precisam de revisão.</div>
+<div class="card">
+<label>Filtro</label>
+<select id="qualityFilter" onchange="renderQualityPanel()">
+<option value="all">Todas</option><option value="open">Com incidência</option><option value="closed">Sem incidência</option>
+</select>
+</div>
+<div id="qualitySummary"></div>
+<div id="qualityList"></div>
+</section>
+
+<section id="apartmentFile" class="page">
+<button class="back" onclick="show('home')">← Volver</button>
+<h1>Ficha dos apartamentos</h1>
+<div class="muted">Consulta rápida do histórico operacional de cada apartamento.</div>
+<div class="card">
+<label>Apartamento</label>
+<select id="apartmentSelect" onchange="renderApartmentFile()"></select>
+</div>
+<div id="apartmentFileContent"></div>
+</section>
+
+<section id="pendingCenter" class="page">
+<button class="back" onclick="show('home')">← Volver</button>
+<h1>Centro de pendências</h1>
+<div class="muted">Acompanhamento rápido dos serviços que precisam de atenção.</div>
+<div class="card">
+<label>Filtro</label>
+<select id="pendingFilter" onchange="renderPendingCenter()">
+<option value="all">Todas</option><option value="incidence">Incidências</option><option value="ongoing">Em andamento</option><option value="planned">Programados</option>
+</select>
+</div>
+<div id="pendingSummary"></div>
+<div id="pendingList"></div>
+</section>
+<section id="additional" class="page"><button class="back" onclick="show('home')">← Volver</button><h1>Servicio adicional</h1><div class="muted">Solicitudes adicionales del cliente</div>
+<div class="card"><label>Cliente</label><select id="addClient"></select><label>Apartamento</label><select id="addApt"></select>
+<label>Tipo</label><select id="addType"><option>Servicio adicional</option><option>Cama extra</option><option>Ropa adicional</option><option>Amenity adicional</option><option>Mantenimiento adicional</option><option>Otro</option></select>
+<label>Producto / servicio / detalle</label><textarea id="addDesc" placeholder="Indique exactamente lo solicitado"></textarea>
+<div class="grid2"><div><label>Cantidad</label><input id="addQty" type="number" min="1" value="1"></div><div><label>Valor (€)</label><input id="addValue" type="number" min="0" step=".01" value="0"></div></div>
+<label>Tratamiento del IVA</label><select id="addVat"><option>IVA incluido</option><option>Sin IVA</option></select>
+<button class="primary" onclick="receiveAdditional()">RECIBIR SOLICITUD</button></div></section><section id="services" class="page"><h1>Servicios</h1><div id="serviceList"></div>
+<div id="activeServicePanel" class="card hidden"><h2>📍 Servicio en curso</h2><div id="activeServiceInfo" class="notice"></div>
+<div class="grid2"><button class="primary" id="startServiceBtn" onclick="startService()">▶ EMPEZAR SERVICIO</button><button class="secondary" id="finishServiceBtn" onclick="finishService()">✓ FINALIZAR SERVICIO</button></div>
+<div class="card"><h3>📷 Evidencias del apartamento</h3>
+<div class="muted">Adjunte y conserve las evidencias asociadas a este servicio.</div>
+<label>Fotos generales del apartamento</label>
+<input id="photoFiles" type="file" accept="image/*" multiple onchange="registerEvidence('Fotos')">
+<button type="button" class="secondary" style="width:100%" onclick="openEvidencePicker('photoFiles')">📷 AÑADIR FOTOS GENERALES</button>
+<label>Vídeos generales del apartamento</label>
+<input id="videoFiles" type="file" accept="video/*" multiple onchange="registerEvidence('Vídeos')">
+<button type="button" class="secondary" style="width:100%" onclick="openEvidencePicker('videoFiles')">🎥 AÑADIR VÍDEOS GENERALES</button>
+<div id="evidenceStatus" class="notice">No hay evidencias registradas.</div>
+<div id="evidencePreview" style="margin-top:10px"></div>
+<div class="card" style="margin-bottom:0"><h3>⚠️ Foto de ocurrencia / incidencia</h3>
+<div class="muted">Utilice esta opción únicamente si existe una incidencia.</div>
+<input id="incidentPhotos" type="file" accept="image/*" multiple onchange="registerIncidentPhotos()">
+<button type="button" class="secondary" style="width:100%" onclick="openEvidencePicker('incidentPhotos')">⚠️ AÑADIR FOTO DE OCURRENCIA</button>
+<label>Descripción de la incidencia</label><textarea id="incidentDesc" placeholder="Describa la incidencia encontrada"></textarea>
+<div id="incidentStatus" class="notice">Sin incidencias registradas.</div>
+<div id="incidentPreview" style="margin-top:10px"></div></div>
+</div></div></section>
+
+<div class="card" id="todayServicesPanel" style="margin-top:16px">
+  <h3>📋 SERVICIOS DE HOY</h3>
+  <div id="todaySummary" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:10px 0"></div>
+  <div id="todayServiceList"></div>
+</div>
+</main>
+<nav><button class="nav on" onclick="show('home')">🏠<br>Inicio</button><button class="nav" onclick="show('services')">📅<br>Servicios</button><button class="nav" onclick="show('history');renderHistory()">🗂️<br>Historial</button><button class="nav" onclick="show('reports');renderReports()">📈<br>Relatórios</button><button class="nav" onclick="show('teamManagement');renderTeamManagement()">👷‍♂️<br>Equipa</button><button class="nav" onclick="show('employees');renderEmployeeArea()">👷<br>Funcionarios</button><button class="nav" onclick="show('clientPortal');renderClientPortal()">👤<br>Cliente</button><button class="nav" onclick="show('clients')">👥<br>Clientes</button><button class="nav" onclick="show('agenda');renderAgenda()">📅<br>Agenda</button><button class="nav" onclick="show('notifications');renderNotifications()">🔔<br>Avisos</button><button class="nav" onclick="show('dailyClosing');renderDailyClosing()">📋<br>Fechamento</button><button class="nav" onclick="show('exportReports');renderExportReports()">📤<br>Exportar</button><button class="nav" onclick="show('qualityPanel');renderQualityPanel()">🛡️<br>Qualidade</button><button class="nav" onclick="show('apartmentFile');renderApartmentFile()">🏠<br>Apartamentos</button><button class="nav" onclick="show('pendingCenter');renderPendingCenter()">📝<br>Pendências</button></nav>
+</div>
+<script>
+const types=["T1 + 1 baño","T2 + 1 baño","T2 + 2 baños","T3 + 2 baños","T3 + 3 baños","T4 + 2 baños","T4 + 3 baños","T4 + 4 baños","T5"];
+const cleanPrices={"T1 + 1 baño":30,"T2 + 1 baño":40,"T2 + 2 baños":55,"T3 + 2 baños":65,"T3 + 3 baños":80,"T4 + 2 baños":85,"T4 + 3 baños":95,"T4 + 4 baños":110,"T5":0};
+const employeeCatalog=[{id:1,name:"Empleado 1"},{id:2,name:"Empleado 2"},{id:3,name:"Empleado 3"}];
+let clients=[{id:1,name:"Empresa ABC",contact:"",phone:"",email:"",apartments:[{id:101,name:"Apt. 101",type:"T2 + 2 baños",beds:{single:0,double:1,king:0,sofas:0,sofad:0},bedRates:{single:18,double:19.42,king:19.42,sofas:18,sofad:19.42}},{id:202,name:"Apt. 202",type:"T3 + 3 baños",beds:{single:0,double:2,king:0,sofas:0,sofad:0},bedRates:{single:18,double:19.42,king:19.42,sofas:18,sofad:19.42}}]}];
+let services=[],currentApt=null,additionalRequests=[];
+
+
+
+let notificationSeen={};
+
+
+
+
+
+
+const ROMANO_SUPABASE_URL = "https://dhzptogrzuqreflcnsnb.supabase.co";
+const ROMANO_SUPABASE_KEY = "sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN";
+const romanoSupabase = window.supabase.createClient(ROMANO_SUPABASE_URL, ROMANO_SUPABASE_KEY);
+
+async function romanoLogin(){
+ const email=(document.getElementById("loginEmail")||{}).value.trim();
+ const password=(document.getElementById("loginPassword")||{}).value;
+ const msg=document.getElementById("loginMessage");
+ if(!email||!password){if(msg)msg.textContent="Preencha e-mail e senha.";return;}
+ if(msg)msg.textContent="A verificar...";
+ const {data,error}=await romanoSupabase.auth.signInWithPassword({email,password});
+ if(error){
+   console.error("ROMANO LOGIN:",error);
+   let text="Não foi possível entrar.";
+   if(error.message&&/email not confirmed/i.test(error.message)) text="E-mail ainda não confirmado no Supabase.";
+   else if(error.message&&/invalid login credentials/i.test(error.message)) text="E-mail ou senha incorretos.";
+   else if(error.message) text="Erro: "+error.message;
+   if(msg)msg.textContent=text;
+   return;
+ }
+ await romanoApplySession(data.session);
+}
+
+async function romanoApplySession(session){
+ const screen=document.getElementById("authScreen"),bar=document.getElementById("accountBar");
+ if(!session){if(screen)screen.style.display="flex";if(bar)bar.style.display="none";return;}
+ let name=session.user.email||"Utilizador";
+ try{
+   const r=await romanoSupabase.from("profiles").select("name,role,active").eq("id",session.user.id).maybeSingle();
+   if(r.data&&r.data.active!==false)name=r.data.name||name;
+ }catch(e){console.warn("Perfil ainda não configurado",e);}
+ if(screen)screen.style.display="none";
+ if(bar)bar.style.display="block";
+ const el=document.getElementById("accountName"); if(el)el.textContent=name;
+}
+
+async function romanoLogout(){
+ await romanoSupabase.auth.signOut();
+ location.reload();
+}
+
+async function romanoInitAuth(){
+ const {data}=await romanoSupabase.auth.getSession();
+ await romanoApplySession(data.session);
+ romanoSupabase.auth.onAuthStateChange(function(_event,session){romanoApplySession(session);});
+}
+function renderPendingCenter(){
+ const sum=document.getElementById("pendingSummary"),list=document.getElementById("pendingList");
+ if(!sum||!list)return;
+ const f=(document.getElementById("pendingFilter")||{}).value||"all";
+ const data=(services||[]).map(function(s,i){return{s:s,i:i};}).filter(function(x){
+   const st=x.s.status||"Programado";
+   return f==="all" || (f==="incidence"&&!!x.s.incidence) || (f==="ongoing"&&st==="En andamento") || (f==="planned"&&st==="Programado");
+ });
+ const inc=data.filter(x=>!!x.s.incidence).length,run=data.filter(x=>(x.s.status||"")==="En andamento").length;
+ sum.innerHTML='<div class="card"><div class="grid2"><div><b>⚠️ '+inc+'</b><br><span class="muted">Incidências</span></div><div><b>🔵 '+run+'</b><br><span class="muted">Em andamento</span></div></div></div>';
+ list.innerHTML=data.length?data.map(function(x){
+   const s=x.s,st=s.status||"Programado";
+   return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><b>🏠 '+(s.aptName||"Apartamento")+'</b><b>'+(s.incidence?"⚠️ ATENÇÃO":st==="En andamento"?"🔵 EM CURSO":"🟡 PROGRAMADO")+'</b></div>'+
+   '<div class="line"><span>Funcionario</span><b>'+(s.employeeName||"Sin asignar")+'</b></div>'+
+   '<div class="line"><span>Cliente</span><b>'+(s.clientName||"Cliente")+'</b></div>'+
+   '<button type="button" class="secondary" onclick="abrirVisualizacaoServico('+x.i+');return false;">ABRIR SERVICIO</button></div>';
+ }).join(""):'<div class="card">✓ No hay pendientes para este filtro.</div>';
+}
+function renderApartmentFile(){
+ const sel=document.getElementById("apartmentSelect"),box=document.getElementById("apartmentFileContent");
+ if(!sel||!box)return;
+ const map={};
+ (services||[]).forEach(function(s,i){
+   const key=String(s.apt);
+   if(!map[key])map[key]={apt:s.apt,aptName:s.aptName||("Apartamento "+key),clientName:s.clientName||"Cliente",services:[]};
+   map[key].services.push({s:s,i:i});
+ });
+ const keys=Object.keys(map);
+ if(!sel.options.length)sel.innerHTML=keys.map(function(k){return '<option value="'+k+'">'+map[k].aptName+'</option>';}).join("");
+ const item=map[sel.value||keys[0]];
+ if(!item){box.innerHTML='<div class="card">No hay apartamentos registrados.</div>';return;}
+ const last=item.services[item.services.length-1].s;
+ const fin=item.services.filter(x=>(x.s.status||"")==="Finalizado").length;
+ const inc=item.services.filter(x=>!!x.s.incidence).length;
+ box.innerHTML='<div class="card"><h2>🏠 '+item.aptName+'</h2><div class="line"><span>Cliente</span><b>'+item.clientName+'</b></div><div class="line"><span>Servicios registrados</span><b>'+item.services.length+'</b></div><div class="line"><span>Finalizados</span><b>🟢 '+fin+'</b></div><div class="line"><span>Incidencias</span><b>⚠️ '+inc+'</b></div><div class="line"><span>Último funcionario</span><b>'+((last&&last.employeeName)||"Sin asignar")+'</b></div></div>'+
+ '<h2>Historial</h2>'+item.services.slice().reverse().map(function(x){const s=x.s;return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+(s.status||"Programado")+'</b><span>'+(s.incidence?"⚠️ Incidencia":"✓ OK")+'</span></div><div class="line"><span>Funcionario</span><b>'+(s.employeeName||"Sin asignar")+'</b></div><div class="line"><span>Evidencias</span><b>'+(s.photos||0)+' fotos · '+(s.videos||0)+' vídeos</b></div><button type="button" class="secondary" onclick="abrirVisualizacaoServico('+x.i+');return false;">ABRIR SERVICIO</button></div>';}).join("");
+}
+function renderQualityPanel(){
+ const sum=document.getElementById("qualitySummary"),list=document.getElementById("qualityList");
+ if(!sum||!list)return;
+ const filter=(document.getElementById("qualityFilter")||{}).value||"all";
+ const data=(services||[]).map(function(s,i){return{s:s,i:i};}).filter(function(x){
+   return filter==="all"||(filter==="open"&&!!x.s.incidence)||(filter==="closed"&&!x.s.incidence);
+ });
+ const open=data.filter(x=>!!x.s.incidence).length,done=data.filter(x=>(x.s.status||"")==="Finalizado").length;
+ sum.innerHTML='<div class="card"><div class="grid2"><div><b>⚠️ '+open+'</b><br><span class="muted">Incidencias</span></div><div><b>🟢 '+done+'</b><br><span class="muted">Finalizados</span></div></div></div>';
+ list.innerHTML=data.length?data.map(function(x){
+   const s=x.s;
+   return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><b>🏠 '+(s.aptName||"Apartamento")+'</b><b>'+(s.incidence?"⚠️ REVISAR":"✓ OK")+'</b></div>'+
+   '<div class="line"><span>Funcionario</span><b>'+(s.employeeName||"Sin asignar")+'</b></div>'+
+   '<div class="line"><span>Estado</span><b>'+(s.status||"Programado")+'</b></div>'+
+   '<div class="line"><span>Evidencias</span><b>'+(s.photos||0)+' fotos · '+(s.videos||0)+' vídeos</b></div>'+
+   (s.incidence?'<div class="notice">⚠️ Este apartamento requiere revisión.</div>':'')+
+   '<button type="button" class="secondary" onclick="abrirVisualizacaoServico('+x.i+');return false;">ABRIR SERVICIO</button></div>';
+ }).join(""):'<div class="card">No hay registros.</div>';
+}
+function dailyReportText(){
+ const input=document.getElementById("exportDate");
+ const day=(input&&input.value)||new Date().toISOString().slice(0,10);
+ const data=(services||[]).filter(function(s){const raw=s.createdAt||s.date||s.startedAt||s.finishedAt;return raw&&new Date(raw).toISOString().slice(0,10)===day;});
+ const fin=data.filter(s=>(s.status||"")==="Finalizado").length;
+ const run=data.filter(s=>(s.status||"")==="En andamento").length;
+ const inc=data.filter(s=>!!s.incidence).length;
+ const lines=data.map(function(s){return "• "+(s.aptName||"Apartamento")+" — "+(s.status||"Programado")+" — "+(s.employeeName||"Sin asignar")+(s.incidence?" — INCIDENCIA":"");});
+ return "ROMANO PROPERTY CARE — RELATÓRIO OPERACIONAL\nData: "+day+"\nServiços: "+data.length+"\nFinalizados: "+fin+"\nEm andamento: "+run+"\nIncidências: "+inc+"\n\n"+lines.join("\n");
+}
+function renderExportReports(){
+ const box=document.getElementById("exportPreview");
+ if(!box)return;
+ const input=document.getElementById("exportDate");
+ if(input&&!input.value)input.value=new Date().toISOString().slice(0,10);
+ const text=dailyReportText();
+ box.innerHTML='<div class="card"><pre style="white-space:pre-wrap;font:inherit;margin:0">'+text.replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];})+'</pre></div>';
+}
+function copyDailyReport(){
+ const text=dailyReportText();
+ if(navigator.clipboard&&navigator.clipboard.writeText){
+   navigator.clipboard.writeText(text).then(function(){alert("Resumen copiado.");}).catch(function(){alert(text);});
+ }else{alert(text);}
+}
+function renderDailyClosing(){
+ const sum=document.getElementById("closingSummary"),emp=document.getElementById("closingEmployees"),inc=document.getElementById("closingIncidents");
+ if(!sum||!emp||!inc)return;
+ const input=document.getElementById("closingDate");
+ if(input&&!input.value)input.value=new Date().toISOString().slice(0,10);
+ const day=(input&&input.value)||"";
+ const data=(services||[]).map(function(s,i){return{s:s,i:i};}).filter(function(x){
+   const raw=x.s.createdAt||x.s.date||x.s.startedAt||x.s.finishedAt;
+   return !day||(raw&&new Date(raw).toISOString().slice(0,10)===day);
+ });
+ const fin=data.filter(x=>(x.s.status||"")==="Finalizado").length;
+ const run=data.filter(x=>(x.s.status||"")==="En andamento").length;
+ const planned=data.filter(x=>(x.s.status||"")==="Programado").length;
+ const incidents=data.filter(x=>!!x.s.incidence);
+ const photos=data.reduce((a,x)=>a+(+x.s.photos||0),0),videos=data.reduce((a,x)=>a+(+x.s.videos||0),0);
+ function money(v){return (Number(v)||0).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";}
+ function val(s,names){for(const n of names){if(s[n]!==undefined&&s[n]!==null&&s[n]!==""&&!isNaN(Number(s[n])))return Number(s[n]);}return 0;}
+ function statusIva(s){
+   if(s.ivaIncluded===true||s.comIva===true||s.withIva===true||s.incluyeIva===true)return "COM IVA";
+   if(s.ivaIncluded===false||s.comIva===false||s.withIva===false||s.semIva===true)return "SEM IVA";
+   if(val(s,["iva","ivaTotal"])>0)return "COM IVA";
+   return "IVA não informado";
+ }
+ function serviceValue(s){
+   let v=val(s,["totalConIva","valorConIva","total","totalIva","finalTotal","valorFinal"]);
+   if(!v)v=val(s,["totalSinIva","valorSinIva","subtotalSinIva","subtotal","base","baseTotal"]);
+   return v;
+ }
+ let sem=0,com=0,iva=0;
+ data.forEach(function(x){
+   const s=x.s,v=serviceValue(s),tax=val(s,["iva","ivaTotal"]),st=statusIva(s);
+   if(st==="SEM IVA")sem+=v; else {com+=v;iva+=tax;}
+ });
+ sum.innerHTML='<div class="card"><div class="grid2"><div><b>'+data.length+'</b><br><span class="muted">Serviços</span></div><div><b>🟢 '+fin+'</b><br><span class="muted">Finalizados</span></div></div><div class="grid2"><div><b>🔵 '+run+'</b><br><span class="muted">Em andamento</span></div><div><b>🟡 '+planned+'</b><br><span class="muted">Programados</span></div></div><div class="line"><span>⚠️ Incidências</span><b>'+incidents.length+'</b></div></div>'+
+ '<div class="card"><h2>💶 Valores dos serviços</h2><div class="line"><span>Total sem IVA</span><b>'+money(sem)+'</b></div><div class="line"><span>Total com IVA</span><b>'+money(com)+'</b></div><div class="line"><span>IVA</span><b>'+money(iva)+'</b></div><div class="line"><span>Total final</span><b>'+money(sem+com)+'</b></div></div>'+
+ '<h2>Serviços e valores</h2>'+(data.length?data.map(function(x){const s=x.s,v=serviceValue(s);return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><b>🏠 '+(s.aptName||"Apartamento")+'</b><b>'+money(v)+'</b></div><div class="line"><span>Tipologia</span><b>'+(s.typology||s.type||s.apartmentType||"—")+'</b></div><div class="line"><span>Valor final</span><b>'+money(v)+'</b></div><div class="line"><span>IVA</span><b>'+statusIva(s)+'</b></div><div class="line"><span>Funcionário</span><b>'+(s.employeeName||"Sin asignar")+'</b></div><div class="line"><span>Estado</span><b>'+(s.status||"Programado")+'</b></div></div>';}).join(""):'<div class="card">Sem serviços nesta data.</div>');
+ const groups={};
+ data.forEach(function(x){const s=x.s,n=s.employeeName||"Sin asignar";if(!groups[n])groups[n]={t:0,f:0,i:0,v:0};groups[n].t++;if((s.status||"")==="Finalizado")groups[n].f++;if(s.incidence)groups[n].i++;groups[n].v+=serviceValue(s);});
+ const names=Object.keys(groups);
+ emp.innerHTML='<h2>Produção por funcionário</h2>'+(names.length?names.map(function(n){const g=groups[n];return '<div class="card"><b>👷 '+n+'</b><div class="line"><span>Serviços</span><b>'+g.t+'</b></div><div class="line"><span>Finalizados</span><b>'+g.f+'</b></div><div class="line"><span>Incidências</span><b>⚠️ '+g.i+'</b></div><div class="line"><span>Valor dos serviços</span><b>'+money(g.v)+'</b></div></div>';}).join(""):'<div class="card">Sem dados.</div>');
+ inc.innerHTML='<h2>Incidências do dia</h2>'+(incidents.length?incidents.map(function(x){const s=x.s;return '<div class="card"><b>⚠️ '+(s.aptName||"Apartamento")+'</b><br><span class="muted">'+(s.employeeName||"Sin asignar")+' · '+(s.clientName||"Cliente")+'</span><br><button type="button" class="secondary" onclick="abrirVisualizacaoServico('+x.i+');return false;">ABRIR SERVIÇO</button></div>';}).join(""):'<div class="card">✓ Sem incidências.</div>');
+}function renderNotifications(){
+ const sum=document.getElementById("notificationSummary"),list=document.getElementById("notificationList");
+ if(!sum||!list)return;
+ const items=(services||[]).map(function(s,i){
+   let type=s.incidence?"⚠️ Incidencia":((s.status||"")==="Finalizado"?"🟢 Servicio finalizado":((s.status||"")==="En andamento"?"🔵 Servicio iniciado":"🟡 Servicio programado"));
+   return {s:s,i:i,type:type};
+ }).sort(function(a,b){return new Date(b.s.finishedAt||b.s.startedAt||b.s.createdAt||0)-new Date(a.s.finishedAt||a.s.startedAt||a.s.createdAt||0);});
+ const pending=items.filter(x=>x.s.incidence||((x.s.status||"")==="Finalizado")).length;
+ sum.innerHTML='<b>🔔 '+items.length+'</b> avisos · <b>⚠️ '+items.filter(x=>x.s.incidence).length+'</b> incidencias';
+ list.innerHTML=items.length?items.map(function(x){
+   const s=x.s;
+   return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+x.type+'</b><span class="muted">'+(s.employeeName||"Sin asignar")+'</span></div>'+
+   '<div class="line"><span>🏠 Apartamento</span><b>'+(s.aptName||"Apartamento")+'</b></div>'+
+   '<div class="line"><span>Cliente</span><b>'+(s.clientName||"Cliente")+'</b></div>'+
+   '<div class="line"><span>Evidencias</span><b>'+(s.photos||0)+' fotos · '+(s.videos||0)+' vídeos</b></div>'+
+   (s.incidence?'<div class="notice">⚠️ Requiere revisión de incidencia.</div>':'')+
+   '<button type="button" class="secondary" onclick="abrirVisualizacaoServico('+x.i+');return false;">ABRIR SERVICIO</button></div>';
+ }).join(""):'<div class="card">No hay avisos.</div>';
+}
+function renderAgenda(){
+ const list=document.getElementById("agendaList"),sum=document.getElementById("agendaSummary");
+ if(!list||!sum)return;
+ const input=document.getElementById("agendaDate");
+ if(input&&!input.value){
+   const d=new Date();
+   input.value=d.toISOString().slice(0,10);
+ }
+ const selected=(input&&input.value)||"";
+ const data=(services||[]).map(function(s,i){return {s:s,i:i};}).filter(function(x){
+   const s=x.s,raw=s.createdAt||s.date||s.startedAt||s.finishedAt;
+   if(!selected)return true;
+   if(!raw)return false;
+   return new Date(raw).toISOString().slice(0,10)===selected;
+ });
+ const finished=data.filter(x=>(x.s.status||"")==="Finalizado").length;
+ const active=data.filter(x=>(x.s.status||"")==="En andamento").length;
+ const inc=data.filter(x=>!!x.s.incidence).length;
+ sum.innerHTML='<div class="card"><div class="grid2"><div><b>'+data.length+'</b><br><span class="muted">Servicios</span></div><div><b>🟢 '+finished+'</b><br><span class="muted">Finalizados</span></div></div><div class="grid2"><div><b>🔵 '+active+'</b><br><span class="muted">En curso</span></div><div><b>⚠️ '+inc+'</b><br><span class="muted">Incidencias</span></div></div></div>';
+ list.innerHTML=data.length?data.map(function(x){
+   const s=x.s,st=s.status||"Programado";
+   return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>🏠 '+(s.aptName||"Apartamento")+'</b><br><span class="muted">'+(s.clientName||"Cliente")+'</span></div><b>'+(st==="Finalizado"?"🟢":st==="En andamento"?"🔵":"🟡")+' '+st+'</b></div>'+
+   '<div class="line"><span>Funcionario</span><b>'+(s.employeeName||"Sin asignar")+'</b></div>'+
+   '<div class="line"><span>Incidencia</span><b>'+(s.incidence?"⚠️ Sí":"✓ No")+'</b></div>'+
+   '<button type="button" class="secondary" onclick="abrirVisualizacaoServico('+x.i+');return false;">ABRIR SERVICIO</button></div>';
+ }).join(""):'<div class="card">No hay servicios para esta fecha.</div>';
+}
+function addEmployee(){
+ const input=document.getElementById("newEmployeeName");
+ const name=(input&&input.value||"").trim();
+ if(!name){alert("Introduzca el nombre del funcionario.");return;}
+ const next=Math.max(0,...employeeCatalog.map(e=>+e.id||0))+1;
+ employeeCatalog.push({id:next,name:name,active:true});
+ if(input)input.value="";
+ renderTeamManagement();
+}
+function toggleEmployee(id){
+ const e=employeeCatalog.find(x=>x.id===+id);
+ if(!e)return;
+ e.active=e.active===false;
+ renderTeamManagement();
+}
+function renameEmployee(id){
+ const e=employeeCatalog.find(x=>x.id===+id);
+ if(!e)return;
+ const name=prompt("Nombre del funcionario:",e.name);
+ if(name&&name.trim()){e.name=name.trim();services.forEach(s=>{if(s.employee===e.id)s.employeeName=e.name;});renderTeamManagement();renderServices();}
+}
+function renderTeamManagement(){
+ const list=document.getElementById("teamList");
+ if(!list)return;
+ const q=((document.getElementById("teamSearch")||{}).value||"").toLowerCase().trim();
+ const staff=employeeCatalog.filter(e=>!q||String(e.name||"").toLowerCase().includes(q));
+ list.innerHTML=staff.length?staff.map(function(e){
+   const mine=(services||[]).filter(s=>s.employee===e.id);
+   const finished=mine.filter(s=>(s.status||"")==="Finalizado").length;
+   const incidences=mine.filter(s=>!!s.incidence).length;
+   return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>👷 '+e.name+'</b><span>'+(e.active===false?'⚪ Inactivo':'🟢 Activo')+'</span></div>'+
+   '<div class="line"><span>Servicios</span><b>'+mine.length+'</b></div>'+
+   '<div class="line"><span>Finalizados</span><b>🟢 '+finished+'</b></div>'+
+   '<div class="line"><span>Incidencias</span><b>⚠️ '+incidences+'</b></div>'+
+   '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="secondary" onclick="renameEmployee('+e.id+')">✏️ Editar</button><button type="button" class="secondary" onclick="toggleEmployee('+e.id+')">'+(e.active===false?'🟢 Activar':'⚪ Desactivar')+'</button></div></div>';
+ }).join(""):'<div class="card">No hay funcionarios encontrados.</div>';
+}
+function refreshDashboard(){
+ const n=clients.reduce((s,c)=>s+c.apartments.length,0);
+ $("dashApts").textContent=n;$("dashActive").textContent=n;$("dashToday").textContent=services.length;
+ $("dashProgress").textContent=services.filter(s=>s.status==="En andamento").length;
+ $("dashInc").textContent=services.filter(s=>s.incidence).length;
+ $("notifCount").textContent=additionalRequests.filter(x=>x.status==="Nueva").length;
+ $("todayServices").innerHTML=services.length?services.slice(0,5).map((s,i)=>'<div class="line"><span><b>'+s.aptName+'</b>'+(s.incidence?' <span style="display:inline-block;padding:3px 7px;border:1px solid #c88;border-radius:999px;font-size:11px;font-weight:800">⚠️ INCIDENCIA</span>':'')+'<br><small>'+s.clientName+'</small></span><span style="text-align:right"><b>'+s.total+'</b>'+(s.incidence?'<br><small style="color:#a33;font-weight:700">REVISAR</small>':'')+'</span></div>').join(""):'<div class="muted">No hay servicios registrados para hoy.</div>';
+ $("recentActivities").innerHTML=additionalRequests.length?additionalRequests.slice(0,5).map(x=>'<div class="line"><span>🔔 '+x.type+'<br><small>'+x.aptName+' · '+x.desc+'</small></span><b>Nueva</b></div>').join(""):'<div class="muted">Sin actividad reciente.</div>';
+}
+renderTodayServices();
+function newAdditional(){
+ $("addClient").innerHTML=clients.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join("");
+ loadAdditionalApts();show("additional");
+}
+function loadAdditionalApts(){const c=clientById(+$("addClient").value);$("addApt").innerHTML=(c?c.apartments:[]).map(a=>'<option value="'+a.id+'">'+a.name+'</option>').join("")}
+function receiveAdditional(){
+ const a=aptById(+$("addApt").value),c=clientById(+$("addClient").value);if(!a||!c)return;
+ additionalRequests.unshift({clientName:c.name,aptName:a.name,type:$("addType").value,desc:$("addDesc").value||"Sin descripción",qty:+$("addQty").value||1,value:+$("addValue").value||0,status:"Nueva"});
+ refreshDashboard();show("home");alert("Nueva solicitud recibida");
+}
+
+const $=id=>document.getElementById(id);
+const money=n=>Number(n||0).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
+function show(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));$(id).classList.add("on");document.querySelectorAll(".nav").forEach(x=>x.classList.remove("on"))}
+function toggleModule(id){$(id).classList.toggle("hidden",!$(id).classList.contains("hidden"))}
+function aptById(id){for(const c of clients){const a=c.apartments.find(x=>x.id==id);if(a)return a}return null}
+function clientById(id){return clients.find(x=>x.id==id)}
+function renderClients(){$("clientList").innerHTML=clients.map(c=>'<div class="card"><b>'+c.name+'</b><br><span class="muted">'+c.apartments.length+' apartamento(s)</span></div>').join("")}
+function renderApts(){$("aptList").innerHTML=clients.flatMap(c=>c.apartments.map(a=>'<button class="card" style="width:100%;text-align:left" onclick="openApt('+a.id+')"><b>'+a.name+'</b><br><span class="muted">'+c.name+' · '+a.type+'</span></button>')).join("")}
+function openApt(id){currentApt=aptById(id);$("aptTitle").textContent=currentApt.name;$("aptClient").textContent=clientByApt(currentApt).name;$("aptNumber").value=currentApt.name.replace(/\\D/g,"");$("aptType").innerHTML=types.map(t=>'<option>'+t+'</option>').join("");$("aptType").value=currentApt.type;show("aptDetail")}
+function clientByApt(a){return clients.find(c=>c.apartments.some(x=>x.id===a.id))}
+function saveApartment(){let n=$("aptNumber").value.trim();if(n)currentApt.name="Apt. "+n;currentApt.type=$("aptType").value;renderApts();show("apartments")}
+function newService(){$("sClient").innerHTML=clients.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join("");$("sEmployee").innerHTML=employeeCatalog.map(e=>'<option value="'+e.id+'">'+e.name+'</option>').join("");loadAptsForService();show("newService")}
+function loadAptsForService(){const c=clientById(+$("sClient").value);$("sApt").innerHTML=c.apartments.map(a=>'<option value="'+a.id+'">'+a.name+'</option>').join("");loadServiceApartment()}
+function loadServiceApartment(){const a=aptById(+$("sApt").value);if(!a)return;$("serviceAptInfo").textContent=a.name+" · "+a.type; $("cleanType").innerHTML=types.map(t=>'<option>'+t+'</option>').join("");$("cleanType").value=a.type;$("cleanRate").value=cleanPrices[a.type]||0;loadLinen(a);calc()}
+function loadLinen(a){const b=a.beds||{};const r=a.bedRates||{single:18,double:19.42,king:19.42,sofas:18,sofad:19.42};$("lSingleQty").value=b.single||0;$("lDoubleQty").value=b.double||0;$("lKingQty").value=b.king||0;$("lSofaSingleQty").value=b.sofas||0;$("lSofaDoubleQty").value=b.sofad||0;$("lSingleRate").value=r.single;$("lDoubleRate").value=r.double;$("lKingRate").value=r.king;$("lSofaSingleRate").value=r.sofas;$("lSofaDoubleRate").value=r.sofad;$("lSingleOn").checked=(b.single||0)>0;$("lDoubleOn").checked=(b.double||0)>0;$("lKingOn").checked=(b.king||0)>0;$("lSofaSingleOn").checked=(b.sofas||0)>0;$("lSofaDoubleOn").checked=(b.sofad||0)>0}
+function saveLinen(){const a=aptById(+$("sApt").value);a.beds={single:$("lSingleOn").checked?(+$("lSingleQty").value||0):0,double:$("lDoubleOn").checked?(+$("lDoubleQty").value||0):0,king:$("lKingOn").checked?(+$("lKingQty").value||0):0,sofas:$("lSofaSingleOn").checked?(+$("lSofaSingleQty").value||0):0,sofad:$("lSofaDoubleOn").checked?(+$("lSofaDoubleQty").value||0):0};a.bedRates={single:+$("lSingleRate").value||18,double:+$("lDoubleRate").value||19.42,king:+$("lKingRate").value||19.42,sofas:+$("lSofaSingleRate").value||18,sofad:+$("lSofaDoubleRate").value||19.42}}
+function calc(){
+ const a=aptById(+$("sApt").value);if(!a)return;
+ let gross=0,lines=[];
+ const cleanOn=$("cClean").checked,maintOn=$("cMaint").checked,linenOn=$("cLinen").checked,amenOn=$("cAmen").checked;
+
+ if(cleanOn){
+  const p=+$("cleanRate").value||0,t=$("cleanType").value,iva=p*.21,total=p+iva;
+  $("cleanPrice").innerHTML="<b>Precio de limpieza:</b> "+money(p)+" sin IVA<br>IVA 21%: "+money(iva)+"<br><b>Total con IVA: "+money(total)+"</b>";
+  gross+=total;
+  lines.push('<div class="line"><span>Limpieza · '+t+'<br><small>Precio base · sin IVA</small></span><b>'+money(p)+'<br>'+money(total)+' con IVA</b></div>');
+ }
+
+ const mh=+$("maintHours").value||0,mr=+$("maintRate").value||45,mg=mh*mr;
+ $("maintTotal").innerHTML="<b>Total mantenimiento:</b> "+money(mg)+" IVA incluido";
+ if(maintOn){gross+=mg;lines.push('<div class="line"><span>Mantenimiento · '+$("maintType").value+'<br><small>'+mh+' hora(s) · IVA incluido</small></span><b>'+money(mg)+' con IVA</b></div>')}
+
+ const br=a.bedRates||{single:18,double:19.42,king:19.42,sofas:18,sofad:19.42};
+ const lt=(+$("lSingleQty").value||0)*(+$("lSingleRate").value||br.single)+(+$("lDoubleQty").value||0)*(+$("lDoubleRate").value||br.double)+(+$("lKingQty").value||0)*(+$("lKingRate").value||br.king)+(+$("lSofaSingleQty").value||0)*(+$("lSofaSingleRate").value||br.sofas)+(+$("lSofaDoubleQty").value||0)*(+$("lSofaDoubleRate").value||br.sofad);
+ $("linenTotal").innerHTML="<b>Total alquiler de ropa:</b> "+money(lt)+" IVA incluido";
+ if(linenOn){gross+=lt;lines.push('<div class="line"><span>Alquiler de ropa<br><small>Valores unitarios · IVA incluido</small></span><b>'+money(lt)+' con IVA</b></div>')}
+
+ const ap=(+$("amenQty").value||0)*(+$("amenRate").value||0);
+ if(amenOn){gross+=ap;lines.push('<div class="line"><span>Amenities · '+($("amenProduct").value||"Producto")+'<br><small>Valor unitario · IVA incluido</small></span><b>'+money(ap)+' con IVA</b></div>')}
+
+ $("summaryLines").innerHTML=lines.length?lines.join(""):'<div class="line">No hay servicios seleccionados.</div>';
+ const base=gross/1.21,vat=gross-base;
+ $("summaryVAT").innerHTML='<div class="line"><span>Base imponible total · sin IVA</span><b>'+money(base)+'</b></div><div class="line"><span>IVA 21% total</span><b>'+money(vat)+'</b></div>';
+ $("finalTotal").innerHTML="<div>Total sin IVA: <b>"+money(base)+"</b></div><div>IVA 21%: <b>"+money(vat)+"</b></div><div style='margin-top:8px;font-size:22px'>Total con IVA: <b>"+money(gross)+"</b></div>";
+}
+
+let activeServiceId=null;
+
+function openServiceOperation(i){
+ const index=Number(i),s=services[index];
+ if(!s){alert("Servicio no encontrado.");return;}
+ activeServiceId=index;
+ show("services");
+ const panel=$("activeServicePanel");
+ if(panel)panel.classList.remove("hidden");
+ $("activeServiceInfo").innerHTML="<b>"+(s.aptName||"Apartamento")+"</b><br>"+(s.clientName||"Cliente")+"<br><span class='muted'>Estado: "+(s.status||"Programado")+"</span>";
+ $("startServiceBtn").disabled=s.status!=="Programado";
+ $("finishServiceBtn").disabled=s.status!=="En andamento";
+ $("evidenceStatus").innerHTML="<b>Evidencias:</b> "+(s.photos||0)+" foto(s) · "+(s.videos||0)+" vídeo(s)";
+ $("incidentStatus").innerHTML=s.incidence?("<b>Incidencia documentada:</b> "+(s.incidentPhotos||0)+" foto(s)"):"Sin incidencias registradas.";
+ if(typeof renderEvidencePreview==="function")renderEvidencePreview(s);
+ if(typeof renderIncidentPreview==="function")renderIncidentPreview(s);
+}
+
+function startService(){
+ if(activeServiceId===null||!services[activeServiceId]){
+   alert("Abra primero el servicio.");return;
+ }
+ const s=services[activeServiceId];
+ if(s.status!=="Programado")return;
+ s.status="En andamento";
+ s.startedAt=new Date().toISOString();
+ refreshDashboard();
+ renderServices();
+ openServiceOperation(activeServiceId);
+}
+
+function finishService(){
+ if(activeServiceId===null||!services[activeServiceId]){
+   alert("Abra primero el servicio.");return;
+ }
+ const s=services[activeServiceId];
+ if(s.status!=="En andamento")return;
+ s.status="Finalizado";
+ s.finishedAt=new Date().toISOString();
+ refreshDashboard();
+ renderServices();
+ openServiceOperation(activeServiceId);
+}
+
+function openEvidencePicker(id){
+ const el=$(id);
+ if(el)el.click();
+}
+
+function registerEvidence(type){
+ if(activeServiceId===null||!services[activeServiceId]){
+   alert("Abra primero el servicio.");return;
+ }
+ const s=services[activeServiceId];
+ const input=type==="Fotos"?$("photoFiles"):$("videoFiles");
+ if(!input||!input.files||!input.files.length)return;
+ s.evidenceFiles=s.evidenceFiles||[];
+ Array.from(input.files).forEach(function(file){
+   s.evidenceFiles.push({type:type,name:file.name,url:URL.createObjectURL(file)});
+ });
+ if(type==="Fotos")s.photos=(s.photos||0)+input.files.length;
+ else s.videos=(s.videos||0)+input.files.length;
+ input.value="";
+ refreshDashboard();
+ renderServices();
+ openServiceOperation(activeServiceId);
+}
+
+function renderEvidencePreview(s){
+ const box=$("evidencePreview");if(!box)return;
+ const files=s.evidenceFiles||[];
+ box.innerHTML=files.length
+ ?'<div class="muted"><b>Archivos adjuntos al servicio</b></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:8px">'+
+  files.map(function(f){
+   return f.type==="Fotos"
+   ?'<div style="border:1px solid #ddd;border-radius:10px;padding:6px;background:#fff;text-align:center"><img src="'+f.url+'" alt="'+f.name+'" style="display:block;width:100%;height:90px;object-fit:cover;border-radius:7px"><small style="display:block;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+f.name+'</small></div>'
+   :'<div class="notice" style="display:flex;align-items:center;min-height:90px">🎥 <span style="margin-left:5px;overflow:hidden;text-overflow:ellipsis">'+f.name+'</span></div>';
+  }).join("")+'</div>'
+ :'';
+}
+
+function registerIncidentPhotos(){
+ if(activeServiceId===null||!services[activeServiceId]){
+   alert("Abra primero el servicio.");return;
+ }
+ const s=services[activeServiceId],input=$("incidentPhotos");
+ if(!input||!input.files||!input.files.length)return;
+ s.incidence=true;
+ s.incidentFiles=s.incidentFiles||[];
+ Array.from(input.files).forEach(function(file){
+   s.incidentFiles.push({name:file.name,url:URL.createObjectURL(file)});
+ });
+ s.incidentPhotos=(s.incidentPhotos||0)+input.files.length;
+ s.incidentDesc=$("incidentDesc").value||"Incidencia documentada";
+ input.value="";
+ refreshDashboard();
+ renderServices();
+ openServiceOperation(activeServiceId);
+}
+
+function renderIncidentPreview(s){
+ const box=$("incidentPreview");
+ if(!box)return;
+ const files=s.incidentFiles||[];
+ box.innerHTML=files.length
+ ?'<div class="muted"><b>Fotos de la incidencia adjuntas</b></div>'+
+  files.map(function(f){
+   return '<div style="display:inline-block;width:92px;margin:6px 6px 0 0;vertical-align:top"><img src="'+f.url+'" alt="'+f.name+'" style="width:92px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #c99"><small>'+f.name+'</small></div>';
+  }).join("")
+ :'';
+}
+
+function saveService(){
+ saveLinen();
+ calc();
+ const aa=aptById(+$("sApt").value),cc=clientById(+$("sClient").value);
+ const textValue=function(id){
+   const el=document.getElementById(id);
+   return el?(el.value!==undefined?el.value:el.textContent||""):"";
+ };
+ const num=function(v){
+   const n=parseFloat(String(v).replace(/\s/g,"").replace(/[€]/g,"").replace(/\./g,"").replace(",",".").replace(/[^\d.-]/g,""));
+   return isNaN(n)?0:n;
+ };
+ const finalValue=num(textValue("finalTotal"));
+ const ivaEl=document.getElementById("ivaTotal")||document.getElementById("serviceIva")||document.getElementById("iva")||document.getElementById("sIva");
+ const ivaValue=ivaEl?num(ivaEl.value!==undefined?ivaEl.value:ivaEl.textContent):0;
+ const baseEl=document.getElementById("subtotal")||document.getElementById("subtotalSinIva")||document.getElementById("serviceTotalSinIva")||document.getElementById("totalSinIva");
+ const baseValue=baseEl?num(baseEl.value!==undefined?baseEl.value:baseEl.textContent):Math.max(0,finalValue-ivaValue);
+ const service={
+   apt:+$("sApt").value,
+   client:+$("sClient").value,
+   employee:+$("sEmployee").value,
+   employeeName:(employeeCatalog.find(e=>e.id===+$("sEmployee").value)||{}).name||"Sin asignar",
+   aptName:aa.name,
+   clientName:cc.name,
+   total:finalValue,
+   totalSinIva:baseValue,
+   iva:ivaValue,
+   totalConIva:finalValue,
+   valorFinal:finalValue,
+   status:"Programado",
+   incidence:false,
+   createdAt:new Date().toISOString()
+ };
+ services.unshift(service);
+ refreshDashboard();
+ renderServices();
+ show("services");
+ openServiceOperation(0);
+}
+function renderServices(){
+ $("serviceList").innerHTML=services.length?services.map((s,i)=>'<div class="card"><b>'+(s.aptName||"Apartamento")+'</b><br><span class="muted">'+(s.clientName||"Cliente")+'</span><div class="line"><span>Funcionario</span><b>'+(s.employeeName||"Sin asignar")+'</b></div><div class="line"><span>Estado</span><b>'+(s.status||"Programado")+'</b></div><div class="line"><span>Fotos / vídeos</span><b>'+(s.photos||0)+' / '+(s.videos||0)+'</b></div><button type="button" class="secondary" style="width:100%" onclick="abrirVisualizacaoServico('+i+');return false;">👁️ VISUALIZAR SERVICIO</button></div>').join(""):'<div class="card">No hay servicios guardados.</div>';
+}
+ try{renderNotifications();}catch(e){}
+function abrirVisualizacaoServico(i){
+ const index=parseInt(i,10);
+ if(!Number.isInteger(index)||!services[index]){alert("Servicio no encontrado.");return false;}
+ activeServiceId=index;
+ const s=services[index];
+ const panel=document.getElementById("activeServicePanel");
+ if(!panel){alert("No se encontró el panel del servicio.");return false;}
+ try{show("services");}catch(e){}
+ panel.classList.remove("hidden");
+ const info=document.getElementById("activeServiceInfo");
+ if(info)info.innerHTML="<b>"+(s.aptName||"Apartamento")+"</b><br>"+(s.clientName||"Cliente")+"<br><b>Funcionario: "+(s.employeeName||"Sin asignar")+"</b><br><span class='muted'>Estado: "+(s.status||"Programado")+"</span>";
+ const start=document.getElementById("startServiceBtn");
+ const finish=document.getElementById("finishServiceBtn");
+ if(start)start.disabled=(s.status!=="Programado");
+ if(finish)finish.disabled=(s.status!=="En andamento");
+ const ev=document.getElementById("evidenceStatus");
+ if(ev)ev.innerHTML="<b>Evidencias:</b> "+(s.photos||0)+" foto(s) · "+(s.videos||0)+" vídeo(s)";
+ const inc=document.getElementById("incidentStatus");
+ if(inc)inc.innerHTML=s.incidence?("<b>Incidencia documentada:</b> "+(s.incidentPhotos||0)+" foto(s)"):"Sin incidencias registradas.";
+ if(typeof renderEvidencePreview==="function")renderEvidencePreview(s);
+ if(typeof renderIncidentPreview==="function")renderIncidentPreview(s);
+ panel.scrollIntoView({behavior:"smooth",block:"start"});
+ return false;
+}
+
+function renderTodayServices(){
+ const summary=document.getElementById("todaySummary"),list=document.getElementById("todayServiceList");
+ if(!summary||!list)return;
+ const now=new Date();
+ const today=(services||[]).filter(function(s){
+   const raw=s.createdAt||s.date||s.startedAt||s.finishedAt;
+   if(!raw)return false;
+   const d=new Date(raw);
+   return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()&&d.getDate()===now.getDate();
+ });
+ const count=function(status){return today.filter(function(s){return (s.status||"Programado")===status}).length};
+ summary.innerHTML=
+   '<div class="today-service-card"><b>🟡 Programados</b><br>'+count("Programado")+'</div>'+
+   '<div class="today-service-card"><b>🔵 En curso</b><br>'+count("En andamento")+'</div>'+
+   '<div class="today-service-card"><b>🟢 Finalizados</b><br>'+count("Finalizado")+'</div>'+
+   '<div class="today-service-card"><b>⚠️ Incidencias</b><br>'+today.filter(function(s){return !!s.incidence}).length+'</div>'+
+   '<div class="today-service-card"><b>📋 Total</b><br>'+today.length+'</div>';
+ list.innerHTML=today.length?today.map(function(s){
+   const i=services.indexOf(s);
+   const st=s.status||"Programado";
+   return '<div class="today-service-card">'+
+     '<b>'+(s.aptName||"Apartamento")+'</b> — '+(s.clientName||"Cliente")+
+     '<div class="muted">'+st+' · '+(s.photos||0)+' fotos · '+(s.videos||0)+' vídeos'+(s.incidence?' · ⚠️ Incidencia':'')+'</div>'+
+     '<button type="button" class="secondary" style="margin-top:8px" onclick="abrirVisualizacaoServico('+i+');return false;">ABRIR SERVICIO</button>'+
+   '</div>';
+ }).join(""):'<div class="today-service-card">No hay servicios registrados hoy.</div>';
+}
+
+function historyDateMatch(s,period){
+ const raw=s.createdAt||s.date||s.startedAt||s.finishedAt;
+ if(!raw)return period==="all";
+ const d=new Date(raw),n=new Date();
+ d.setHours(0,0,0,0);n.setHours(0,0,0,0);
+ const diff=Math.floor((n-d)/86400000);
+ if(period==="today")return diff===0;
+ if(period==="yesterday")return diff===1;
+ if(period==="week")return diff>=0&&diff<7;
+ if(period==="month")return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();
+ return true;
+}
+function renderHistory(){
+ const list=$("historyList"),sum=$("historySummary");
+ if(!list||!sum)return;
+ const period=($("historyPeriod")||{}).value||"today";
+ const status=($("historyStatus")||{}).value||"all";
+ const q=(($("historySearch")||{}).value||"").trim().toLowerCase();
+ const data=(services||[]).map((s,i)=>({s:s,i:i})).filter(x=>{
+   const s=x.s,st=s.status||"Programado";
+   return historyDateMatch(s,period)&&(status==="all"||st===status)&&
+    (!q||String(s.aptName||"").toLowerCase().includes(q)||String(s.clientName||"").toLowerCase().includes(q));
+ });
+ const inc=data.filter(x=>x.s.incidence).length;
+ sum.innerHTML='<div class="card"><div class="grid2"><div><b>'+data.length+'</b><br><span class="muted">Servicios encontrados</span></div><div><b>⚠️ '+inc+'</b><br><span class="muted">Con incidencia</span></div></div></div>';
+ list.innerHTML=data.length?data.map(x=>{
+   const s=x.s,st=s.status||"Programado";
+   const statusText=st==="Finalizado"?"🟢 Finalizado":st==="En andamento"?"🔵 En andamento":"🟡 Programado";
+   const times=(s.startedAt?"Inicio: "+new Date(s.startedAt).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}):"")+
+     (s.finishedAt?" · Fin: "+new Date(s.finishedAt).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}):"");
+   return '<div class="history-card"><div class="history-head"><div><b>🏠 '+(s.aptName||"Apartamento")+'</b><br><span class="muted">'+(s.clientName||"Cliente")+'</span></div>'+
+     '<span class="history-badge '+(s.incidence?'history-inc':'')+'">'+(s.incidence?'⚠️ INCIDENCIA':statusText)+'</span></div>'+
+     '<div class="muted" style="margin-top:8px">'+times+' · '+(s.photos||0)+' fotos · '+(s.videos||0)+' vídeos'+(s.incidence?' · '+(s.incidentPhotos||0)+' foto(s) de incidencia':'')+'</div>'+
+     '<button type="button" class="secondary" onclick="abrirVisualizacaoServico('+x.i+');return false;">ABRIR SERVICIO</button></div>';
+ }).join(""):'<div class="card">No hay servicios para este filtro.</div>';
+}
+
+function renderEmployeeArea(){
+ const list=document.getElementById("employeeTodayList");
+ if(!list)return;
+ const q=((document.getElementById("employeeSearch")||{}).value||"").toLowerCase().trim();
+ const now=new Date();
+ const data=(services||[]).map((s,i)=>({s:s,i:i})).filter(function(x){
+   const s=x.s,raw=s.createdAt||s.date||s.startedAt||s.finishedAt;
+   if(!raw)return false;
+   const d=new Date(raw);
+   const today=d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()&&d.getDate()===now.getDate();
+   return today&&(!q||String(s.aptName||"").toLowerCase().includes(q)||String(s.clientName||"").toLowerCase().includes(q));
+ });
+ list.innerHTML=data.length?data.map(function(x){
+   const s=x.s,st=s.status||"Programado";
+   return '<div class="card"><b>🏠 '+(s.aptName||"Apartamento")+'</b><br><span class="muted">'+(s.clientName||"Cliente")+'</span>'+
+    '<div class="line"><span>Estado</span><b>'+st+'</b></div>'+
+    '<div class="line"><span>Tipología</span><b>'+((s.typology||"")+"")+'</b></div>'+
+    '<button type="button" class="secondary" style="width:100%;margin-top:8px" onclick="openServiceOperation('+x.i+')">ABRIR SERVICIO</button>'+
+   '</div>';
+ }).join(""):'<div class="card">No hay servicios asignados para hoy.</div>';
+}
+
+function renderClientPortal(){
+ const select=document.getElementById("portalClient"),list=document.getElementById("clientPortalList"),sum=document.getElementById("clientPortalSummary");
+ if(!select||!list||!sum)return;
+ if(!select.options.length)select.innerHTML=clients.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join("");
+ const cid=+(select.value||0),c=clientById(cid);
+ const data=(services||[]).map((s,i)=>({s:s,i:i})).filter(x=>x.s.client==cid);
+ const finished=data.filter(x=>(x.s.status||"")=="Finalizado").length;
+ const incidents=data.filter(x=>!!x.s.incidence).length;
+ sum.innerHTML='<div class="card"><div class="grid2"><div><b>'+data.length+'</b><br><span class="muted">Servicios</span></div><div><b>'+finished+'</b><br><span class="muted">Finalizados</span></div></div><div class="line"><span>Incidencias</span><b>⚠️ '+incidents+'</b></div></div>';
+ list.innerHTML=data.length?data.map(x=>{
+   const s=x.s,st=s.status||"Programado";
+   return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>🏠 '+(s.aptName||"Apartamento")+'</b><br><span class="muted">'+(c?c.name:"")+'</span></div><b>'+(st==="Finalizado"?"🟢 Finalizado":st==="En andamento"?"🔵 En andamento":"🟡 Programado")+'</b></div>'+
+    '<div class="line"><span>Evidencias</span><b>'+(s.photos||0)+' fotos · '+(s.videos||0)+' vídeos</b></div>'+
+    '<div class="line"><span>Incidencia</span><b>'+(s.incidence?"⚠️ Sí":"✓ No")+'</b></div>'+
+    (s.incidence?'<div class="notice">Incidencia registrada. Consulte las evidencias asociadas al servicio.</div>':'')+
+   '</div>';
+ }).join(""):'<div class="card">No hay servicios para este cliente.</div>';
+}
+
+function renderReports(){
+ const sum=document.getElementById("reportSummary"),list=document.getElementById("reportEmployees");
+ if(!sum||!list)return;
+ const period=(document.getElementById("reportPeriod")||{}).value||"today";
+ const now=new Date(); now.setHours(0,0,0,0);
+ const data=(services||[]).filter(function(s){
+   const raw=s.createdAt||s.date||s.startedAt||s.finishedAt;
+   if(period==="all")return true;
+   if(!raw)return false;
+   const d=new Date(raw); d.setHours(0,0,0,0);
+   const diff=Math.floor((now-d)/86400000);
+   if(period==="today")return diff===0;
+   if(period==="week")return diff>=0&&diff<7;
+   return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+ });
+ const finished=data.filter(s=>(s.status||"")==="Finalizado").length;
+ const incidences=data.filter(s=>!!s.incidence).length;
+ sum.innerHTML='<div class="card"><div class="grid2"><div><b>'+data.length+'</b><br><span class="muted">Apartamentos / servicios</span></div><div><b>🟢 '+finished+'</b><br><span class="muted">Finalizados</span></div></div><div class="grid2"><div><b>⚠️ '+incidences+'</b><br><span class="muted">Con incidencia</span></div><div><b>📷 '+data.reduce((a,s)=>a+(+s.photos||0),0)+'</b><br><span class="muted">Fotos</span></div></div></div>';
+ const groups={};
+ data.forEach(function(s){
+   const name=s.employeeName||"Sin asignar";
+   if(!groups[name])groups[name]={total:0,finished:0,inc:0,photos:0,videos:0};
+   groups[name].total++; if((s.status||"")==="Finalizado")groups[name].finished++;
+   if(s.incidence)groups[name].inc++; groups[name].photos+=(+s.photos||0); groups[name].videos+=(+s.videos||0);
+ });
+ const names=Object.keys(groups);
+ list.innerHTML=names.length?names.map(function(name){
+   const g=groups[name];
+   return '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><b>👷 '+name+'</b><b>'+g.total+' servicios</b></div><div class="line"><span>Finalizados</span><b>🟢 '+g.finished+'</b></div><div class="line"><span>Incidencias</span><b>⚠️ '+g.inc+'</b></div><div class="line"><span>Evidencias</span><b>'+g.photos+' fotos · '+g.videos+' vídeos</b></div></div>';
+ }).join(""):'<div class="card">No hay datos para este periodo.</div>';
+}
+function saveClient(){const n=$("cn").value.trim();if(!n)return;clients.push({id:Date.now(),name:n,contact:$("cc").value,phone:$("cp").value,email:$("ce").value,apartments:[]});renderClients();show("clients")}
+$("cleanType").onchange=()=>{ $("cleanRate").value=cleanPrices[$("cleanType").value]||0; calc(); }; document.querySelectorAll(".service-head").forEach(h=>h.addEventListener("click",e=>{if(e.target.tagName==="INPUT")return;const cb=h.querySelector("input");cb.checked=!cb.checked;cb.dispatchEvent(new Event("change"))}));
+$("cleanRate").value=cleanPrices["T2 + 2 baños"];renderClients();renderApts();
+
+window.addEventListener('DOMContentLoaded',function(){renderTodayServices();});
+
+window.addEventListener("DOMContentLoaded", romanoInitAuth);
+</script></body></html>
