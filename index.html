@@ -79,7 +79,8 @@ nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(780px,
 <label>Tipología</label><select id="aptType"></select><button class="primary" onclick="saveApartment()">GUARDAR DATOS</button></div></section>
 
 <section id="newService" class="page"><button class="back" onclick="show('home')">← Volver</button><h1>Nuevo servicio</h1><div class="muted">Cada módulo funciona de forma independiente.</div>
-<div class="card"><div class="grid2"><div><label>Cliente</label><select id="sClient" onchange="loadAptsForService()"></select></div><div><label>Apartamento</label><select id="sApt" onchange="loadServiceApartment()"></select></div></div>
+<div class="card"><label>Data do serviço</label><input id="serviceDate" type="date"></div
+<<div class="card"><div class="grid2"><div><label>Cliente</label><select id="sClient" onchange="loadAptsForService()"></select></div><div><label>Apartamento</label><select id="sApt" onchange="loadServiceApartment()"></select></div></div>
 <label>Funcionario responsable</label><select id="sEmployee"></select><div id="serviceAptInfo" class="notice"></div></div>
 
 <div class="card service"><label class="service-head"><input type="checkbox" id="cClean" onchange="toggleModule('cleanBody');calc()"><b>🧹 LIMPIEZA</b><span>＋</span></label>
