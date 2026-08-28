@@ -791,7 +791,7 @@ function saveService(){
  refreshDashboard();
  renderServices();
  show("services");
- openServiceOperation(0);
+
 }
 function renderServices(){
  $("serviceList").innerHTML=services.length?services.map((s,i)=>'<div class="card"><b>'+(s.aptName||"Apartamento")+'</b><br><span class="muted">'+(s.clientName||"Cliente")+'</span><div class="line"><span>Funcionario</span><b>'+(s.employeeName||"Sin asignar")+'</b></div><div class="line"><span>Estado</span><b>'+(s.status||"Programado")+'</b></div><div class="line"><span>Fotos / vídeos</span><b>'+(s.photos||0)+' / '+(s.videos||0)+'</b></div><button type="button" class="secondary" style="width:100%" onclick="abrirVisualizacaoServico('+i+');return false;">👁️ VISUALIZAR SERVICIO</button></div>').join(""):'<div class="card">No hay servicios guardados.</div>';
