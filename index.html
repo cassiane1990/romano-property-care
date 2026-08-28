@@ -598,7 +598,7 @@ function receiveAdditional(){
 
 const $=id=>document.getElementById(id);
 const money=n=>Number(n||0).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
-function show(id){
+function show(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));$(id).classList.add("on");document.querySelectorAll(".nav").forEach(x=>x.classList.remove("on"))}
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));
   const p=document.getElementById(id);
   if(p)p.classList.add("on");
