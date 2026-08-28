@@ -598,7 +598,12 @@ function receiveAdditional(){
 
 const $=id=>document.getElementById(id);
 const money=n=>Number(n||0).toLocaleString("es-ES",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
-function show(id){document.querySelectorAll(".page").forEach(x=>{x.classList.remove("on");x.style.display="none"});const p=$(id);if(p){p.style.display="block";p.classList.add("on");}window.scrollTo(0,0)}
+function show(id){
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));
+  const p=document.getElementById(id);
+  if(p)p.classList.add("on");
+  window.scrollTo(0,0);
+}
 function toggleModule(id){$(id).classList.toggle("hidden",!$(id).classList.contains("hidden"))}
 function aptById(id){for(const c of clients){const a=c.apartments.find(x=>x.id==id);if(a)return a}return null}
 function clientById(id){return clients.find(x=>x.id==id)}
