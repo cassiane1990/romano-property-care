@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>ROMANO PROPERTY CARE — Gestão</title>
+<style>
+:root{--bg:#f6f0e6;--card:#fffdf9;--card2:#fbf7ef;--line:#e4d8c6;--gold:#c58c25;--gold2:#8f641d;--ink:#211d18;--muted:#756b5e;--green:#3c7b35;--red:#a43b32;--blue:#315b94;--orange:#a66b00;--shadow:0 7px 24px rgba(80,53,18,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}button,input,select,textarea{font:inherit}.app{min-height:100vh}.sidebar{position:fixed;left:0;top:0;bottom:0;width:230px;background:#fdfbf7;border-right:1px solid var(--line);padding:25px 18px;z-index:30}.brand{text-align:center;margin-bottom:27px;padding-top:2px}.logoMark{font-family:Georgia,serif;color:var(--gold2);font-size:30px;line-height:28px;position:relative;margin-bottom:3px}.crown{display:block;position:static;transform:none;font-size:27px;line-height:28px;margin:0 auto 2px}.brandName{font:22px Georgia,serif;letter-spacing:1px}.brandSub{font-size:9px;letter-spacing:2.4px;color:var(--gold2)}.menu{display:flex;flex-direction:column;gap:9px}.menu button{height:48px;border:1px solid #dfd3c2;background:#fffdf9;border-radius:9px;color:#453a2d;font-weight:750;text-align:left;padding:0 14px;cursor:pointer;display:flex;align-items:center;gap:12px}.menu button:hover{border-color:#cda45d}.menu button.active{background:linear-gradient(#d39a2c,#bd851e);color:#fff;border-color:#c58c25;box-shadow:0 7px 16px rgba(187,132,29,.18)}.ico{width:22px;text-align:center;font-size:18px}.logout{position:absolute;left:18px;right:18px;bottom:22px}.main{margin-left:230px}.topbar{height:84px;background:rgba(255,253,249,.97);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 29px;position:sticky;top:0;z-index:20}.topLeft{display:flex;align-items:center;gap:18px}.hamb{font-size:23px;color:#6e6252}.topTitle{font:700 17px Georgia,serif}.topRight{display:flex;align-items:center;gap:20px}.bell{font-size:23px;position:relative;cursor:pointer}.bell b{position:absolute;right:-8px;top:-8px;background:var(--gold);color:#fff;font-size:9px;min-width:17px;height:17px;border-radius:50%;display:grid;place-items:center}.user{display:flex;gap:9px;align-items:center}.avatar{width:37px;height:37px;border-radius:50%;background:#6b4b18;color:#fff;display:grid;place-items:center;border:2px solid #ead8b9}.user strong{font-size:12px}.user small{display:block;font-size:10px;color:var(--muted)}.content{padding:25px 23px 45px;max-width:1500px;margin:auto}.page{display:none}.page.active{display:block}.heading{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-bottom:18px}.heading h1{margin:0 0 4px;font-size:23px}.heading p{margin:0;color:var(--muted);font-size:13px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:19px}.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:105px;padding:16px 19px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}.stat .num{font-size:25px;font-weight:850;margin:4px 0}.stat .label{font-size:12px}.stat .ico{font-size:29px;color:var(--gold2)}.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}.panelHead{padding:15px 17px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}.panelHead h2{margin:0;font-size:16px}.panelHead small{color:var(--muted)}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}.btn{border:1px solid #cda15a;background:#fffdf9;color:#835d1e;border-radius:7px;padding:9px 13px;font-weight:800;cursor:pointer}.btn.gold{background:#c48b24;color:#fff;border-color:#c48b24}.btn.danger{background:#fff2ef;color:#a33b32;border-color:#e0b0a8}.btn.success{background:#eef6e9;color:#2e6b2c;border-color:#bfd8b6}.btn.blue{background:#eef4fb;color:#2e568b;border-color:#c3d2e5}.search{flex:1;min-width:220px;padding:10px 12px;border:1px solid #d8cbb9;border-radius:7px;background:#fff}.tableWrap{overflow:auto}.table{width:100%;border-collapse:collapse;font-size:12px}.table th{background:#f8f2e8;color:#4b4339;text-align:left;font-size:10px;padding:10px 11px;white-space:nowrap}.table td{padding:10px 11px;border-top:1px solid #eee6da;vertical-align:middle}.table tr:hover{background:#fffcf7}.status{display:inline-block;border-radius:999px;padding:5px 9px;font-size:9px;font-weight:850;white-space:nowrap}.s-planned{background:#e6eef8;color:#2b5184}.s-running{background:#ffe7a3;color:#8a6300}.s-done{background:#e7f1de;color:#2d6a30}.s-cancel{background:#f9e3e0;color:#96372f}.s-open{background:#ffe0a0;color:#8a5d00}.s-closed{background:#e8f0df;color:#2f6d32}.dashboardGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.list{padding:0 17px}.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #eee6da}.row:last-child{border-bottom:0}.rowLeft{display:flex;gap:10px;align-items:center}.mini{width:34px;height:34px;border-radius:8px;background:#f3e8d6;color:#9c6d1e;display:grid;place-items:center}.pageCard{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:17px;margin-bottom:14px}.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.field label{display:block;font-size:11px;font-weight:800;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #d8cbb9;border-radius:7px;background:#fff;font:inherit}.field textarea{min-height:85px;resize:vertical}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}.note{background:#fff7e5;border:1px solid #ead5ac;padding:10px;border-radius:8px;font-size:11px;color:#6e5836}.modalBg{position:fixed;inset:0;background:rgba(31,25,18,.38);z-index:100;display:none;align-items:center;justify-content:center;padding:18px}.modal{width:min(820px,100%);max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:0 25px 80px rgba(0,0,0,.25)}.modalHead{position:sticky;top:0;background:var(--card);z-index:2;border-bottom:1px solid var(--line);padding:15px 18px;display:flex;justify-content:space-between;align-items:center}.modalHead h3{margin:0;font-size:17px}.modalBody{padding:18px}.close{border:0;background:none;font-size:24px;cursor:pointer;color:#776d61}.detailGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.detail{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--card2)}.detail small{display:block;color:var(--muted);font-size:9px;margin-bottom:4px}.detail b{font-size:12px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:13px}.kpi{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:12px}.kpi small{display:block;color:var(--muted);font-size:9px}.kpi strong{font-size:18px}.chips{display:flex;gap:7px;flex-wrap:wrap}.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 9px;font-size:10px}.photoGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.photoGrid img,.photoGrid video{width:100%;height:105px;object-fit:cover;border-radius:7px;border:1px solid var(--line)}.mediaBox{border:1px dashed #cdbb9e;border-radius:8px;padding:12px;background:#fffaf1}.urgent{position:fixed;right:24px;bottom:24px;z-index:90;background:#a83d32;color:#fff;border:0;border-radius:999px;padding:13px 17px;font-weight:900;box-shadow:0 10px 30px rgba(125,40,30,.28);cursor:pointer}.urgent.pulse{animation:pulse 1s infinite}@keyframes pulse{50%{transform:scale(1.04);box-shadow:0 0 0 9px rgba(168,61,50,.16),0 10px 30px rgba(125,40,30,.28)}}.toast{position:fixed;right:22px;top:96px;z-index:120;display:none;background:#211d18;color:#fff;padding:12px 15px;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.2);font-size:12px}.roleBadge{font-size:9px;border:1px solid var(--line);padding:4px 7px;border-radius:999px;color:var(--gold2);background:#fff8ea}.onlyService{display:none}.bottomNav{display:none}.printOnly{display:none}
+@media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.dashboardGrid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.sidebar{transform:translateX(-100%);transition:.2s}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.topbar{height:70px;padding:0 14px}.topTitle{font-size:15px}.topRight{gap:9px}.user div:nth-child(2){display:none}.content{padding:18px 12px 85px}.stats{grid-template-columns:1fr 1fr;gap:8px}.stat{min-height:88px;padding:13px}.stat .num{font-size:21px}.stat .ico{font-size:23px}.formgrid,.detailGrid{grid-template-columns:1fr}.photoGrid{grid-template-columns:repeat(2,1fr)}.bottomNav{display:flex;position:fixed;left:0;right:0;bottom:0;height:66px;background:#fffdf9;border-top:1px solid var(--line);z-index:25;justify-content:space-around;align-items:center}.bottomNav button{border:0;background:none;color:#675b4c;font-size:10px}.bottomNav button.active{color:var(--gold2);font-weight:800}.urgent{right:14px;bottom:78px}.kpis{grid-template-columns:1fr 1fr}.table{min-width:760px}}
+@media print{body{background:#fff}.sidebar,.topbar,.urgent,.bottomNav,.toolbar,.noPrint,.btn{display:none!important}.main{margin:0}.content{padding:0}.page{display:none!important}.page.printPage{display:block!important}.printOnly{display:block}.panel,.pageCard{box-shadow:none;border:1px solid #bbb}}
+
+.serviceExtras{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+.serviceExtras h4{margin:0 0 10px;font-size:13px;color:var(--gold2)}
+.optionGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.optionCard{border:1px solid var(--line);border-radius:8px;background:#fffdf9;padding:10px}
+.optionCard label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:750;cursor:pointer}
+.optionCard input[type=checkbox],.optionCard input[type=radio]{width:auto}
+.optionPrice{font-size:10px;color:var(--muted);margin:5px 0 0 24px}
+.extraSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.extraSummary .detail{background:#fff}
+.maintenanceBox{border:1px solid #dbc79f;background:#fffaf0;border-radius:9px;padding:12px;margin-top:10px}
+.maintenanceBox .formgrid{margin-top:10px}
+.ivaIncluded{font-size:10px;color:var(--green);font-weight:800}
+@media(max-width:720px){.optionGrid{grid-template-columns:1fr}.extraSummary{grid-template-columns:1fr}}
+
+.rentalRows{display:flex;flex-direction:column;gap:8px}
+.rentalRow{display:grid;grid-template-columns:minmax(0,1fr) 88px 92px;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;background:#fffdf9;padding:8px 10px}
+.rentalRow label{font-size:11px;font-weight:800;cursor:pointer}
+.rentalQty{width:78px;padding:8px;border:1px solid #d8cbb9;border-radius:7px;background:#fff;text-align:center}
+.rentalLineTotal{text-align:right;font-weight:850;font-size:11px;color:var(--gold2)}
+.apartmentSummary{margin-top:14px;border:1px solid #d9c39b;border-radius:10px;background:linear-gradient(180deg,#fffaf0,#fffdf9);padding:13px}
+.apartmentSummary h4{margin:0 0 10px;font-size:13px;color:var(--gold2)}
+.summaryGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.summaryGrid .detail{background:#fff}
+@media(max-width:720px){.rentalRow{grid-template-columns:1fr 82px 86px}.summaryGrid{grid-template-columns:1fr 1fr}}
+.serviceQuick{margin-top:6px}.serviceQuick .btn{padding:7px 10px;font-size:10px}
+.heading>div:last-child{display:flex;gap:7px;flex-wrap:wrap}.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.field:has(#sApartment) select:invalid{border-color:#c98a16}.apartmentEmpty{border:1px dashed #c98a16;padding:8px;border-radius:8px}
+
+
+/* Ajuste fino do formulário Novo Serviço */
+.moneyField{display:flex;align-items:stretch}
+.moneyField input{border-radius:7px 0 0 7px!important;flex:1}
+.moneyField span{display:grid;place-items:center;min-width:42px;padding:0 10px;border:1px solid #d8cbb9;border-left:0;border-radius:0 7px 7px 0;background:#f8f2e8;color:#8f641d;font-weight:900}
+.maintenanceHeader{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:10px}
+.maintenanceHeader h4{margin:0}
+.maintenanceHeader p{margin:4px 0 0;color:var(--muted);font-size:10px}
+.maintenanceHeader .btn{white-space:nowrap}
+#maintenanceAction.active{background:#8f641d;color:#fff}
+#maintenanceStatus{margin-bottom:10px}
+@media(max-width:720px){.maintenanceHeader{align-items:flex-start;flex-direction:column}.maintenanceHeader .btn{width:100%}}
+</style>
+
+
+
+
+
+<style id="romano-service-layout-final">
+.modal .serviceForm{display:block!important;width:100%!important}
+.modal .serviceRow{display:grid!important;width:100%!important;gap:16px!important;margin:0 0 14px!important;padding:0!important;align-items:start!important}
+.modal .serviceRow.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+.modal .serviceRow.one{grid-template-columns:minmax(0,1fr)!important}
+.modal .serviceRow .field{display:block!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important;position:static!important;float:none!important;transform:none!important;box-sizing:border-box!important}
+.modal .serviceRow .field label{display:block!important;width:100%!important;height:auto!important;margin:0 0 7px!important;padding:0!important;position:static!important;line-height:1.2!important}
+.modal .serviceRow .field>input,.modal .serviceRow .field>select{display:block!important;width:100%!important;max-width:100%!important;height:48px!important;margin:0!important;padding:10px!important;box-sizing:border-box!important}
+.modal .serviceRow .moneyField{display:flex!important;width:100%!important;height:48px!important;margin:0!important;padding:0!important;box-sizing:border-box!important}
+.modal .serviceRow .moneyField input{flex:1 1 auto!important;width:1px!important;min-width:0!important;height:48px!important;margin:0!important;box-sizing:border-box!important}
+.modal .serviceRow .moneyField span{flex:0 0 48px!important;width:48px!important;height:48px!important;display:grid!important;place-items:center!important;box-sizing:border-box!important}
+@media(max-width:720px){.modal .serviceRow.two{grid-template-columns:minmax(0,1fr)!important}}
+</style>
+<style id="romano-only-service-fix">
+/* ÚNICO AJUSTE: organização visual do formulário Novo Serviço.
+   Todo o restante do app permanece exatamente como no arquivo Feito.html. */
+.modal .serviceForm{
+  display:block!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+.modal .serviceForm > .serviceRow{
+  display:grid!important;
+  width:100%!important;
+  margin:0 0 14px!important;
+  padding:0!important;
+  gap:16px!important;
+  align-items:start!important;
+  position:relative!important;
+  float:none!important;
+  clear:both!important;
+}
+.modal .serviceForm > .serviceRow.two{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+}
+.modal .serviceForm > .serviceRow.one{
+  grid-template-columns:minmax(0,1fr)!important;
+}
+.modal .serviceForm > .serviceRow > .field{
+  display:block!important;
+  width:auto!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  position:relative!important;
+  top:auto!important;
+  left:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  float:none!important;
+  clear:none!important;
+  transform:none!important;
+}
+.modal .serviceForm > .serviceRow > .field > label{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:20px!important;
+  margin:0 0 6px!important;
+  padding:0!important;
+  position:static!important;
+  line-height:20px!important;
+  white-space:normal!important;
+}
+.modal .serviceForm > .serviceRow > .field > input,
+.modal .serviceForm > .serviceRow > .field > select{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  height:48px!important;
+  margin:0!important;
+  position:static!important;
+  transform:none!important;
+}
+.modal .serviceForm .moneyField{
+  display:flex!important;
+  width:100%!important;
+  height:48px!important;
+  margin:0!important;
+  padding:0!important;
+  position:static!important;
+}
+.modal .serviceForm .moneyField input{
+  display:block!important;
+  flex:1 1 auto!important;
+  width:0!important;
+  min-width:0!important;
+  height:48px!important;
+  margin:0!important;
+}
+.modal .serviceForm .moneyField span{
+  flex:0 0 46px!important;
+  width:46px!important;
+  height:48px!important;
+  display:grid!important;
+  place-items:center!important;
+}
+@media(max-width:720px){
+  .modal .serviceForm > .serviceRow.two{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+</style>
+
+<style id="romano-final-field-alignment">
+/* Correção pontual: impedir que os campos do Novo Serviço fiquem sobrepostos
+   e manter todas as caixas com a mesma altura, especialmente Data/Horário no iPad/iPhone. */
+.modal .serviceForm > .serviceRow{
+  position:relative!important;
+  display:grid!important;
+  grid-auto-flow:row!important;
+  align-items:start!important;
+  min-height:0!important;
+}
+.modal .serviceForm > .serviceRow.two{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+}
+.modal .serviceForm > .serviceRow.one{
+  grid-template-columns:minmax(0,1fr)!important;
+}
+.modal .serviceForm > .serviceRow > .field{
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  min-width:0!important;
+  width:100%!important;
+}
+.modal .serviceForm > .serviceRow > .field > label{
+  position:static!important;
+  display:block!important;
+  flex:0 0 auto!important;
+  margin:0 0 7px!important;
+}
+.modal .serviceForm > .serviceRow > .field > input,
+.modal .serviceForm > .serviceRow > .field > select{
+  position:static!important;
+  display:block!important;
+  flex:0 0 48px!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  height:48px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  line-height:26px!important;
+}
+.modal .serviceForm input[type="date"],
+.modal .serviceForm input[type="time"]{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  height:48px!important;
+  padding:10px!important;
+}
+.modal .serviceForm .moneyField{
+  position:static!important;
+  display:flex!important;
+  flex:0 0 48px!important;
+  width:100%!important;
+  min-width:0!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+}
+.modal .serviceForm .moneyField input{
+  flex:1 1 auto!important;
+  width:1px!important;
+  min-width:0!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+}
+.modal .serviceForm .moneyField span{
+  flex:0 0 46px!important;
+  width:46px!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+}
+@media(max-width:720px){
+  .modal .serviceForm > .serviceRow.two{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="modalBg" id="modalBg"><div class="modal"><div class="modalHead"><h3 id="modalTitle"></h3><button class="close" onclick="closeModal()">×</button></div><div class="modalBody" id="modalBody"></div></div></div>
+<aside class="sidebar" id="sidebar">
+<div class="brand"><div class="logoMark"><span class="crown">♛</span></div><div class="brandName">ROMANO</div><div class="brandSub">PROPERTY CARE</div></div>
+<nav class="menu">
+<button class="active" data-page="dashboard"><span class="ico">⌂</span>DASHBOARD</button>
+<button data-page="services"><span class="ico">▣</span>SERVIÇOS</button>
+<button data-page="clients"><span class="ico">●</span>CLIENTES</button>
+<button data-page="finance"><span class="ico">€</span>FINANÇAS</button>
+<button data-page="employees"><span class="ico">♟</span>FUNCIONÁRIOS</button>
+<button data-page="settings"><span class="ico">⚙</span>CONFIGURAÇÕES</button>
+</nav>
+<div class="logout"><button class="menu" onclick="logout()" style="width:100%;height:46px;border:1px solid #dfd3c2;background:#fffdf9;border-radius:9px;text-align:left;padding:0 14px;font-weight:800;color:#453a2d;cursor:pointer">↪   SAIR</button></div>
+</aside>
+<main class="main">
+<header class="topbar"><div class="topLeft"><button class="mobileMenu" onclick="toggleSidebar()" style="border:0;background:none;font-size:22px">☰</button><span class="hamb">☰</span><span class="topTitle">ROMANO PROPERTY CARE</span></div><div class="topRight"><div class="bell" onclick="showUrgencies()">♧<b id="notif">0</b></div><div class="user" onclick="openRoleTestModal()" style="cursor:pointer"><div class="avatar">●</div><div><strong id="userName">Administrador</strong><small id="userEmail">admin@romano.com</small></div><span>⌄</span></div><span class="roleBadge" id="roleBadge">ADMIN</span></div></header>
+<div class="content">
+<section class="page active" id="page-dashboard">
+<div class="heading"><div><h1>Bem-vindo, Administrador!</h1><p>Resumo geral do sistema</p></div></div>
+<div class="stats"><div class="stat"><div><div class="num" id="stToday">0</div><div class="label">Serviços Hoje</div></div><div class="ico">▣</div></div><div class="stat"><div><div class="num" id="stEmp">0</div><div class="label">Funcionários</div></div><div class="ico">♟</div></div><div class="stat"><div><div class="num" id="stMonth">0 €</div><div class="label">Faturamento Mês</div></div><div class="ico">€</div></div><div class="stat"><div><div class="num" id="stOcc">0</div><div class="label">Ocorrências</div></div><div class="ico">⚠</div></div></div>
+<div class="panel"><div class="panelHead"><div><h2>Serviços de Hoje</h2><small>Início, término e responsável ficam registados no serviço</small></div><button class="btn" onclick="showPage('services')">VER TODOS</button></div><div class="tableWrap"><table class="table"><thead><tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Endereço</th><th>Horário</th><th>Responsável</th><th>Status</th></tr></thead><tbody id="todayTable"></tbody></table></div></div>
+<div class="dashboardGrid"><div class="panel"><div class="panelHead"><h2>Serviços recentes</h2></div><div class="list" id="recentServices"></div></div><div class="panel"><div class="panelHead"><h2>Ocorrências recentes</h2><button class="btn danger" onclick="showUrgencies()">VER URGENTES</button></div><div class="list" id="recentOccurrences"></div></div></div>
+</section>
+<section class="page" id="page-services">
+<div class="heading"><div><h1>Serviços</h1><p>Agendamento, execução, tipologia, valores, fotos, vídeos e ocorrências</p></div><div><button class="btn gold adminOnly" onclick="openServiceModal()">＋ NOVO SERVIÇO</button><button class="btn gold clientOnly" onclick="openServiceModal()">＋ SOLICITAR SERVIÇO</button><button class="btn" onclick="printIncidents()">IMPRIMIR INCIDÊNCIAS</button></div></div>
+<div class="pageCard"><div class="toolbar"><input class="search" id="serviceSearch" oninput="renderServices()" placeholder="Pesquisar cliente, endereço ou serviço..."/><select class="btn" id="serviceStatusFilter" onchange="renderServices()"><option value="">Todos os status</option><option>AGENDADO</option><option>EM ANDAMENTO</option><option>CONCLUÍDO</option><option>CANCELADO</option></select><select class="btn" id="serviceTypeFilter" onchange="renderServices()"><option value="">Todos os tipos</option><option value="Limpeza">Limpeza</option><option value="Mantenimiento">Mantenimiento</option><option value="Lavandería">Lavandería</option><option>Limpeza Pós Obra</option><option>Limpeza Clínica</option><option>Limpeza Oficina</option><option>Pintura</option></select></div><div class="tableWrap"><table class="table"><thead><tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Data</th><th>Tipologia</th><th>Sem IVA</th><th>IVA</th><th>Total</th><th>Início</th><th>Término</th><th>Responsável</th><th>Status</th><th></th></tr></thead><tbody id="serviceTable"></tbody></table></div></div>
+</section>
+<section class="page" id="page-agenda">
+<div class="heading"><div><h1>Agenda</h1><p>Visão organizada dos serviços por data, horário e responsável</p></div><button class="btn gold adminOnly" onclick="openServiceModal()">＋ NOVO SERVIÇO</button></div>
+<div class="pageCard"><div class="toolbar"><input class="search" id="agendaSearch" oninput="renderAgenda()" placeholder="Pesquisar cliente, apartamento ou responsável..."/><input class="btn" id="agendaDate" onchange="renderAgenda()" type="date"/></div><div class="list" id="agendaList"></div></div>
+</section>
+<section class="page" id="page-closing">
+<div class="heading"><div><h1>Fechamento</h1><p>Conferência dos serviços concluídos e valores do período</p></div><button class="btn gold" onclick="openReportModal('custom')">📄 RELATÓRIO DE FECHAMENTO</button></div>
+<div class="kpis"><div class="kpi"><small>Serviços concluídos</small><strong id="closeServices">0</strong></div><div class="kpi"><small>Valor total</small><strong id="closeTotal">0 €</strong></div><div class="kpi"><small>Pendências</small><strong id="closePending">0</strong></div></div>
+<div class="panel"><div class="panelHead"><h2>Conferência</h2></div><div class="tableWrap"><table class="table"><thead><tr><th>ID</th><th>Cliente</th><th>Apartamento</th><th>Data</th><th>Responsável</th><th>Total</th><th>Status</th></tr></thead><tbody id="closingTable"></tbody></table></div></div>
+</section>
+<section class="page" id="page-pending">
+<div class="heading"><div><h1>Pendências</h1><p>Ocorrências, serviços por concluir e chamados urgentes</p></div><button class="btn danger" onclick="openUrgentModal()">☎ CHAMADOS URGENTES</button></div>
+<div class="pageCard"><div class="toolbar"><input class="search" id="pendingSearch" oninput="renderPending()" placeholder="Pesquisar pendência..."/></div><div class="list" id="pendingList"></div></div>
+</section>
+<section class="page" id="page-clients">
+<div class="heading"><div><h1>Clientes &amp; Apartamentos</h1><p>Cadastre clientes e todos os apartamentos com os respetivos endereços</p></div><button class="btn adminOnly" onclick="openApartmentChooser()">🏠 APARTAMENTOS</button><button class="btn gold adminOnly" onclick="openClientModal()">＋ NOVO CLIENTE</button></div>
+<div class="pageCard"><div class="toolbar"><input class="search" id="clientSearch" oninput="renderClients()" placeholder="Pesquisar cliente, e-mail ou telefone..."/></div><div class="tableWrap"><table class="table"><thead><tr><th>ID</th><th>Cliente</th><th>E-mail</th><th>Telefone</th><th>Apartamentos</th><th>Serviços</th><th></th></tr></thead><tbody id="clientTable"></tbody></table></div></div>
+</section>
+<section class="page" id="page-finance">
+<div class="heading"><div><h1>Finanças</h1><p>Receitas, despesas e relatórios diários, semanais e mensais</p></div><div><button class="btn" onclick="openReportModal('daily')">RELATÓRIO DIÁRIO</button><button class="btn" onclick="openReportModal('weekly')">RELATÓRIO SEMANAL</button><button class="btn gold" onclick="openReportModal('monthly')">RELATÓRIO MENSAL</button><button class="btn" onclick="openReportModal('custom')">📅 RELATÓRIO POR PERÍODO</button></div></div>
+<div class="kpis"><div class="kpi"><small>Faturamento do mês</small><strong id="finRevenue">0 €</strong></div><div class="kpi"><small>Despesas do mês</small><strong id="finExpense">0 €</strong></div><div class="kpi"><small>Lucro líquido</small><strong id="finProfit">0 €</strong></div><div class="kpi"><small>Serviços faturados</small><strong id="finServices">0</strong></div></div>
+<div class="panel"><div class="panelHead"><h2>Últimas movimentações</h2><button class="btn" onclick="openMovementModal()">＋ MOVIMENTAÇÃO</button></div><div class="tableWrap"><table class="table"><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Status</th></tr></thead><tbody id="financeTable"></tbody></table></div></div>
+</section>
+<section class="page" id="page-employees">
+<div class="heading"><div><h1>Funcionários</h1><p>Perfis, funções e permissões</p></div><button class="btn gold adminOnly" onclick="openEmployeeModal()">＋ NOVO FUNCIONÁRIO</button></div>
+<div class="pageCard"><div class="toolbar"><input class="search" id="employeeSearch" oninput="renderEmployees()" placeholder="Pesquisar funcionário..."/></div><div class="tableWrap"><table class="table"><thead><tr><th>ID</th><th>Nome</th><th>Função</th><th>Telefone</th><th>Permissão</th><th>Utilizador</th><th>Status</th></tr></thead><tbody id="employeeTable"></tbody></table></div></div>
+</section>
+<section class="page" id="page-settings">
+<div class="heading"><div><h1>Configurações</h1><p>Regras do sistema ROMANO PROPERTY CARE</p></div></div>
+<div class="pageCard"><div class="heading" style="margin-bottom:10px"><div><h3 style="margin:0">Acessos de teste</h3><p>Cadastre utilizadores para funcionários e clientes.</p></div><button class="btn" onclick="openAccessManager()">VER ACESSOS</button></div><div class="note"><b>Regra de acesso:</b> Administrador controla o sistema. Cliente e Funcionário podem apenas consultar/alterar os serviços que lhes forem atribuídos, iniciar/finalizar execução e acrescentar ocorrências, fotos e vídeos.</div><div class="formgrid" style="margin-top:14px"><div class="field"><label>Empresa</label><input readonly="" value="ROMANO PROPERTY CARE"/></div><div class="field"><label>Moeda</label><input readonly="" value="EUR (€)"/></div><div class="field"><label>Pagamento durante experiência</label><input readonly="" value="A cada 15 dias"/></div><div class="field"><label>Pagamento posterior</label><input readonly="" value="Quinzenal ou mensal, conforme acordo"/></div></div></div>
+<div class="pageCard"><h3 style="margin-top:0">Tabela de limpeza por tipologia</h3><div class="tableWrap"><table class="table"><thead><tr><th>Tipologia</th><th>Configuração</th><th>Sem IVA</th><th>IVA (21%)</th><th>Total</th></tr></thead><tbody id="pricingTable"></tbody></table></div><div class="pageCard" style="margin-top:14px"><h3 style="margin-top:0">Valores editáveis manualmente</h3><div class="formgrid">
+<div class="field"><label>Ropa de cama — individual (€)</label><input id="edit_ind" min="0" step="0.01" type="number"/></div>
+<div class="field"><label>Ropa de cama — doble / king (€)</label><input id="edit_king" min="0" step="0.01" type="number"/></div>
+<div class="field"><label>Varias camas (€ / cama)</label><input id="edit_varias" min="0" step="0.01" type="number"/></div>
+<div class="field"><label>Sofá-cama — individual (€)</label><input id="edit_sofa_ind" min="0" step="0.01" type="number"/></div>
+<div class="field"><label>Sofá-cama — doble (€)</label><input id="edit_sofa_doble" min="0" step="0.01" type="number"/></div>
+<div class="field"><label>Mantenimiento (€ / hora, IVA incluido)</label><input id="edit_maint" min="0" step="0.01" type="number"/></div>
+</div><div class="actions"><button class="btn gold" onclick="saveManualPrices()" type="button">GUARDAR VALORES</button></div>
+<div class="note">Estos valores pueden ser alterados manualmente pelo administrador e ficam gravados no navegador.</div></div><div class="note" style="margin-top:12px"><b>Valores ajustáveis:</b> localização, quantidade de apartamentos, rotatividade, volume diário e necessidades específicas de cada empresa podem alterar o preço acordado.</div></div>
+</section>
+</div></main>
+<button class="urgent" id="urgentBtn" onclick="openUrgentModal()">☎ CHAMADOS URGENTES <span id="urgentCount">0</span></button>
+<div class="bottomNav"><button data-page="dashboard">⌂<br/>Dashboard</button><button data-page="services">▣<br/>Serviços</button><button data-page="agenda">▦<br/>Agenda</button><button data-page="closing">✓<br/>Fechamento</button><button data-page="pending">⚠<br/>Pendências</button><button data-page="clients">●<br/>Clientes</button><button data-page="finance">€<br/>Finanças</button><button data-page="employees">♟<br/>Funcionários</button></div>
+<script>
+const IVA=0.21;
+const DBKEY='romano_db';
+const prices=[['T1','1 dormitório + 1 banho',35],['T2','2 dormitórios + 1 banho',45],['T2+','2 dormitórios + 2 banhos',55],['T3','3 dormitórios + 2 banhos',65],['T3+','3 dormitórios + 3 banhos',75],['T4','4 dormitórios + 2 banhos',85],['T4+','4 dormitórios + 3 banhos',95],['T4++','4 dormitórios + 4 banhos',110],['T5 / T5+','Segundo propriedade',null]];
+const laundryRental=[
+  ['Ropa de cama — individual',18],
+  ['Ropa de cama — doble / king',19.42],
+  ['Várias camas',12.80],
+  ['Sofá-cama — individual',18],
+  ['Sofá-cama — doble',19.42]
+];
+const maintenanceTypes=['Pintura','Eletricidade básica','Fontanería básica','Silicone','Montagem de mobiliário','Reparaciones generales','Instalaciones generales','Revisión preventiva'];
+const MAINT_HOUR_TOTAL=45;
+const defaultEditablePrices={
+  "Ropa de cama — individual":18,
+  "Ropa de cama — doble / king":19.42,
+  "Várias camas":12.80,
+  "Sofá-cama — individual":18,
+  "Sofá-cama — doble":19.42,
+  "Mantenimiento / hora":45
+};
+function getEditablePrices(){
+  try{return {...defaultEditablePrices,...(db.editablePrices||{})}}catch(e){return {...defaultEditablePrices}}
+}
+function setEditablePrice(name,value){
+  const n=Math.max(0,Number(value)||0);
+  db.editablePrices=db.editablePrices||{};
+  db.editablePrices[name]=n;
+  save();
+  toast("Valor atualizado.");
+}
+function currentRentalPrice(name){return getEditablePrices()[name]??0}
+
+
+const seed={clients:[{id:'C00016',name:'Maria Silva',email:'maria@email.com',phone:'+34 600 123 456',apartments:[{id:'A001',name:'Apartamento Centro',address:'Rua das Flores, 45 - T2'}]},{id:'C00015',name:'João Santos',email:'joao@email.com',phone:'+34 600 654 321',apartments:[{id:'A002',name:'Apartamento Liberdade',address:'Av. da Liberdade, 12 - T3'},{id:'A003',name:'Apartamento Parque',address:'Rua do Parque, 8 - T2'}]},{id:'C00014',name:'Ana Costa',email:'ana@email.com',phone:'+34 600 987 654',apartments:[{id:'A004',name:'Apartamento Comércio',address:'Praça do Comércio, 7 - T1'}]}],employees:[{id:'F00016',name:'Ana Paula',role:'Limpeza',phone:'+34 600 123 456',permission:'FUNCIONÁRIO',status:'Ativo'},{id:'F00015',name:'Carlos Eduardo',role:'Mantenimiento',phone:'+34 600 654 321',permission:'FUNCIONÁRIO',status:'Ativo'},{id:'F00014',name:'Fernanda Lima',role:'Lavandería',phone:'+34 600 987 654',permission:'FUNCIONÁRIO',status:'Ativo'}],services:[{id:'S00028',clientId:'C00016',client:'Maria Silva',apartmentId:'A001',type:'Limpeza',date:'2026-08-28',time:'10:00',address:'Rua das Flores, 45 - T2',typology:'T2',net:45,status:'EM ANDAMENTO',startedAt:'09:57',finishedAt:'',responsible:'Ana Paula',incidents:[{id:'I001',text:'Pequena mancha no sofá',urgent:false,at:'10:30',by:'Ana Paula',media:[]}],media:[]},{id:'S00027',clientId:'C00015',apartmentId:'A002',type:'Mantenimiento',date:'2026-08-28',time:'09:00',address:'Av. da Liberdade, 12 - T3',typology:'',net:120,status:'CONCLUÍDO',startedAt:'08:58',finishedAt:'10:35',responsible:'Carlos Eduardo',incidents:[],media:[]},{id:'S00026',clientId:'C00014',apartmentId:'A004',type:'Lavandería',date:'2026-08-28',time:'11:00',address:'Praça do Comércio, 7 - T1',typology:'',net:150,status:'AGENDADO',startedAt:'',finishedAt:'',responsible:'',incidents:[],media:[]},{id:'S00025',clientId:'C00015',apartmentId:'A003',type:'Limpeza',date:'2026-08-28',time:'14:00',address:'Rua do Parque, 8 - T2',typology:'T2',net:45,status:'AGENDADO',startedAt:'',finishedAt:'',responsible:'',incidents:[],media:[]},{id:'S00024',clientId:'C00014',apartmentId:'A004',type:'Limpeza Pós Obra',date:'2026-08-27',time:'16:00',address:'Praça do Comércio, 7 - T1',typology:'',net:350,status:'CONCLUÍDO',startedAt:'15:55',finishedAt:'18:40',responsible:'Ana Paula',incidents:[],media:[]}],movements:[{date:'2026-08-28',desc:'Serviço S00028',type:'Receita',value:45,status:'Pago'},{date:'2026-08-28',desc:'Serviço S00027',type:'Receita',value:120,status:'Pago'},{date:'2026-08-27',desc:'Material de limpeza',type:'Despesa',value:-45,status:'Pago'},{date:'2026-08-27',desc:'Serviço S00026',type:'Receita',value:150,status:'Pago'}],urgencies:[]};
+let db=JSON.parse(localStorage.getItem(DBKEY)||'null')||seed;
+db.editablePrices=db.editablePrices||{...defaultEditablePrices};
+let role=localStorage.getItem('romano_role')||'ADMIN';
+function save(){
+  try{
+    localStorage.setItem(DBKEY,JSON.stringify(db));
+    return true;
+  }catch(e){
+    console.error(e);
+    toast('Não foi possível guardar os dados neste navegador.');
+    return false;
+  }
+}
+function money(v){return v==null?'A consultar':Number(v).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'}
+function dateBR(d){if(!d)return'';return d.split('-').reverse().join('/')}
+function nowTime(){return new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(window._toast);window._toast=setTimeout(()=>t.style.display='none',2600)}
+function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.menu button[data-page],.bottomNav button[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===name));if(innerWidth<721)document.getElementById('sidebar').classList.remove('open');if(name==='dashboard')renderDashboard();if(name==='services')renderServices();if(name==='agenda')renderAgenda();if(name==='closing')renderClosing();if(name==='pending')renderPending();if(name==='clients')renderClients();if(name==='finance')renderFinance();if(name==='employees')renderEmployees();if(name==='settings')renderPricing()}
+function setupNav(){document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)))}
+function statusClass(s){return s==='CONCLUÍDO'?'s-done':s==='EM ANDAMENTO'?'s-running':s==='AGENDADO'?'s-planned':s==='CANCELADO'?'s-cancel':'s-open'}
+function calcTotal(net){return net==null?null:net*(1+IVA)}
+function currentEmployeeName(){const u=localStorage.getItem('romano_user');const e=db.employees.find(x=>x.username===u);return e?.name||''}
+function currentClientId(){const u=localStorage.getItem('romano_user');const c=db.clients.find(x=>x.username===u);return c?.id||''}
+function renderDashboard(){const today='2026-08-28';document.getElementById('stToday').textContent=db.services.filter(s=>s.date===today).length;document.getElementById('stEmp').textContent=db.employees.length;document.getElementById('stMonth').textContent=money(db.services.filter(s=>s.date.startsWith('2026-08')).reduce((a,s)=>a+(s.totalFinal??calcTotal(s.net)??0),0));document.getElementById('stOcc').textContent=db.services.reduce((a,s)=>a+(s.incidents?.length||0),0)+db.urgencies.length;document.getElementById('notif').textContent=db.urgencies.filter(u=>!u.seen).length;document.getElementById('urgentCount').textContent=db.urgencies.filter(u=>!u.seen).length;document.getElementById('todayTable').innerHTML=db.services.filter(s=>s.date===today).slice(0,8).map(s=>`<tr><td>#${s.id.slice(1)}</td><td>${esc(s.client)}</td><td>${esc(s.type)}</td><td>${esc(s.address)}</td><td>${esc(s.time)}</td><td>${esc(s.responsible||'—')}</td><td><span class="status ${statusClass(s.status)}">${s.status}</span></td></tr>`).join('')||'<tr><td colspan="7" class="empty">Nenhum serviço hoje.</td></tr>';document.getElementById('recentServices').innerHTML=db.services.slice(0,5).map(s=>`<div class="row"><div class="rowLeft"><div class="mini">▣</div><div><b>${esc(s.type)}</b><div style="font-size:11px;color:var(--muted)">${esc(s.client)} · ${dateBR(s.date)} · ${esc(s.responsible||'não atribuído')}</div></div></div><span class="status ${statusClass(s.status)}">${s.status}</span></div>`).join('');let inc=[];db.services.forEach(s=>(s.incidents||[]).forEach(i=>inc.push({...i,service:s})));inc=inc.slice(-5).reverse();document.getElementById('recentOccurrences').innerHTML=inc.length?inc.map(i=>`<div class="row"><div><b>${esc(i.text)}</b><div style="font-size:11px;color:var(--muted)">${i.service.id} · ${esc(i.by)} · ${esc(i.at)}</div></div>${i.urgent?'<span class="status s-open">URGENTE</span>':''}</div>`).join(''):'<div class="empty">Sem ocorrências.</div>'}
+function renderServices(){
+  let visibleServices=db.services;
+  if(role==='FUNCIONÁRIO'){
+    const name=currentEmployeeName();
+    visibleServices=db.services.filter(s=>s.responsible===name);
+  }
+  if(role==='CLIENTE'){
+    const cid=currentClientId();
+    visibleServices=cid?db.services.filter(s=>s.clientId===cid):[];
+  }
+  let q=(document.getElementById('serviceSearch')?.value||'').toLowerCase(),sf=document.getElementById('serviceStatusFilter')?.value||'',tf=document.getElementById('serviceTypeFilter')?.value||'';
+  let arr=visibleServices.filter(s=>(s.client+s.address+s.type+s.id).toLowerCase().includes(q)&&(sf?!s.status||s.status===sf:true)&&(tf?!s.type||s.type.includes(tf):true));document.getElementById('serviceTable').innerHTML=arr.map(s=>`<tr><td>#${s.id.slice(1)}</td><td>${esc(s.client)}</td><td>${esc(s.type)}</td><td>${dateBR(s.date)}</td><td>${esc(s.typology||'—')}</td><td>${money(s.netFinal??s.net)}</td><td>${money(s.vatFinal??(s.net==null?null:s.net*IVA))}</td><td><b>${money(s.totalFinal??calcTotal(s.net))}</b></td><td>${esc(s.startedAt||'—')}</td><td>${esc(s.finishedAt||'—')}</td><td>${esc(s.responsible||'—')}</td><td><span class="status ${statusClass(s.status)}">${s.status}</span></td><td><button class="btn" onclick="openServiceDetail('${s.id}')">ABRIR</button></td></tr>`).join('')||'<tr><td colspan="13" class="empty">Nenhum serviço encontrado.</td></tr>'}
+function renderAgenda(){
+  const q=(document.getElementById('agendaSearch')?.value||'').toLowerCase();
+  const d=document.getElementById('agendaDate')?.value||'';
+  let arr=db.services.filter(s=>(!d||s.date===d)&&(s.client+s.address+(s.responsible||'')).toLowerCase().includes(q)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  document.getElementById('agendaList').innerHTML=arr.map(s=>`<div class="row"><div class="rowLeft"><div class="mini">▦</div><div><b>${esc(s.time||'—')} · ${esc(s.type)}</b><div style="font-size:11px;color:var(--muted)">${esc(s.client)} · ${esc(s.address)} · ${esc(s.responsible||'A atribuir')}</div></div></div><span class="status ${statusClass(s.status)}">${esc(s.status)}</span></div>`).join('')||'<div class="empty">Nenhum serviço na agenda.</div>';
+}
+function renderClosing(){
+  const arr=db.services.filter(s=>s.status==='CONCLUÍDO');
+  document.getElementById('closeServices').textContent=arr.length;
+  document.getElementById('closeTotal').textContent=money(arr.reduce((a,s)=>a+(s.totalFinal??calcTotal(s.net)??0),0));
+  const pending=db.services.filter(s=>s.status!=='CONCLUÍDO'&&s.status!=='CANCELADO').length+db.urgencies.filter(u=>!u.seen).length;
+  document.getElementById('closePending').textContent=pending;
+  document.getElementById('closingTable').innerHTML=arr.map(s=>`<tr><td>#${s.id.slice(1)}</td><td>${esc(s.client)}</td><td>${esc(s.address)}</td><td>${dateBR(s.date)}</td><td>${esc(s.responsible||'—')}</td><td><b>${money(s.totalFinal??calcTotal(s.net))}</b></td><td><span class="status s-done">CONCLUÍDO</span></td></tr>`).join('')||'<tr><td colspan="7" class="empty">Nenhum serviço concluído.</td></tr>';
+}
+function renderPending(){
+  const q=(document.getElementById('pendingSearch')?.value||'').toLowerCase();
+  const items=[];
+  db.services.filter(s=>s.status!=='CONCLUÍDO'&&s.status!=='CANCELADO').forEach(s=>items.push({title:`${s.type} · ${s.client}`,text:`${s.address} · ${s.status}`,urgent:false}));
+  db.urgencies.filter(u=>!u.seen).forEach(u=>items.push({title:`CHAMADO URGENTE · ${u.client||''}`,text:u.text||'Chamado urgente',urgent:true}));
+  const arr=items.filter(x=>(x.title+x.text).toLowerCase().includes(q));
+  document.getElementById('pendingList').innerHTML=arr.map(x=>`<div class="row"><div class="rowLeft"><div class="mini">${x.urgent?'⚠':'!'}</div><div><b>${esc(x.title)}</b><div style="font-size:11px;color:var(--muted)">${esc(x.text)}</div></div></div><span class="status ${x.urgent?'s-cancel':'s-open'}">${x.urgent?'URGENTE':'PENDENTE'}</span></div>`).join('')||'<div class="empty">Nenhuma pendência.</div>';
+}
+function renderClients(){let q=(document.getElementById('clientSearch')?.value||'').toLowerCase();document.getElementById('clientTable').innerHTML=db.clients.filter(c=>(c.name+c.email+c.phone).toLowerCase().includes(q)).map(c=>`<tr><td>#${c.id.slice(1)}</td><td><b>${esc(c.name)}</b></td><td>${esc(c.email)}</td><td>${esc(c.phone)}</td><td><span class="chips">${c.apartments.map(a=>`<span class="chip"><b>${esc(a.id)}</b> · ${esc(a.name)} · ${esc(a.address)}</span>`).join('')}</span></td><td>${db.services.filter(s=>s.clientId===c.id).length}</td><td><button class="btn" onclick="openClientDetail('${c.id}')">ABRIR</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">Nenhum cliente encontrado.</td></tr>'}
+function renderFinance(){const m=db.movements.filter(x=>x.date.startsWith('2026-08'));const rev=m.filter(x=>x.type==='Receita').reduce((a,x)=>a+x.value,0),exp=Math.abs(m.filter(x=>x.type==='Despesa').reduce((a,x)=>a+x.value,0));document.getElementById('finRevenue').textContent=money(rev);document.getElementById('finExpense').textContent=money(exp);document.getElementById('finProfit').textContent=money(rev-exp);document.getElementById('finServices').textContent=db.services.filter(s=>s.date.startsWith('2026-08')).length;document.getElementById('financeTable').innerHTML=db.movements.slice().reverse().map(x=>`<tr><td>${dateBR(x.date)}</td><td>${esc(x.desc)}</td><td class="${x.type==='Receita'?'positive':'negative'}">${x.type}</td><td><b>${money(x.value)}</b></td><td><span class="status s-done">${x.status}</span></td></tr>`).join('')}
+function renderEmployees(){let q=(document.getElementById('employeeSearch')?.value||'').toLowerCase();document.getElementById('employeeTable').innerHTML=db.employees.filter(e=>(e.name+e.role+e.phone).toLowerCase().includes(q)).map(e=>`<tr><td>#${e.id.slice(1)}</td><td><b>${esc(e.name)}</b></td><td>${esc(e.role)}</td><td>${esc(e.phone)}</td><td>${esc(e.permission)}</td><td>${esc(e.username||'—')}</td><td><span class="status s-done">${esc(e.status)}</span></td></tr>`).join('')}
+function saveManualPrices(){
+  const map={
+    "Roupa de cama — individual":document.getElementById("edit_ind")?.value,
+    "Roupa de cama — doble / king":document.getElementById("edit_king")?.value,
+    "Varias camas":document.getElementById("edit_varias")?.value,
+    "Sofá-cama — individual":document.getElementById("edit_sofa_ind")?.value,
+    "Sofá-cama — doble":document.getElementById("edit_sofa_doble")?.value,
+    "Mantenimiento / hora":document.getElementById("edit_maint")?.value
+  };
+  Object.entries(map).forEach(([k,v])=>{if(v!==undefined&&v!=="")setEditablePrice(k,v)});
+  renderPricing();
+  toast("Valores atualizados e gravados.");
+}
+function renderPricing(){document.getElementById('pricingTable').innerHTML=prices.map(p=>`<tr><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${money(p[2])}</td><td>${money(p[2]==null?null:p[2]*IVA)}</td><td><b>${money(calcTotal(p[2]))}</b></td></tr>`).join('');
+const ep=getEditablePrices();
+const fields={"edit_ind":"Roupa de cama — individual","edit_king":"Roupa de cama — doble / king","edit_varias":"Varias camas","edit_sofa_ind":"Sofá-cama — individual","edit_sofa_doble":"Sofá-cama — doble","edit_maint":"Mantenimiento / hora"};
+Object.entries(fields).forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.value=ep[k]??defaultEditablePrices[k]});
+}
+function openModal(title,html){document.getElementById('modalTitle').textContent=title;document.getElementById('modalBody').innerHTML=html;document.getElementById('modalBg').style.display='flex'}function closeModal(){document.getElementById('modalBg').style.display='none'}
+function openApartmentChooser(){
+  openModal('Apartamentos',`<div class="field"><label>SELECIONE O CLIENTE</label><select id="apartmentClient">${db.clients.map(c=>`<option value="${c.id}">${esc(c.id)} · ${esc(c.name)}</option>`).join('')}</select></div>
+  <div class="note" style="margin-top:10px">Cada cliente possui um código próprio. Escolha o cliente para cadastrar um novo apartamento com nome, número e endereço.</div>
+  <div class="actions"><button class="btn" onclick="closeModal()">FECHAR</button><button class="btn gold" onclick="openApartmentModal(document.getElementById('apartmentClient').value)">＋ NOVO APARTAMENTO</button></div>`)
+}
+function openClientModal(){openModal('Novo cliente',`<div class="formgrid"><div class="field"><label>Nome / Empresa</label><input id="cName"></div><div class="field"><label>E-mail</label><input id="cEmail" type="email"></div><div class="field"><label>Telefone</label><input id="cPhone"></div><div class="field"><label>Nome do apartamento</label><input id="cAName" placeholder="Ex.: Apartamento Centro"></div><div class="field" style="grid-column:1/-1"><label>Endereço completo</label><input id="cAAddress" placeholder="Rua, número, código postal, cidade"></div><div class="field"><label>Utilizador / login do cliente</label><input id="cUser" autocomplete="off"></div><div class="field"><label>Senha do cliente</label><input id="cPass" type="password" autocomplete="new-password"></div></div><div class="note">O cliente recebe automaticamente um <b>código próprio</b> e, se preencher os campos de acesso, poderá utilizar o perfil <b>CLIENTE</b>. Depois poderá cadastrar quantos apartamentos precisar.</div><div class="actions"><button class="btn" onclick="closeModal()">CANCELAR</button><button class="btn gold" onclick="saveClient()">GUARDAR CLIENTE</button></div>`)}
+function nextClientCode(){const nums=db.clients.map(c=>Number(String(c.id||'').replace(/\D/g,''))).filter(Number.isFinite);return 'C'+String((Math.max(0,...nums)+1)).padStart(5,'0')}
+function nextApartmentCode(){const nums=db.clients.flatMap(c=>c.apartments||[]).map(a=>Number(String(a.id||'').replace(/\D/g,''))).filter(Number.isFinite);return 'A'+String((Math.max(0,...nums)+1)).padStart(5,'0')}
+function saveClient(){
+  const name=document.getElementById('cName').value.trim();
+  if(!name)return toast('Informe o nome do cliente.');
+  const c={id:nextClientCode(),name,email:document.getElementById('cEmail').value.trim(),phone:document.getElementById('cPhone').value.trim(),username:document.getElementById('cUser')?.value.trim()||'',password:document.getElementById('cPass')?.value||'',permission:'CLIENTE',apartments:[]};
+  const aName=document.getElementById('cAName').value.trim();
+  const aAddress=document.getElementById('cAAddress').value.trim();
+  if(aName||aAddress)c.apartments.push({id:nextApartmentCode(),name:aName||'Apartamento',address:aAddress||'A definir'});
+  db.clients.unshift(c);
+  if(!save())return;
+  closeModal();renderClients();toast('Cliente '+c.id+' e apartamento cadastrados.');
+}
+function openClientDetail(id){
+  const c=db.clients.find(x=>x.id===id);
+  openModal('Perfil do cliente',`<div class="detailGrid">
+    <div class="detail"><small>CÓDIGO DO CLIENTE</small><b>${esc(c.id)}</b></div>
+    <div class="detail"><small>CLIENTE</small><b>${esc(c.name)}</b></div>
+    <div class="detail"><small>E-MAIL</small><b>${esc(c.email)}</b></div>
+    <div class="detail"><small>TELEFONE</small><b>${esc(c.phone)}</b></div>
+  </div>
+  <div class="heading" style="margin-top:14px"><div><h3 style="margin:0">Apartamentos</h3><p>${c.apartments.length} apartamento(s) cadastrado(s)</p></div><button class="btn gold" onclick="openApartmentModal('${c.id}')">＋ NOVO APARTAMENTO</button></div>
+  ${c.apartments.map(a=>`<div class="detail" style="margin-bottom:8px"><b>${esc(a.id)} · ${esc(a.name)}</b><div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(a.address)}</div></div>`).join('')||'<div class="empty">Nenhum apartamento cadastrado.</div>'}
+  <div class="actions"><button class="btn" onclick="closeModal()">FECHAR</button></div>`)
+}
+function openApartmentModal(clientId){
+  const c=db.clients.find(x=>x.id===clientId); if(!c)return;
+  openModal('Novo apartamento',`<div class="note"><b>Cliente:</b> ${esc(c.id)} · ${esc(c.name)}</div>
+  <div class="formgrid" style="margin-top:12px">
+    <div class="field"><label>Nome do apartamento</label><input id="aName" placeholder="Ex.: Apartamento Centro"></div>
+    <div class="field"><label>Número / porta</label><input id="aNumber" placeholder="Ex.: 3º D"></div>
+    <div class="field" style="grid-column:1/-1"><label>Endereço completo</label><input id="aAddress" placeholder="Rua, número, código postal, cidade"></div>
+  </div>
+  <div class="actions"><button class="btn" onclick="closeModal()">FECHAR</button><button class="btn gold" onclick="saveApartment('${clientId}')">GUARDAR APARTAMENTO</button></div>`)
+}
+function saveApartment(clientId){
+  const c=db.clients.find(x=>x.id===clientId); if(!c)return;
+  const name=document.getElementById('aName').value.trim();
+  const number=document.getElementById('aNumber').value.trim();
+  const address=document.getElementById('aAddress').value.trim();
+  if(!name)return toast('Informe o nome do apartamento.');
+  if(!address)return toast('Informe o endereço completo.');
+  c.apartments=c.apartments||[];
+  c.apartments.push({id:nextApartmentCode(),name:number?name+' · '+number:name,address});
+  if(!save())return;
+  closeModal();renderClients();toast('Apartamento guardado com sucesso.');
+}
+function openAccessManager(){
+  const em=db.employees.filter(e=>e.username);
+  const cl=db.clients.filter(c=>c.username);
+  openModal('Utilizadores e acessos',`<div class="note"><b>ADMINISTRADOR:</b> acesso total.<br><b>FUNCIONÁRIO:</b> somente serviços atribuídos, execução, ocorrências, fotos/vídeos e urgências.<br><b>CLIENTE:</b> somente seus apartamentos/serviços, inclusão de serviço e urgências.</div><h4>FUNCIONÁRIOS</h4>${em.map(e=>`<div class="detail" style="margin-bottom:7px"><b>${esc(e.name)}</b> · ${esc(e.username)} · ${esc(e.permission)}</div>`).join('')||'<div class="empty">Nenhum login de funcionário cadastrado.</div>'}<h4>CLIENTES</h4>${cl.map(c=>`<div class="detail" style="margin-bottom:7px"><b>${esc(c.id)} · ${esc(c.name)}</b> · ${esc(c.username)}</div>`).join('')||'<div class="empty">Nenhum login de cliente cadastrado.</div>'}<div class="actions"><button class="btn" onclick="closeModal()">FECHAR</button><button class="btn gold" onclick="openRoleTestModal()">TESTAR PERFIL</button></div>`)
+}
+function openRoleTestModal(){
+  openModal('Testar perfil de acesso',`<div class="note"><b>Modo de teste:</b> escolha o perfil que deseja simular neste dispositivo. Os utilizadores e senhas cadastrados ficam associados aos respetivos perfis para a próxima etapa de login.</div><div class="optionGrid" style="margin-top:12px"><button class="btn gold" onclick="setTestRole('ADMIN')">ADMINISTRADOR</button><button class="btn" onclick="setTestRole('FUNCIONÁRIO')">FUNCIONÁRIO</button><button class="btn" onclick="setTestRole('CLIENTE')">CLIENTE</button></div><div class="actions"><button class="btn" onclick="closeModal()">FECHAR</button></div>`)
+}
+function setTestRole(r){
+  role=r;localStorage.setItem('romano_role',r);
+  if(r==='FUNCIONÁRIO'){const e=db.employees.find(x=>x.permission==='FUNCIONÁRIO');if(e?.username)localStorage.setItem('romano_user',e.username)}
+  if(r==='CLIENTE'){const c=db.clients.find(x=>x.permission==='CLIENTE'&&x.username);if(c?.username)localStorage.setItem('romano_user',c.username)}
+  closeModal();location.reload()
+}
+function openEmployeeModal(){openModal('Novo funcionário / usuário',`<div class="formgrid"><div class="field"><label>Nome</label><input id="eName"></div><div class="field"><label>Função</label><select id="eRole"><option>Limpeza</option><option>Mantenimiento</option><option>Lavandería</option><option>Pintura</option></select></div><div class="field"><label>Telefone</label><input id="ePhone"></div><div class="field"><label>Tipo de acesso</label><select id="ePermission"><option>FUNCIONÁRIO</option><option>CLIENTE</option></select></div><div class="field"><label>Utilizador / login</label><input id="eUser" autocomplete="off" placeholder="Ex.: ana.paula"></div><div class="field"><label>Senha</label><input id="ePass" type="password" autocomplete="new-password" placeholder="Defina uma senha"></div></div><div class="note">Funcionário: acesso somente aos serviços atribuídos, início/finalização, ocorrências, fotos, vídeos e chamados urgentes. Não acessa Finanças, Clientes, Funcionários ou Configurações.</div><div class="actions"><button class="btn" onclick="closeModal()">CANCELAR</button><button class="btn gold" onclick="saveEmployee()">GUARDAR FUNCIONÁRIO</button></div>`)}
+function saveEmployee(){const name=document.getElementById('eName').value.trim();const user=document.getElementById('eUser').value.trim();if(!name)return toast('Informe o nome.');if(user&&db.employees.some(e=>e.username===user))return toast('Este utilizador já existe.');db.employees.unshift({id:'F'+String(16+db.employees.length+1).padStart(5,'0'),name,role:document.getElementById('eRole').value,phone:document.getElementById('ePhone').value,permission:document.getElementById('ePermission').value,status:'Ativo',username:user,password:document.getElementById('ePass').value});save();closeModal();renderEmployees();toast('Funcionário e acesso cadastrados.')}
+function typologyOptions(){return prices.map(p=>`<option value="${p[0]}" data-net="${p[2]??''}">${p[0]} — ${p[2]==null?'A consultar':money(p[2])}</option>`).join('')}
+
+function rentalOptionsHtml(){
+  const ep=getEditablePrices();
+  return laundryRental.map((x,i)=>{
+    const price=ep[x[0]]??x[1];
+    return `<div class="rentalRow">
+      <label><input type="checkbox" class="rentalOpt" value="${i}" onchange="syncServiceExtras()"> ${esc(x[0])}</label>
+      <input class="rentalQty" id="rentalQty${i}" type="number" min="0" step="1" value="0" inputmode="numeric" aria-label="Quantidade de ${esc(x[0])}" onchange="syncRentalCheckbox(${i})" oninput="syncServiceExtras()">
+      <div class="rentalLineTotal" id="rentalLine${i}"><strong>0,00 €</strong><small style="display:block;color:var(--gold2);font-weight:800">${money(price)} / un.</small></div>
+    </div>`;
+  }).join('');
+}
+function maintenanceOptionsHtml(){
+  return maintenanceTypes.map((x,i)=>`<option value="${i}">${esc(x)}</option>`).join('');
+}
+function rentalSelected(){
+  return laundryRental.map((x,i)=>{
+    const q=Math.max(0,Math.floor(Number(document.getElementById('rentalQty'+i)?.value||0)));
+    const price=currentRentalPrice(x[0]);
+    return {name:x[0],price,qty:q,total:price*q};
+  }).filter(x=>x.qty>0);
+}
+function serviceExtraNet(){
+  const rentalTotal=rentalSelected().reduce((a,x)=>a+x.total,0);
+  const hours=Number(document.getElementById('sMaintHours')?.value||0);
+  const maintenance=document.getElementById('sType')?.value==='Mantenimiento';
+  return rentalTotal+(maintenance?hours*MAINT_HOUR_TOTAL/(1+IVA):0);
+}
+function serviceExtraTotal(){
+  const rentalTotal=rentalSelected().reduce((a,x)=>a+x.total,0);
+  const hours=Number(document.getElementById('sMaintHours')?.value||0);
+  const maintenance=document.getElementById('sType')?.value==='Mantenimiento';
+  return rentalTotal+(maintenance?hours*MAINT_HOUR_TOTAL:0);
+}
+function enableMaintenanceService(){
+  const cb=document.getElementById('maintenanceEnabled');
+  const box=document.getElementById('maintenanceBox');
+  const type=document.getElementById('sType');
+  const btn=document.getElementById('maintenanceAction');
+  const status=document.getElementById('maintenanceStatus');
+  if(cb?.checked){
+    if(type) type.value='Mantenimiento';
+    if(box) box.style.display='block';
+    if(btn){btn.textContent='✓ MANTENIMIENTO AÑADIDO';btn.classList.add('active')}
+    if(status)status.innerHTML='<b>Mantenimiento incluido en este servicio.</b> Seleccione el trabajo y las horas.';
+  }else{
+    if(box) box.style.display='none';
+    if(btn){btn.textContent='＋ AÑADIR MANTENIMIENTO';btn.classList.remove('active')}
+    if(status)status.textContent='Mantenimiento no incluido.';
+  }
+  syncServiceExtras();
+}
+function syncServiceExtras(){
+  const type=document.getElementById('sType')?.value;
+  const cb=document.getElementById('maintenanceEnabled');
+  const maintenanceOn=!!cb?.checked || type==='Mantenimiento';
+  const mb=document.getElementById('maintenanceBox');
+  if(mb) mb.style.display=maintenanceOn?'block':'none';
+  if(cb && type==='Mantenimiento') cb.checked=true;
+
+  const selected=rentalSelected();
+  const rentalTotal=selected.reduce((a,x)=>a+x.total,0);
+  selected.forEach((x)=>{
+    const i=laundryRental.findIndex(p=>p[0]===x.name);
+    const el=document.getElementById('rentalLine'+i);
+    if(el)el.innerHTML=money(x.total)+`<small style="display:block;color:var(--muted)">${money(x.price)}/un.</small>`;
+  });
+  laundryRental.forEach((x,i)=>{
+    if(!selected.some(s=>s.name===x[0])){
+      const el=document.getElementById('rentalLine'+i);
+      if(el)el.innerHTML='<strong>0,00 €</strong>'+`<small style="display:block;color:var(--gold2);font-weight:800">${money(currentRentalPrice(x[0]))} / un.</small>`;
+    }
+  });
+
+  const rate=Number(currentRentalPrice('Mantenimiento / hora')||MAINT_HOUR_TOTAL);
+  const rateEl=document.getElementById('sMaintRate'); if(rateEl)rateEl.value=money(rate)+' — IVA incluido';
+  const rateLabel=document.getElementById('maintRateLabel'); if(rateLabel)rateLabel.textContent=money(rate)+' / hora — IVA incluido';
+  const hours=maintenanceOn?Math.max(0,Number(document.getElementById('sMaintHours')?.value||0)):0;
+  const maintenanceTotal=hours*rate;
+  const maintTotalEl=document.getElementById('sMaintTotal'); if(maintTotalEl)maintTotalEl.value=money(maintenanceTotal);
+
+  let netBase=Number(document.getElementById('sNet')?.value||0);
+  // A maintenance-only service must not inherit a cleaning typology price.
+  if(type==='Mantenimiento' && !document.getElementById('sTypology')?.value) netBase=0;
+  const baseVat=netBase*IVA;
+  const baseTotal=netBase*(1+IVA);
+  const rentalVat=rentalTotal*IVA;
+  const maintenanceNet=maintenanceTotal/(1+IVA);
+  const maintenanceVat=maintenanceNet*IVA;
+  const netFinal=netBase+rentalTotal+maintenanceNet;
+  const vatFinal=baseVat+rentalVat+maintenanceVat;
+  const total=baseTotal+rentalTotal+maintenanceTotal;
+
+  const put=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=money(v)};
+  put('rentalTotal',rentalTotal);
+  put('maintenanceTotal',maintenanceTotal);
+  put('summaryBase',baseTotal);
+  put('summaryRental',rentalTotal);
+  put('summaryMaintenance',maintenanceTotal);
+  put('summaryFinal',total);
+  put('sNetFinal',netFinal);
+  put('sVatFinal',vatFinal);
+  put('sTotalFinal',total);
+
+  const eLaundry=document.getElementById('laundryState');
+  if(eLaundry)eLaundry.textContent=document.getElementById('sLaundry')?.checked?'SIM':'NÃO';
+}
+function openServiceModal(){
+  openModal('Novo serviço',`
+  <div class="serviceForm">
+    <div class="serviceRow two">
+      <div class="field"><label>Cliente</label><select id="sClient" onchange="loadApartments()">${(role==='CLIENTE'?db.clients.filter(c=>c.id===currentClientId()):db.clients).map(c=>`<option value="${c.id}">${esc(c.id)} · ${esc(c.name)}</option>`).join('')||'<option value="">Nenhum cliente cadastrado</option>'}</select></div>
+      <div class="field"><label>Tipo de serviço</label><select id="sType" onchange="syncServiceExtras()"><option>Limpeza</option><option>Mantenimiento</option><option>Lavandería</option><option>Limpeza Pós Obra</option><option>Limpeza Clínica</option><option>Limpeza Oficina</option><option>Pintura</option></select></div>
+    </div>
+    <div class="serviceRow one">
+      <div class="field"><label>Apartamento</label><select id="sApartment" onchange="syncApartment()"></select><div id="apartmentHint" class="note" style="margin-top:6px;display:none"></div></div>
+    </div>
+    <div class="serviceRow two">
+      <div class="field"><label>Tipologia</label><select id="sTypology" onchange="syncPrice()">${typologyOptions()}</select></div>
+      <div class="field"><label>Data</label><input id="sDate" type="date" value="2026-08-28"></div>
+    </div>
+    <div class="serviceRow two">
+      <div class="field"><label>Horário</label><input id="sTime" type="time" value="10:00"></div>
+      <div class="field"><label>Valor base sem IVA</label><div class="moneyField"><input id="sNet" type="number" step="0.01" readonly><span>€</span></div></div>
+    </div>
+    <div class="serviceRow two">
+      <div class="field"><label>IVA (21%) — base</label><input id="sVat" readonly></div>
+      <div class="field"><label>Total base</label><input id="sTotal" readonly></div>
+    </div>
+    <div class="serviceRow one">
+      <div class="field"><label>Responsável</label><select id="sResponsible"><option value="">A atribuir</option>${db.employees.map(e=>`<option>${esc(e.name)}</option>`).join('')}</select></div>
+    </div>
+  </div>
+
+  <div class="apartmentSummary">
+    <h4>RESUMEN DEL APARTAMENTO</h4>
+    <div class="summaryGrid">
+      <div class="detail"><small>APARTAMENTO</small><b id="summaryApartment">—</b></div>
+      <div class="detail"><small>TIPOLOGÍA</small><b id="summaryTypology">—</b></div>
+      <div class="detail"><small>DIRECCIÓN</small><b id="summaryAddress">—</b></div>
+      <div class="detail"><small>TOTAL DEL SERVICIO</small><b id="summaryFinal">0,00 €</b></div>
+    </div>
+  </div>
+
+  <div class="serviceExtras">
+    <h4>🧺 LAVANDERÍA — ASSINALAR SE EXISTE</h4>
+    <div class="optionCard">
+      <label><input id="sLaundry" type="checkbox" onchange="syncServiceExtras()"> Lavandería incluída neste serviço</label>
+      <div class="optionPrice">Estado: <b id="laundryState">NÃO</b></div>
+    </div>
+  </div>
+
+  <div class="serviceExtras">
+    <h4>🛏️ ALQUILER DE ROPA — INDICAR QUANTIDADE</h4>
+    <div class="rentalRows">${rentalOptionsHtml()}</div>
+    <div class="extraSummary">
+      <div class="detail"><small>TOTAL ALQUILER DE ROPA</small><b id="rentalTotal">0,00 €</b></div>
+      <div class="detail"><small>IVA DO ALUGUEL</small><b>21%</b></div>
+      <div class="detail"><small>QUANTIDADES</small><b>Calculadas automaticamente</b></div>
+    </div>
+  </div>
+
+  <div class="serviceExtras maintenanceServiceCard">
+    <div class="maintenanceHeader"><div><h4>🔧 MANTENIMIENTO — SERVICIO INDEPENDIENTE</h4><p>Solo se añade cuando el apartamento necesita mantenimiento.</p></div><button type="button" class="btn gold" onclick="document.getElementById('maintenanceEnabled').checked=!document.getElementById('maintenanceEnabled').checked;enableMaintenanceService()" id="maintenanceAction">＋ AÑADIR MANTENIMIENTO</button></div>
+    <input id="maintenanceEnabled" type="checkbox" onchange="enableMaintenanceService()" style="display:none">
+    <div id="maintenanceStatus" class="optionPrice">Mantenimiento no incluido.</div>
+    <div id="maintenanceBox" class="maintenanceBox" style="display:none">
+      <div class="formgrid">
+        <div class="field"><label>¿QUÉ SERVICIO ESTÁ REALIZANDO?</label><select id="sMaintType">${maintenanceOptionsHtml()}</select></div>
+        <div class="field"><label>CANTIDAD DE HORAS</label><input id="sMaintHours" type="number" min="0.5" step="0.5" value="1" oninput="syncServiceExtras()"></div>
+        <div class="field"><label>VALOR POR HORA</label><input id="sMaintRate" value="" readonly><div class="ivaIncluded">IVA INCLUIDO</div></div>
+        <div class="field"><label>TOTAL MANTENIMIENTO</label><input id="sMaintTotal" value="" readonly></div>
+      </div>
+      <div class="note" style="margin-top:8px">
+        <b>Servicios:</b> Pintura · Electricidad básica · Fontanería básica · Silicone · Montaje de mobiliario · Reparaciones generales · Instalaciones generales · Revisión preventiva.
+        <br><b>Precio actual:</b> <span id="maintRateLabel">45,00 € / hora — IVA incluido</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="serviceExtras">
+    <h4>RESUMEN FINAL DEL APARTAMENTO</h4>
+    <div class="summaryGrid">
+      <div class="detail"><small>TOTAL BASE COM IVA</small><b id="summaryBase">0,00 €</b></div>
+      <div class="detail"><small>ALUGUEL DE ROUPA</small><b id="summaryRental">0,00 €</b></div>
+      <div class="detail"><small>MANTENIMIENTO</small><b id="summaryMaintenance">0,00 €</b></div>
+      <div class="detail"><small>VALOR FINAL</small><b id="summaryFinal">0,00 €</b></div>
+    </div>
+    <div class="extraSummary" style="margin-top:8px">
+      <div class="detail"><small>VALOR SEM IVA</small><b id="sNetFinal">0,00 €</b></div>
+      <div class="detail"><small>IVA</small><b id="sVatFinal">0,00 €</b></div>
+      <div class="detail"><small>VALOR TOTAL</small><b id="sTotalFinal">0,00 €</b></div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:12px"><b>Regra comercial:</b> os valores de limpeza por tipologia podem ser ajustados conforme localização, quantidade de apartamentos, rotatividade, volume diário e necessidades específicas de cada empresa. Lavandería, aluguel de roupa e manutenção ficam separados no resumo.</div>
+  <div class="actions"><button class="btn" onclick="closeModal()">CANCELAR</button><button class="btn gold" onclick="saveService()">GUARDAR SERVIÇO</button></div>`);
+  loadApartments();
+  syncPrice();
+  syncServiceExtras();
+}
+function loadApartments(){
+  const c=db.clients.find(x=>x.id===document.getElementById('sClient')?.value);
+  const sel=document.getElementById('sApartment');
+  const hint=document.getElementById('apartmentHint');
+  if(!sel)return;
+  const aps=(c?.apartments||[]).filter(a=>a&&a.id);
+  sel.innerHTML=aps.map(a=>`<option value="${a.id}">${esc(a.id)} · ${esc(a.name)} — ${esc(a.address)}</option>`).join('')||'<option value="">Nenhum apartamento cadastrado</option>';
+  if(hint){
+    hint.style.display=aps.length?'none':'block';
+    hint.innerHTML=c?`Este cliente ainda não tem apartamento cadastrado. Vá em <b>Clientes → Apartamentos</b> para adicionar um.`:'Selecione um cliente com apartamento cadastrado.';
+  }
+  syncApartment();
+}
+function syncApartment(){const c=db.clients.find(x=>x.id===document.getElementById('sClient').value);const a=c?.apartments.find(x=>x.id===document.getElementById('sApartment').value);if(a){document.getElementById('sAddress')?.setAttribute('value',a.address);const ap=document.getElementById('summaryApartment'),ad=document.getElementById('summaryAddress');if(ap)ap.textContent=a.name;if(ad)ad.textContent=a.address;}syncServiceExtras()}
+function syncPrice(){
+  const sel=document.getElementById('sTypology'); const p=prices.find(x=>x[0]===sel.value);
+  document.getElementById('sNet').value=p?.[2]??'';
+  document.getElementById('sVat').value=p?.[2]==null?'A consultar':money(p[2]*IVA);
+  document.getElementById('sTotal').value=p?.[2]==null?'A consultar':money(p[2]*(1+IVA));
+  const st=document.getElementById('summaryTypology'); if(st)st.textContent=p?.[0]||'—';
+  syncServiceExtras();
+}
+function saveService(){
+  try{
+    const client=db.clients.find(x=>x.id===document.getElementById('sClient').value);
+    if(!client){toast('Selecione um cliente.');return;}
+    const a=client.apartments.find(x=>x.id===document.getElementById('sApartment').value);
+    if(!a){toast('Selecione um apartamento cadastrado para este cliente.');return;}
+    const typ=document.getElementById('sTypology').value;
+    const p=prices.find(x=>x[0]===typ);
+    const type=document.getElementById('sType').value;
+    const maintenanceOn=!!document.getElementById('maintenanceEnabled')?.checked || type==='Mantenimiento';
+    const rentalItems=rentalSelected();
+    const rentalTotal=rentalItems.reduce((a,x)=>a+x.total,0);
+    const maintenanceHours=maintenanceOn?Number(document.getElementById('sMaintHours')?.value||0):0;
+    const maintenanceType=maintenanceOn?maintenanceTypes[Number(document.getElementById('sMaintType')?.value||0)]:'';
+    const maintenanceRate=Number(currentRentalPrice('Mantenimiento / hora')||MAINT_HOUR_TOTAL);
+    const maintenanceTotal=maintenanceHours*maintenanceRate;
+    const baseNet=(type==='Mantenimiento' && maintenanceOn)?0:(p?.[2]??0);
+    const netFinal=baseNet+rentalTotal+(maintenanceTotal/(1+IVA));
+    const vatFinal=(baseNet*IVA)+(rentalTotal*IVA)+(maintenanceTotal/(1+IVA)*IVA);
+    const totalFinal=(baseNet*(1+IVA))+rentalTotal+maintenanceTotal;
+    const s={
+      id:'S'+String(28+db.services.length+1).padStart(5,'0'),
+      clientId:client.id,client:client.name,apartmentId:a.id,
+      type,date:document.getElementById('sDate').value,time:document.getElementById('sTime').value,
+      address:a.address,typology:type==='Mantenimiento'?'—':typ,net:baseNet,netFinal,vatFinal,totalFinal,
+      laundry:!!document.getElementById('sLaundry')?.checked,
+      rentalItems,rentalTotal,
+      maintenance:{enabled:maintenanceOn,type:maintenanceType,hours:maintenanceHours,rate:maintenanceRate,total:maintenanceTotal,ivaIncluded:true},
+      status:'AGENDADO',startedAt:'',finishedAt:'',
+      responsible:document.getElementById('sResponsible').value,incidents:[],media:[]
+    };
+    db.services.unshift(s);
+    if(!save()){db.services.shift();return;}
+    closeModal();renderServices();renderDashboard();toast('Serviço guardado com sucesso.');
+  }catch(err){
+    console.error(err);
+    toast('Erro ao guardar o serviço. Verifique os campos.');
+  }
+}
+function openServiceDetail(id){
+  const s=db.services.find(x=>x.id===id);
+  let inc=(s.incidents||[]).map(i=>`<div class="detail" style="margin-bottom:8px"><b>${esc(i.text)}</b><div style="font-size:10px;color:var(--muted)">${esc(i.by)} · ${esc(i.at)} ${i.urgent?'· URGENTE':''}</div>${i.media?.length?'<div class="chips" style="margin-top:6px">'+i.media.map(m=>`<span class="chip">${esc(m.name)}</span>`).join('')+'</div>':''}</div>`).join('')||'<div class="empty">Nenhuma ocorrência registada.</div>';
+  const baseNet=s.net, baseVat=baseNet==null?null:baseNet*IVA, baseTotal=calcTotal(baseNet);
+  const finalNet=s.netFinal??baseNet, finalVat=s.vatFinal??baseVat, finalTotal=s.totalFinal??baseTotal;
+  const rentals=(s.rentalItems||[]).map(x=>`<span class="chip">${esc(x.name)} · ${x.qty||1} un. · ${money(x.total??x.price)}</span>`).join('')||'<span style="color:var(--muted);font-size:11px">Nenhum aluguel de roupa selecionado.</span>';
+  const maint=s.maintenance||{type:'',hours:0,total:0};
+  openModal('Serviço '+id,`
+    <div class="detailGrid">
+      <div class="detail"><small>CLIENTE</small><b>${esc(s.client)}</b></div>
+      <div class="detail"><small>APARTAMENTO</small><b>${esc(s.address)}</b></div>
+      <div class="detail"><small>TIPOLOGIA</small><b>${esc(s.typology||'—')}</b></div>
+      <div class="detail"><small>VALOR SEM IVA</small><b>${money(finalNet)}</b></div>
+      <div class="detail"><small>IVA</small><b>${money(finalVat)}</b></div>
+      <div class="detail"><small>VALOR TOTAL</small><b>${money(finalTotal)}</b></div>
+      <div class="detail"><small>LAVANDERÍA</small><b>${s.laundry?'SIM':'NÃO'}</b></div>
+      <div class="detail"><small>INÍCIO</small><b>${esc(s.startedAt||'—')}</b></div>
+      <div class="detail"><small>TÉRMINO</small><b>${esc(s.finishedAt||'—')}</b></div>
+      <div class="detail"><small>QUEM FEZ</small><b>${esc(s.responsible||'—')}</b></div>
+    </div>
+    <div class="serviceExtras"><h4>🛏️ ALUGUEL DE ROUPA</h4><div class="chips">${rentals}</div><div class="detail" style="margin-top:9px"><small>TOTAL ALUGUEL</small><b>${money(s.rentalTotal||0)}</b></div></div>
+    <div class="serviceExtras"><h4>🔧 MANUTENÇÃO</h4>${maint.enabled||maint.hours?`<div class="detailGrid"><div class="detail"><small>SERVIÇO</small><b>${esc(maint.type||'—')}</b></div><div class="detail"><small>HORAS</small><b>${maint.hours||0}</b></div><div class="detail"><small>VALOR/HORA</small><b>${money(maint.rate||45)} <span class="ivaIncluded">IVA INCLUÍDO</span></b></div><div class="detail"><small>TOTAL</small><b>${money(maint.total||0)}</b></div></div>`:'<span style="font-size:11px;color:var(--muted)">Nenhuma manutenção adicionada a este serviço.</span>'}</div>
+    <div class="actions" style="justify-content:flex-start">
+      <button class="btn gold" ${s.startedAt?'disabled':''} onclick="startService('${s.id}')">▶ COMEÇAR LIMPEZA</button>
+      <button class="btn success" ${s.startedAt&&!s.finishedAt?'':'disabled'} onclick="finishService('${s.id}')">✓ FINALIZAR SERVIÇO</button>
+      <button class="btn blue" onclick="openIncidentModal('${s.id}')">＋ OCORRÊNCIA</button>
+      <button class="btn" onclick="openMediaModal('${s.id}')">＋ FOTOS / VÍDEOS</button>
+    </div>
+    <h4>Fotos e vídeos do serviço</h4>
+    <div class="photoGrid">${(s.media||[]).map(m=>m.type==='video'?`<video controls src="${m.data}"></video>`:`<img src="${m.data}" alt="${esc(m.name)}">`).join('')||'<div class="empty" style="grid-column:1/-1">Nenhuma mídia adicionada.</div>'}</div>
+    <h4>Ocorrências</h4>${inc}
+    <div class="actions"><button class="btn" onclick="closeModal()">FECHAR</button><button class="btn" onclick="printService('${s.id}')">IMPRIMIR SERVIÇO</button></div>
+  `);
+}
+function startService(id){const s=db.services.find(x=>x.id===id);s.startedAt=nowTime();s.status='EM ANDAMENTO';if(!s.responsible){const emp=db.employees.find(e=>e.status==='Ativo'&&e.role==='Limpeza')||db.employees.find(e=>e.status==='Ativo');s.responsible=emp?.name||'Não atribuído'}save();closeModal();renderServices();renderDashboard();toast('Serviço iniciado às '+s.startedAt+'. Responsável: '+s.responsible)}
+function finishService(id){const s=db.services.find(x=>x.id===id);s.finishedAt=nowTime();s.status='CONCLUÍDO';save();closeModal();renderServices();renderDashboard();toast('Serviço finalizado às '+s.finishedAt+'.')}
+function openIncidentModal(serviceId){openModal('Nova ocorrência',`<div class="field"><label>Descrição da ocorrência</label><textarea id="iText" placeholder="Descreva o que aconteceu..."></textarea></div><div class="field" style="margin-top:12px"><label><input id="iUrgent" type="checkbox" style="width:auto"> Marcar como CHAMADO URGENTE</label></div><div class="field" style="margin-top:12px"><label>Foto / vídeo da ocorrência</label><input id="iMedia" type="file" accept="image/*,video/*" multiple></div><div class="actions"><button class="btn" onclick="closeModal()">CANCELAR</button><button class="btn gold" onclick="saveIncident('${serviceId}')">REGISTAR OCORRÊNCIA</button></div>`)}
+async function filesToMedia(files){const out=[];for(const f of [...files]){out.push({name:f.name,type:f.type.startsWith('video')?'video':'image',data:await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(f)})})}return out}
+async function saveIncident(serviceId){const s=db.services.find(x=>x.id===serviceId),text=document.getElementById('iText').value.trim(),urgent=document.getElementById('iUrgent').checked;if(!text)return toast('Descreva a ocorrência.');const media=await filesToMedia(document.getElementById('iMedia').files);const item={id:'I'+Date.now(),text,urgent,at:nowTime(),by:s.responsible||'Utilizador',media};s.incidents=s.incidents||[];s.incidents.push(item);if(urgent){db.urgencies.push({id:item.id,serviceId,text,at:item.at,seen:false});ringUrgent()}save();closeModal();renderDashboard();renderServices();toast(urgent?'CHAMADO URGENTE registado.':'Ocorrência registada.')}
+function openMediaModal(serviceId){openModal('Adicionar fotos e vídeos ao serviço',`<div class="mediaBox"><div class="field"><label>Selecionar ficheiros</label><input id="sMedia" type="file" accept="image/*,video/*" multiple></div><p style="font-size:11px;color:var(--muted)">As fotos e vídeos ficam vinculados ao perfil deste serviço.</p></div><div class="actions"><button class="btn" onclick="closeModal()">CANCELAR</button><button class="btn gold" onclick="saveMedia('${serviceId}')">ADICIONAR</button></div>`)}
+async function saveMedia(serviceId){const s=db.services.find(x=>x.id===serviceId),media=await filesToMedia(document.getElementById('sMedia').files);s.media=s.media||[];s.media.push(...media);save();closeModal();toast(media.length+' ficheiro(s) adicionado(s).');openServiceDetail(serviceId)}
+function openUrgentModal(){const list=db.urgencies.slice().reverse();openModal('Chamados urgentes',list.length?list.map(u=>`<div class="detail" style="margin-bottom:8px"><b>${esc(u.text)}</b><div style="font-size:10px;color:var(--muted)">${u.serviceId} · ${u.at}</div><div class="actions" style="justify-content:flex-start"><button class="btn success" onclick="markUrgency('${u.id}')">MARCAR COMO VISTO</button></div></div>`).join(''):'<div class="empty">Nenhum chamado urgente.</div>')}
+function markUrgency(id){const u=db.urgencies.find(x=>x.id===id);if(u)u.seen=true;save();closeModal();renderDashboard();toast('Chamado marcado como visto.')}
+function showUrgencies(){openUrgentModal()}
+function ringUrgent(){document.getElementById('urgentBtn').classList.add('pulse');try{const ctx=new (window.AudioContext||window.webkitAudioContext)();let o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=880;g.gain.value=.12;o.connect(g);g.connect(ctx.destination);o.start();setTimeout(()=>{o.frequency.value=660},180);setTimeout(()=>{o.stop();ctx.close()},420)}catch(e){}setTimeout(()=>document.getElementById('urgentBtn').classList.remove('pulse'),5000)}
+function printIncidents(){let rows=[];db.services.forEach(s=>(s.incidents||[]).forEach(i=>rows.push([dateBR(s.date),s.id,s.client,s.address,i.text,i.urgent?'URGENTE':'Normal',i.at,i.by])));const w=window.open('','_blank');w.document.write(`<html><head><title>Incidências — ROMANO PROPERTY CARE</title><style>body{font-family:Arial;padding:30px}h1{color:#8f641d}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px;font-size:12px;text-align:left}</style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Relatório de Incidências</h2><table><tr><th>Data</th><th>Serviço</th><th>Cliente</th><th>Endereço</th><th>Ocorrência</th><th>Prioridade</th><th>Hora</th><th>Responsável</th></tr>${rows.map(r=>'<tr>'+r.map(x=>`<td>${esc(x)}</td>`).join('')+'</tr>').join('')}</table><script>window.print()<\/script></body></html>`);w.document.close()}
+function openReportModal(period){
+  const now='2026-08-28';
+  let start=now;
+  if(period==='weekly'){const d=new Date(now+'T12:00:00');d.setDate(d.getDate()-6);start=d.toISOString().slice(0,10)}
+  if(period==='monthly')start=now.slice(0,8)+'01';
+  openModal('Relatório financeiro',`<div class="formgrid">
+    <div class="field"><label>DATA INICIAL</label><input id="reportStart" type="date" value="${start}"></div>
+    <div class="field"><label>DATA FINAL</label><input id="reportEnd" type="date" value="${now}"></div>
+  </div>
+  <div class="note" style="margin-top:10px">Escolha livremente o período. O relatório completo será calculado somente entre as duas datas selecionadas.</div>
+  <div id="customReportPreview" style="margin-top:14px"></div>
+  <div class="actions">
+    <button class="btn" onclick="closeModal()">FECHAR</button>
+    <button class="btn" onclick="previewCustomReport()">ATUALIZAR RELATÓRIO</button>
+    <button class="btn" onclick="exportFinanceReport()">EXPORTAR</button>
+    <button class="btn gold" onclick="printCustomFinanceReport()">IMPRIMIR RELATÓRIO</button>
+  </div>`);
+  previewCustomReport();
+}
+function getReportData(){
+  const a=document.getElementById('reportStart')?.value, b=document.getElementById('reportEnd')?.value;
+  if(!a||!b)return null;
+  if(a>b){toast('A data inicial não pode ser posterior à data final.');return null}
+  const rows=db.movements.filter(m=>m.date>=a&&m.date<=b).slice().sort((x,y)=>x.date.localeCompare(y.date));
+  const services=db.services.filter(s=>s.date>=a&&s.date<=b);
+  const rev=rows.filter(x=>x.type==='Receita').reduce((s,x)=>s+Math.abs(Number(x.value)||0),0);
+  const exp=rows.filter(x=>x.type==='Despesa').reduce((s,x)=>s+Math.abs(Number(x.value)||0),0);
+  const serviceTotal=services.reduce((s,x)=>s+(Number(x.totalFinal??x.net??0)||0),0);
+  return {a,b,rows,services,rev,exp,profit:rev-exp,serviceTotal};
+}
+function previewCustomReport(){
+  const d=getReportData(); if(!d)return;
+  const el=document.getElementById('customReportPreview'); if(!el)return;
+  el.innerHTML=`<div class="kpis">
+    <div class="kpi"><small>PERÍODO</small><strong>${dateBR(d.a)} — ${dateBR(d.b)}</strong></div>
+    <div class="kpi"><small>RECEITAS</small><strong>${money(d.rev)}</strong></div>
+    <div class="kpi"><small>DESPESAS</small><strong>${money(d.exp)}</strong></div>
+    <div class="kpi"><small>LUCRO</small><strong>${money(d.profit)}</strong></div>
+  </div>
+  <div class="note" style="margin-top:10px"><b>Serviços no período:</b> ${d.services.length} · <b>Valor dos serviços:</b> ${money(d.serviceTotal)} · <b>Movimentações:</b> ${d.rows.length}</div>
+  <div class="tableWrap" style="margin-top:10px;max-height:260px"><table class="table"><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Status</th></tr>${d.rows.map(x=>`<tr><td>${dateBR(x.date)}</td><td>${esc(x.desc)}</td><td>${esc(x.type)}</td><td>${money(Math.abs(x.value))}</td><td>${esc(x.status)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Sem movimentações no período.</td></tr>'}</table></div>`;
+}
+function exportFinanceReport(){
+  const d=getReportData(); if(!d)return;
+  const lines=[['ROMANO PROPERTY CARE'],['RELATÓRIO FINANCEIRO'],['Período',dateBR(d.a),dateBR(d.b)],[],['Data','Descrição','Tipo','Valor','Status']];
+  d.rows.forEach(x=>lines.push([x.date,String(x.desc||'').replace(/"/g,'""'),x.type,Math.abs(x.value),x.status]));
+  lines.push([],['Receitas',d.rev],['Despesas',d.exp],['Lucro',d.profit],['Serviços no período',d.services.length],['Valor dos serviços',d.serviceTotal]);
+  const csv=lines.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\\n');
+  const blob=new Blob([String.fromCharCode(0xFEFF)+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`ROMANO_RELATORIO_${d.a}_${d.b}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast('Relatório exportado.');
+}
+function printCustomFinanceReport(){
+  const d=getReportData(); if(!d)return;
+  const w=window.open('','_blank'); if(!w){toast('O navegador bloqueou a janela de impressão.');return;}
+  w.document.write(`<html><head><title>ROMANO PROPERTY CARE — Relatório</title><style>
+  body{font-family:Arial;padding:30px;color:#211d18}h1{color:#8f641d;margin-bottom:4px}.sub{color:#756b5e}
+  .k{display:inline-block;margin:18px 35px 12px 0}.k b{display:block;font-size:12px;color:#756b5e}.k strong{font-size:20px}
+  table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border:1px solid #ccc;padding:8px;font-size:11px;text-align:left}
+  .total{margin-top:18px;padding:12px;border:1px solid #d8cbb9;border-radius:8px}
+  </style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Relatório Financeiro Completo</h2><p class="sub">Período: ${dateBR(d.a)} — ${dateBR(d.b)}</p>
+  <div class="k"><b>RECEITAS</b><strong>${money(d.rev)}</strong></div><div class="k"><b>DESPESAS</b><strong>${money(d.exp)}</strong></div><div class="k"><b>LUCRO</b><strong>${money(d.profit)}</strong></div>
+  <div class="total"><b>Serviços no período:</b> ${d.services.length} &nbsp; | &nbsp; <b>Valor dos serviços:</b> ${money(d.serviceTotal)}</div>
+  <table><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Status</th></tr>${d.rows.map(x=>`<tr><td>${dateBR(x.date)}</td><td>${esc(x.desc)}</td><td>${esc(x.type)}</td><td>${money(Math.abs(x.value))}</td><td>${esc(x.status)}</td></tr>`).join('')||'<tr><td colspan="5">Sem movimentações no período.</td></tr>'}</table>
+  <script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close();
+}
+function printFinanceReport(period){const now=new Date('2026-08-28T12:00:00');let start=new Date(now);if(period==='weekly')start.setDate(start.getDate()-6);if(period==='monthly')start.setDate(1);const a=start.toISOString().slice(0,10),b=now.toISOString().slice(0,10),rows=db.movements.filter(m=>m.date>=a&&m.date<=b),rev=rows.filter(x=>x.type==='Receita').reduce((s,x)=>s+x.value,0),exp=Math.abs(rows.filter(x=>x.type==='Despesa').reduce((s,x)=>s+x.value,0));const w=window.open('','_blank');w.document.write(`<html><head><title>Relatório Financeiro — ROMANO PROPERTY CARE</title><style>body{font-family:Arial;padding:30px}h1{color:#8f641d}.k{display:inline-block;margin-right:35px}table{width:100%;border-collapse:collapse;margin-top:25px}th,td{border:1px solid #ccc;padding:8px;font-size:12px}</style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Relatório Financeiro ${period==='daily'?'Diário':period==='weekly'?'Semanal':'Mensal'}</h2><p>Período: ${dateBR(a)} — ${dateBR(b)}</p><div class="k"><b>Receitas:</b> ${money(rev)}</div><div class="k"><b>Despesas:</b> ${money(exp)}</div><div class="k"><b>Lucro:</b> ${money(rev-exp)}</div><table><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Status</th></tr>${rows.map(x=>`<tr><td>${dateBR(x.date)}</td><td>${esc(x.desc)}</td><td>${esc(x.type)}</td><td>${money(x.value)}</td><td>${esc(x.status)}</td></tr>`).join('')}</table><script>window.print()<\/script></body></html>`);w.document.close()}
+function openMovementModal(){openModal('Nova movimentação financeira',`<div class="formgrid"><div class="field"><label>Data</label><input id="mDate" type="date" value="2026-08-28"></div><div class="field"><label>Tipo</label><select id="mType"><option>Receita</option><option>Despesa</option></select></div><div class="field"><label>Descrição</label><input id="mDesc"></div><div class="field"><label>Valor</label><input id="mValue" type="number" step="0.01"></div></div><div class="actions"><button class="btn" onclick="closeModal()">CANCELAR</button><button class="btn gold" onclick="saveMovement()">GUARDAR</button></div>`)}
+function saveMovement(){let v=Number(document.getElementById('mValue').value||0);if(!v)return toast('Informe o valor.');if(document.getElementById('mType').value==='Despesa')v=-v;db.movements.push({date:document.getElementById('mDate').value,desc:document.getElementById('mDesc').value||'Movimentação',type:v>=0?'Receita':'Despesa',value:v,status:'Pago'});save();closeModal();renderFinance();toast('Movimentação guardada.')}
+function printService(id){
+  const s=db.services.find(x=>x.id===id);
+  const rentals=(s.rentalItems||[]).map(x=>`${esc(x.name)} — ${money(x.price)}`).join('<br>')||'Nenhum';
+  const m=s.maintenance||{type:'',hours:0,total:0};
+  const w=window.open('','_blank');
+  w.document.write(`<html><head><title>Serviço ${id}</title><style>body{font-family:Arial;padding:30px;color:#211d18}h1{color:#8f641d}.box{border:1px solid #ccc;padding:12px;margin:10px 0;border-radius:8px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px}</style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Serviço ${id}</h2><div class="box"><b>Cliente:</b> ${esc(s.client)}<br><b>Endereço:</b> ${esc(s.address)}<br><b>Tipologia:</b> ${esc(s.typology||'—')}<br><b>Lavandería:</b> ${s.laundry?'SIM':'NÃO'}<br><b>Início:</b> ${esc(s.startedAt||'—')}<br><b>Término:</b> ${esc(s.finishedAt||'—')}<br><b>Responsável:</b> ${esc(s.responsible||'—')}</div><div class="box"><b>Aluguel de roupa</b><br>${rentals}<br><br><b>Total aluguel:</b> ${money(s.rentalTotal||0)}</div><div class="box"><b>Mantenimiento</b><br>${m.hours?`${esc(m.type)} — ${m.hours} hora(s) — ${money(m.total)} (IVA incluído)`:'Nenhuma manutenção'}</div><div class="box"><table><tr><th>Valor sem IVA</th><th>IVA</th><th>Valor total</th></tr><tr><td>${money(s.netFinal??s.net)}</td><td>${money(s.vatFinal??(s.net==null?null:s.net*IVA))}</td><td><b>${money(s.totalFinal??calcTotal(s.net))}</b></td></tr></table></div><h3>Ocorrências</h3>${(s.incidents||[]).map(i=>`<div class="box"><b>${esc(i.text)}</b><br>${i.urgent?'URGENTE<br>':''}${esc(i.by)} · ${esc(i.at)}</div>`).join('')||'Nenhuma'}<script>window.print()<\/script></body></html>`);
+  w.document.close();
+}
+function logout(){localStorage.removeItem('romano_role');location.reload()}function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open')}
+function init(){db.editablePrices=db.editablePrices||{...defaultEditablePrices};save();setupNav();renderPricing();renderDashboard();renderServices();renderAgenda();renderClosing();renderPending();renderClients();renderFinance();renderEmployees();document.getElementById('roleBadge').textContent=role;document.getElementById('userName').textContent=role==='ADMIN'?'Administrador':role==='FUNCIONÁRIO'?'Funcionário':'Cliente';document.querySelectorAll('.adminOnly').forEach(x=>{if(role!=='ADMIN')x.style.display='none'});
+document.querySelectorAll('.clientOnly').forEach(x=>{x.style.display=role==='CLIENTE'?'inline-flex':'none'});if(role!=='ADMIN'){document.querySelectorAll('[data-page="clients"],[data-page="finance"],[data-page="employees"],[data-page="settings"]').forEach(x=>x.style.display='none');showPage('services')}if(db.urgencies.some(u=>!u.seen))document.getElementById('urgentBtn').classList.add('pulse');
+if(role==='FUNCIONÁRIO'||role==='CLIENTE'){
+  document.querySelectorAll('[data-page="dashboard"],[data-page="clients"],[data-page="finance"],[data-page="employees"],[data-page="settings"],[data-page="closing"]').forEach(x=>x.style.display='none');
+  document.querySelectorAll('.adminOnly').forEach(x=>x.style.display='none');
+  const h=document.querySelector('#page-services .heading');
+  if(h&&!h.querySelector('.roleInfo')){const d=document.createElement('div');d.className='roleInfo note';d.textContent=role==='FUNCIONÁRIO'?'Acesso: somente serviços, execução, ocorrências, fotos, vídeos e urgências.':'Acesso: seus apartamentos e serviços, inclusão de serviços e urgências.';h.appendChild(d)}
+  showPage('services');
+}}
+init();
+</script>
+</body></html>
