@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROMANO PROPERTY CARE — Acceso</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f6f0e6;--card:#fffdf9;--line:#e4d8c6;--gold:#c58c25;--gold2:#8f641d;--ink:#211d18;--muted:#756b5e;--red:#a43b32}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(135deg,#f8f3eb,#eee2d0);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:20px}.box{width:min(440px,100%);background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px;box-shadow:0 20px 60px rgba(80,53,18,.12)}.logo{text-align:center;color:var(--gold2);font:42px Georgia}.brand{text-align:center;font:24px Georgia;letter-spacing:1.2px;margin-top:3px}.sub{text-align:center;color:var(--gold2);font-size:10px;letter-spacing:2.5px;margin:5px 0 24px}.tag{text-align:center;font-size:12px;color:var(--muted);margin-bottom:22px}.field{margin:12px 0}.field label{display:block;font-size:11px;font-weight:800;margin-bottom:6px}.field input{width:100%;padding:12px;border:1px solid #d8cbb9;border-radius:9px;background:#fff;font:inherit}.btn{width:100%;border:0;border-radius:9px;padding:13px;background:linear-gradient(#d39a2c,#bd851e);color:#fff;font-weight:850;cursor:pointer;margin-top:8px}.btn:disabled{opacity:.6;cursor:wait}.msg{min-height:20px;text-align:center;font-size:12px;margin-top:12px;color:var(--muted)}.forgot{display:block;text-align:center;margin-top:14px;color:var(--gold2);font-size:11px;text-decoration:none}.create{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);text-align:center;font-size:11px;color:var(--muted)}.create button{border:0;background:none;color:var(--gold2);font-weight:800;cursor:pointer}.hidden{display:none!important}.note{background:#fff7e5;border:1px solid #ead5ac;border-radius:9px;padding:10px;font-size:11px;color:#6e5836;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">♕</div>
+  <div class="brand">ROMANO PROPERTY CARE</div>
+  <div class="sub">SERVICIOS PROFESIONALES</div>
+  <div class="tag">Acceso de empleados y administradores</div>
+
+  <form id="loginForm">
+    <div class="field"><label>E-MAIL</label><input id="email" type="email" autocomplete="username" placeholder="empleado@email.com" required></div>
+    <div class="field"><label>CONTRASEÑA</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••" required></div>
+    <button class="btn" id="loginBtn" type="submit">ENTRAR</button>
+  </form>
+  <div id="msg" class="msg"></div>
+  <a href="#" class="forgot" id="forgot">¿Olvidaste tu contraseña?</a>
+
+  <div class="create">¿Necesitas crear un acceso de empleado? <button type="button" id="showCreate">Crear acceso</button></div>
+
+  <div id="createPanel" class="hidden">
+    <div class="note">Este registro crea una cuenta de empleado. El empleado usará su propio e-mail y contraseña para entrar.</div>
+    <div class="field"><label>NOMBRE DEL EMPLEADO</label><input id="newName" placeholder="Nombre completo"></div>
+    <div class="field"><label>E-MAIL DEL EMPLEADO</label><input id="newEmail" type="email" placeholder="empleado@email.com"></div>
+    <div class="field"><label>CONTRASEÑA INICIAL</label><input id="newPassword" type="password" minlength="6" placeholder="Mínimo 6 caracteres"></div>
+    <button class="btn" id="createBtn" type="button">CREAR ACCESO</button>
+    <div id="createMsg" class="msg"></div>
+  </div>
+</div>
+<script>
+const SUPABASE_URL='https://dhzptogrzuqreflcnsnb.supabase.co';
+const SUPABASE_KEY='sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+function message(text,error=false){$('msg').textContent=text;$('msg').style.color=error?'var(--red)':'var(--muted)'}
+function createMessage(text,error=false){$('createMsg').textContent=text;$('createMsg').style.color=error?'var(--red)':'var(--muted)'}
+async function profileFor(userId){
+  const {data,error}=await sb.from('user_profiles').select('role,display_name,active').eq('id',userId).maybeSingle();
+  if(error) throw error;
+  return data;
+}
+$('loginForm').addEventListener('submit',async e=>{
+ e.preventDefault(); const email=$('email').value.trim(), password=$('password').value; $('loginBtn').disabled=true; message('Verificando acceso...');
+ try{
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  if(error) throw error;
+  const p=await profileFor(data.user.id);
+  if(!p||p.active===false){await sb.auth.signOut();throw new Error('Cuenta inactiva o sin perfil autorizado.');}
+  const role=p.role||'FUNCIONÁRIO';
+  localStorage.setItem('romano_role',role);
+  localStorage.setItem('romano_user',email);
+  localStorage.setItem('romano_auth_user_id',data.user.id);
+  localStorage.setItem('romano_display_name',p.display_name||data.user.email||'');
+  window.location.href='index.html';
+ }catch(err){console.error(err);let t=err.message||'No fue posible entrar.';if(/invalid login credentials/i.test(t))t='E-mail o contraseña incorrectos.';if(/email not confirmed/i.test(t))t='Confirma primero el e-mail de la cuenta.';message(t,true)}finally{$('loginBtn').disabled=false}
+});
+$('showCreate').onclick=()=>{$('createPanel').classList.toggle('hidden');$('newName').focus()};
+$('createBtn').onclick=async()=>{
+ const name=$('newName').value.trim(), email=$('newEmail').value.trim(), password=$('newPassword').value;
+ if(!name||!email||password.length<6){createMessage('Preencha nombre, e-mail y una contraseña de mínimo 6 caracteres.',true);return}
+ $('createBtn').disabled=true;createMessage('Creando cuenta...');
+ try{
+  const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:name}}});
+  if(error) throw error;
+  createMessage(data.session?'Cuenta creada. Ya puede entrar.':'Cuenta creada. Si se solicita, confirma el e-mail recibido y después entra.');
+  $('email').value=email;$('password').value=password;
+ }catch(err){createMessage(err.message||'No fue posible crear la cuenta.',true)}finally{$('createBtn').disabled=false}
+};
+$('forgot').onclick=async e=>{e.preventDefault();const email=$('email').value.trim();if(!email){message('Escribe primero tu e-mail para recibir el enlace de recuperación.',true);return}message('Enviando enlace de recuperación...');try{const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.href});if(error)throw error;message('Si la cuenta existe, recibirás el enlace de recuperación por e-mail.')}catch(err){message(err.message||'No fue posible solicitar la recuperación.',true)}};
+(async()=>{const {data}=await sb.auth.getSession();if(data.session){const p=await profileFor(data.session.user.id).catch(()=>null);if(p&&p.active!==false){localStorage.setItem('romano_role',p.role||'FUNCIONÁRIO');localStorage.setItem('romano_user',data.session.user.email||'');localStorage.setItem('romano_auth_user_id',data.session.user.id);localStorage.setItem('romano_display_name',p.display_name||data.session.user.email||'');window.location.href='index.html'}}})();
+</script>
+</body>
+</html>
