@@ -810,7 +810,64 @@ function openUrgentModal(){const list=db.urgencies.slice().reverse();openModal('
 function markUrgency(id){const u=db.urgencies.find(x=>x.id===id);if(u)u.seen=true;save();closeModal();renderDashboard();toast('Chamado marcado como visto.')}
 function showUrgencies(){openUrgentModal()}
 function ringUrgent(){document.getElementById('urgentBtn').classList.add('pulse');try{const ctx=new (window.AudioContext||window.webkitAudioContext)();let o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=880;g.gain.value=.12;o.connect(g);g.connect(ctx.destination);o.start();setTimeout(()=>{o.frequency.value=660},180);setTimeout(()=>{o.stop();ctx.close()},420)}catch(e){}setTimeout(()=>document.getElementById('urgentBtn').classList.remove('pulse'),5000)}
-function printIncidents(){let rows=[];db.services.forEach(s=>(s.incidents||[]).forEach(i=>rows.push([dateBR(s.date),s.id,s.client,s.address,i.text,i.urgent?'URGENTE':'Normal',i.at,i.by])));const w=window.open('','_blank');w.document.write(`<html><head><title>Incidências — ROMANO PROPERTY CARE</title><style>body{font-family:Arial;padding:30px}h1{color:#8f641d}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px;font-size:12px;text-align:left}</style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Relatório de Incidências</h2><table><tr><th>Data</th><th>Serviço</th><th>Cliente</th><th>Endereço</th><th>Ocorrência</th><th>Prioridade</th><th>Hora</th><th>Responsável</th></tr>${rows.map(r=>'<tr>'+r.map(x=>`<td>${esc(x)}</td>`).join('')+'</tr>').join('')}</table><script>window.print()<\/script></body></html>`);w.document.close()}
+function printIncidents(){let rows=[];db.services.forEach(s=>(s.incidents||[]).forEach(i=>rows.push([dateBR(s.date),s.id,s.client,s.address,i.text,i.urgent?'URGENTE':'Normal',i.at,i.by])));const w=window.open('','_blank');w.document.write(`<html><head><title>Incidências — ROMANO PROPERTY CARE</title><style>body{font-family:Arial;padding:30px}h1{color:#8f641d}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px;font-size:12px;text-align:left}</style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Relatório de Incidências</h2><table><tr><th>Data</th><th>Serviço</th><th>Cliente</th><th>Endereço</th><th>Ocorrência</th><th>Prioridade</th><th>Hora</th><th>Responsável</th></tr>${rows.map(r=>'<tr>'+r.map(x=>`<td>${esc(x)}</td>`).join('')+'</tr>').join('')}</table><script>window.print()<\/script><!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->
+<style id="romano-auth-guard-style">html.romano-auth-checking body{visibility:hidden!important}</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  const SUPABASE_URL='https://dhzptogrzuqreflcnsnb.supabase.co';
+  const SUPABASE_KEY='sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN';
+  const client=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
+  document.documentElement.classList.add('romano-auth-checking');
+  async function sync(){
+    try{
+      if(!client){ location.replace('acesso-funcionario.html'); return; }
+      const {data:{session}}=await client.auth.getSession();
+      if(!session){
+        localStorage.removeItem('romano_role');
+        localStorage.removeItem('romano_user');
+        localStorage.removeItem('romano_auth_user_id');
+        localStorage.removeItem('romano_display_name');
+        location.replace('acesso-funcionario.html');
+        return;
+      }
+      const {data:p,error}=await client.from('user_profiles').select('role,display_name,active,employee_id').eq('id',session.user.id).maybeSingle();
+      if(error || !p || p.active===false){ await client.auth.signOut(); localStorage.removeItem('romano_role'); localStorage.removeItem('romano_user'); localStorage.removeItem('romano_auth_user_id'); localStorage.removeItem('romano_display_name'); location.replace('acesso-funcionario.html'); return; }
+      const nextRole=p.role||'FUNCIONÁRIO';
+      const nextUser=session.user.email||'';
+      const changed=localStorage.getItem('romano_role')!==nextRole || localStorage.getItem('romano_user')!==nextUser || localStorage.getItem('romano_auth_user_id')!==session.user.id;
+      localStorage.setItem('romano_role',nextRole);
+      localStorage.setItem('romano_user',nextUser);
+      localStorage.setItem('romano_auth_user_id',session.user.id);
+      localStorage.setItem('romano_display_name',p.display_name||session.user.email||'');
+      if(changed){ location.reload(); return; }
+      document.documentElement.classList.remove('romano-auth-checking');
+    }catch(e){
+      console.error('ROMANO auth sync',e);
+      document.documentElement.classList.remove('romano-auth-checking');
+    }
+  }
+  window.romanoSupabase=client;
+  window.romanoAuthSync=sync;
+  window.addEventListener('DOMContentLoaded',sync,{once:true});
+  window.logout=async function(){
+    try{ if(client) await client.auth.signOut(); }catch(e){}
+    localStorage.removeItem('romano_role');
+    localStorage.removeItem('romano_user');
+    localStorage.removeItem('romano_auth_user_id');
+    localStorage.removeItem('romano_display_name');
+    location.replace('acesso-funcionario.html');
+  };
+  window.setTestRole=function(r){
+    if(window.role!=='ADMIN' && r!=='ADMIN') return;
+    localStorage.setItem('romano_role',r);
+    if(r!=='ADMIN') localStorage.removeItem('romano_user');
+    location.reload();
+  };
+})();
+</script>
+
+</body></html>`);w.document.close()}
 function openReportModal(period){
   const now='2026-08-28';
   let start=now;
@@ -875,9 +932,123 @@ function printCustomFinanceReport(){
   <div class="k"><b>RECEITAS</b><strong>${money(d.rev)}</strong></div><div class="k"><b>DESPESAS</b><strong>${money(d.exp)}</strong></div><div class="k"><b>LUCRO</b><strong>${money(d.profit)}</strong></div>
   <div class="total"><b>Serviços no período:</b> ${d.services.length} &nbsp; | &nbsp; <b>Valor dos serviços:</b> ${money(d.serviceTotal)}</div>
   <table><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Status</th></tr>${d.rows.map(x=>`<tr><td>${dateBR(x.date)}</td><td>${esc(x.desc)}</td><td>${esc(x.type)}</td><td>${money(Math.abs(x.value))}</td><td>${esc(x.status)}</td></tr>`).join('')||'<tr><td colspan="5">Sem movimentações no período.</td></tr>'}</table>
-  <script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close();
+  <script>window.onload=()=>window.print()<\/script><!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->
+<style id="romano-auth-guard-style">html.romano-auth-checking body{visibility:hidden!important}</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  const SUPABASE_URL='https://dhzptogrzuqreflcnsnb.supabase.co';
+  const SUPABASE_KEY='sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN';
+  const client=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
+  document.documentElement.classList.add('romano-auth-checking');
+  async function sync(){
+    try{
+      if(!client){ location.replace('acesso-funcionario.html'); return; }
+      const {data:{session}}=await client.auth.getSession();
+      if(!session){
+        localStorage.removeItem('romano_role');
+        localStorage.removeItem('romano_user');
+        localStorage.removeItem('romano_auth_user_id');
+        localStorage.removeItem('romano_display_name');
+        location.replace('acesso-funcionario.html');
+        return;
+      }
+      const {data:p,error}=await client.from('user_profiles').select('role,display_name,active,employee_id').eq('id',session.user.id).maybeSingle();
+      if(error || !p || p.active===false){ await client.auth.signOut(); localStorage.removeItem('romano_role'); localStorage.removeItem('romano_user'); localStorage.removeItem('romano_auth_user_id'); localStorage.removeItem('romano_display_name'); location.replace('acesso-funcionario.html'); return; }
+      const nextRole=p.role||'FUNCIONÁRIO';
+      const nextUser=session.user.email||'';
+      const changed=localStorage.getItem('romano_role')!==nextRole || localStorage.getItem('romano_user')!==nextUser || localStorage.getItem('romano_auth_user_id')!==session.user.id;
+      localStorage.setItem('romano_role',nextRole);
+      localStorage.setItem('romano_user',nextUser);
+      localStorage.setItem('romano_auth_user_id',session.user.id);
+      localStorage.setItem('romano_display_name',p.display_name||session.user.email||'');
+      if(changed){ location.reload(); return; }
+      document.documentElement.classList.remove('romano-auth-checking');
+    }catch(e){
+      console.error('ROMANO auth sync',e);
+      document.documentElement.classList.remove('romano-auth-checking');
+    }
+  }
+  window.romanoSupabase=client;
+  window.romanoAuthSync=sync;
+  window.addEventListener('DOMContentLoaded',sync,{once:true});
+  window.logout=async function(){
+    try{ if(client) await client.auth.signOut(); }catch(e){}
+    localStorage.removeItem('romano_role');
+    localStorage.removeItem('romano_user');
+    localStorage.removeItem('romano_auth_user_id');
+    localStorage.removeItem('romano_display_name');
+    location.replace('acesso-funcionario.html');
+  };
+  window.setTestRole=function(r){
+    if(window.role!=='ADMIN' && r!=='ADMIN') return;
+    localStorage.setItem('romano_role',r);
+    if(r!=='ADMIN') localStorage.removeItem('romano_user');
+    location.reload();
+  };
+})();
+</script>
+
+</body></html>`);w.document.close();
 }
-function printFinanceReport(period){const now=new Date('2026-08-28T12:00:00');let start=new Date(now);if(period==='weekly')start.setDate(start.getDate()-6);if(period==='monthly')start.setDate(1);const a=start.toISOString().slice(0,10),b=now.toISOString().slice(0,10),rows=db.movements.filter(m=>m.date>=a&&m.date<=b),rev=rows.filter(x=>x.type==='Receita').reduce((s,x)=>s+x.value,0),exp=Math.abs(rows.filter(x=>x.type==='Despesa').reduce((s,x)=>s+x.value,0));const w=window.open('','_blank');w.document.write(`<html><head><title>Relatório Financeiro — ROMANO PROPERTY CARE</title><style>body{font-family:Arial;padding:30px}h1{color:#8f641d}.k{display:inline-block;margin-right:35px}table{width:100%;border-collapse:collapse;margin-top:25px}th,td{border:1px solid #ccc;padding:8px;font-size:12px}</style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Relatório Financeiro ${period==='daily'?'Diário':period==='weekly'?'Semanal':'Mensal'}</h2><p>Período: ${dateBR(a)} — ${dateBR(b)}</p><div class="k"><b>Receitas:</b> ${money(rev)}</div><div class="k"><b>Despesas:</b> ${money(exp)}</div><div class="k"><b>Lucro:</b> ${money(rev-exp)}</div><table><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Status</th></tr>${rows.map(x=>`<tr><td>${dateBR(x.date)}</td><td>${esc(x.desc)}</td><td>${esc(x.type)}</td><td>${money(x.value)}</td><td>${esc(x.status)}</td></tr>`).join('')}</table><script>window.print()<\/script></body></html>`);w.document.close()}
+function printFinanceReport(period){const now=new Date('2026-08-28T12:00:00');let start=new Date(now);if(period==='weekly')start.setDate(start.getDate()-6);if(period==='monthly')start.setDate(1);const a=start.toISOString().slice(0,10),b=now.toISOString().slice(0,10),rows=db.movements.filter(m=>m.date>=a&&m.date<=b),rev=rows.filter(x=>x.type==='Receita').reduce((s,x)=>s+x.value,0),exp=Math.abs(rows.filter(x=>x.type==='Despesa').reduce((s,x)=>s+x.value,0));const w=window.open('','_blank');w.document.write(`<html><head><title>Relatório Financeiro — ROMANO PROPERTY CARE</title><style>body{font-family:Arial;padding:30px}h1{color:#8f641d}.k{display:inline-block;margin-right:35px}table{width:100%;border-collapse:collapse;margin-top:25px}th,td{border:1px solid #ccc;padding:8px;font-size:12px}</style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Relatório Financeiro ${period==='daily'?'Diário':period==='weekly'?'Semanal':'Mensal'}</h2><p>Período: ${dateBR(a)} — ${dateBR(b)}</p><div class="k"><b>Receitas:</b> ${money(rev)}</div><div class="k"><b>Despesas:</b> ${money(exp)}</div><div class="k"><b>Lucro:</b> ${money(rev-exp)}</div><table><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Status</th></tr>${rows.map(x=>`<tr><td>${dateBR(x.date)}</td><td>${esc(x.desc)}</td><td>${esc(x.type)}</td><td>${money(x.value)}</td><td>${esc(x.status)}</td></tr>`).join('')}</table><script>window.print()<\/script><!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->
+<style id="romano-auth-guard-style">html.romano-auth-checking body{visibility:hidden!important}</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  const SUPABASE_URL='https://dhzptogrzuqreflcnsnb.supabase.co';
+  const SUPABASE_KEY='sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN';
+  const client=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
+  document.documentElement.classList.add('romano-auth-checking');
+  async function sync(){
+    try{
+      if(!client){ location.replace('acesso-funcionario.html'); return; }
+      const {data:{session}}=await client.auth.getSession();
+      if(!session){
+        localStorage.removeItem('romano_role');
+        localStorage.removeItem('romano_user');
+        localStorage.removeItem('romano_auth_user_id');
+        localStorage.removeItem('romano_display_name');
+        location.replace('acesso-funcionario.html');
+        return;
+      }
+      const {data:p,error}=await client.from('user_profiles').select('role,display_name,active,employee_id').eq('id',session.user.id).maybeSingle();
+      if(error || !p || p.active===false){ await client.auth.signOut(); localStorage.removeItem('romano_role'); localStorage.removeItem('romano_user'); localStorage.removeItem('romano_auth_user_id'); localStorage.removeItem('romano_display_name'); location.replace('acesso-funcionario.html'); return; }
+      const nextRole=p.role||'FUNCIONÁRIO';
+      const nextUser=session.user.email||'';
+      const changed=localStorage.getItem('romano_role')!==nextRole || localStorage.getItem('romano_user')!==nextUser || localStorage.getItem('romano_auth_user_id')!==session.user.id;
+      localStorage.setItem('romano_role',nextRole);
+      localStorage.setItem('romano_user',nextUser);
+      localStorage.setItem('romano_auth_user_id',session.user.id);
+      localStorage.setItem('romano_display_name',p.display_name||session.user.email||'');
+      if(changed){ location.reload(); return; }
+      document.documentElement.classList.remove('romano-auth-checking');
+    }catch(e){
+      console.error('ROMANO auth sync',e);
+      document.documentElement.classList.remove('romano-auth-checking');
+    }
+  }
+  window.romanoSupabase=client;
+  window.romanoAuthSync=sync;
+  window.addEventListener('DOMContentLoaded',sync,{once:true});
+  window.logout=async function(){
+    try{ if(client) await client.auth.signOut(); }catch(e){}
+    localStorage.removeItem('romano_role');
+    localStorage.removeItem('romano_user');
+    localStorage.removeItem('romano_auth_user_id');
+    localStorage.removeItem('romano_display_name');
+    location.replace('acesso-funcionario.html');
+  };
+  window.setTestRole=function(r){
+    if(window.role!=='ADMIN' && r!=='ADMIN') return;
+    localStorage.setItem('romano_role',r);
+    if(r!=='ADMIN') localStorage.removeItem('romano_user');
+    location.reload();
+  };
+})();
+</script>
+
+</body></html>`);w.document.close()}
 function openMovementModal(){openModal('Nova movimentação financeira',`<div class="formgrid"><div class="field"><label>Data</label><input id="mDate" type="date" value="2026-08-28"></div><div class="field"><label>Tipo</label><select id="mType"><option>Receita</option><option>Despesa</option></select></div><div class="field"><label>Descrição</label><input id="mDesc"></div><div class="field"><label>Valor</label><input id="mValue" type="number" step="0.01"></div></div><div class="actions"><button class="btn" onclick="closeModal()">CANCELAR</button><button class="btn gold" onclick="saveMovement()">GUARDAR</button></div>`)}
 function saveMovement(){let v=Number(document.getElementById('mValue').value||0);if(!v)return toast('Informe o valor.');if(document.getElementById('mType').value==='Despesa')v=-v;db.movements.push({date:document.getElementById('mDate').value,desc:document.getElementById('mDesc').value||'Movimentação',type:v>=0?'Receita':'Despesa',value:v,status:'Pago'});save();closeModal();renderFinance();toast('Movimentação guardada.')}
 function printService(id){
@@ -885,7 +1056,64 @@ function printService(id){
   const rentals=(s.rentalItems||[]).map(x=>`${esc(x.name)} — ${money(x.price)}`).join('<br>')||'Nenhum';
   const m=s.maintenance||{type:'',hours:0,total:0};
   const w=window.open('','_blank');
-  w.document.write(`<html><head><title>Serviço ${id}</title><style>body{font-family:Arial;padding:30px;color:#211d18}h1{color:#8f641d}.box{border:1px solid #ccc;padding:12px;margin:10px 0;border-radius:8px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px}</style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Serviço ${id}</h2><div class="box"><b>Cliente:</b> ${esc(s.client)}<br><b>Endereço:</b> ${esc(s.address)}<br><b>Tipologia:</b> ${esc(s.typology||'—')}<br><b>Lavandería:</b> ${s.laundry?'SIM':'NÃO'}<br><b>Início:</b> ${esc(s.startedAt||'—')}<br><b>Término:</b> ${esc(s.finishedAt||'—')}<br><b>Responsável:</b> ${esc(s.responsible||'—')}</div><div class="box"><b>Aluguel de roupa</b><br>${rentals}<br><br><b>Total aluguel:</b> ${money(s.rentalTotal||0)}</div><div class="box"><b>Mantenimiento</b><br>${m.hours?`${esc(m.type)} — ${m.hours} hora(s) — ${money(m.total)} (IVA incluído)`:'Nenhuma manutenção'}</div><div class="box"><table><tr><th>Valor sem IVA</th><th>IVA</th><th>Valor total</th></tr><tr><td>${money(s.netFinal??s.net)}</td><td>${money(s.vatFinal??(s.net==null?null:s.net*IVA))}</td><td><b>${money(s.totalFinal??calcTotal(s.net))}</b></td></tr></table></div><h3>Ocorrências</h3>${(s.incidents||[]).map(i=>`<div class="box"><b>${esc(i.text)}</b><br>${i.urgent?'URGENTE<br>':''}${esc(i.by)} · ${esc(i.at)}</div>`).join('')||'Nenhuma'}<script>window.print()<\/script></body></html>`);
+  w.document.write(`<html><head><title>Serviço ${id}</title><style>body{font-family:Arial;padding:30px;color:#211d18}h1{color:#8f641d}.box{border:1px solid #ccc;padding:12px;margin:10px 0;border-radius:8px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px}</style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Serviço ${id}</h2><div class="box"><b>Cliente:</b> ${esc(s.client)}<br><b>Endereço:</b> ${esc(s.address)}<br><b>Tipologia:</b> ${esc(s.typology||'—')}<br><b>Lavandería:</b> ${s.laundry?'SIM':'NÃO'}<br><b>Início:</b> ${esc(s.startedAt||'—')}<br><b>Término:</b> ${esc(s.finishedAt||'—')}<br><b>Responsável:</b> ${esc(s.responsible||'—')}</div><div class="box"><b>Aluguel de roupa</b><br>${rentals}<br><br><b>Total aluguel:</b> ${money(s.rentalTotal||0)}</div><div class="box"><b>Mantenimiento</b><br>${m.hours?`${esc(m.type)} — ${m.hours} hora(s) — ${money(m.total)} (IVA incluído)`:'Nenhuma manutenção'}</div><div class="box"><table><tr><th>Valor sem IVA</th><th>IVA</th><th>Valor total</th></tr><tr><td>${money(s.netFinal??s.net)}</td><td>${money(s.vatFinal??(s.net==null?null:s.net*IVA))}</td><td><b>${money(s.totalFinal??calcTotal(s.net))}</b></td></tr></table></div><h3>Ocorrências</h3>${(s.incidents||[]).map(i=>`<div class="box"><b>${esc(i.text)}</b><br>${i.urgent?'URGENTE<br>':''}${esc(i.by)} · ${esc(i.at)}</div>`).join('')||'Nenhuma'}<script>window.print()<\/script><!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->
+<style id="romano-auth-guard-style">html.romano-auth-checking body{visibility:hidden!important}</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  const SUPABASE_URL='https://dhzptogrzuqreflcnsnb.supabase.co';
+  const SUPABASE_KEY='sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN';
+  const client=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
+  document.documentElement.classList.add('romano-auth-checking');
+  async function sync(){
+    try{
+      if(!client){ location.replace('acesso-funcionario.html'); return; }
+      const {data:{session}}=await client.auth.getSession();
+      if(!session){
+        localStorage.removeItem('romano_role');
+        localStorage.removeItem('romano_user');
+        localStorage.removeItem('romano_auth_user_id');
+        localStorage.removeItem('romano_display_name');
+        location.replace('acesso-funcionario.html');
+        return;
+      }
+      const {data:p,error}=await client.from('user_profiles').select('role,display_name,active,employee_id').eq('id',session.user.id).maybeSingle();
+      if(error || !p || p.active===false){ await client.auth.signOut(); localStorage.removeItem('romano_role'); localStorage.removeItem('romano_user'); localStorage.removeItem('romano_auth_user_id'); localStorage.removeItem('romano_display_name'); location.replace('acesso-funcionario.html'); return; }
+      const nextRole=p.role||'FUNCIONÁRIO';
+      const nextUser=session.user.email||'';
+      const changed=localStorage.getItem('romano_role')!==nextRole || localStorage.getItem('romano_user')!==nextUser || localStorage.getItem('romano_auth_user_id')!==session.user.id;
+      localStorage.setItem('romano_role',nextRole);
+      localStorage.setItem('romano_user',nextUser);
+      localStorage.setItem('romano_auth_user_id',session.user.id);
+      localStorage.setItem('romano_display_name',p.display_name||session.user.email||'');
+      if(changed){ location.reload(); return; }
+      document.documentElement.classList.remove('romano-auth-checking');
+    }catch(e){
+      console.error('ROMANO auth sync',e);
+      document.documentElement.classList.remove('romano-auth-checking');
+    }
+  }
+  window.romanoSupabase=client;
+  window.romanoAuthSync=sync;
+  window.addEventListener('DOMContentLoaded',sync,{once:true});
+  window.logout=async function(){
+    try{ if(client) await client.auth.signOut(); }catch(e){}
+    localStorage.removeItem('romano_role');
+    localStorage.removeItem('romano_user');
+    localStorage.removeItem('romano_auth_user_id');
+    localStorage.removeItem('romano_display_name');
+    location.replace('acesso-funcionario.html');
+  };
+  window.setTestRole=function(r){
+    if(window.role!=='ADMIN' && r!=='ADMIN') return;
+    localStorage.setItem('romano_role',r);
+    if(r!=='ADMIN') localStorage.removeItem('romano_user');
+    location.reload();
+  };
+})();
+</script>
+
+</body></html>`);
   w.document.close();
 }
 function logout(){localStorage.removeItem('romano_role');location.reload()}function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open')}
@@ -900,4 +1128,61 @@ if(role==='FUNCIONÁRIO'||role==='CLIENTE'){
 }}
 init();
 </script>
+<!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->
+<style id="romano-auth-guard-style">html.romano-auth-checking body{visibility:hidden!important}</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  const SUPABASE_URL='https://dhzptogrzuqreflcnsnb.supabase.co';
+  const SUPABASE_KEY='sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN';
+  const client=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
+  document.documentElement.classList.add('romano-auth-checking');
+  async function sync(){
+    try{
+      if(!client){ location.replace('acesso-funcionario.html'); return; }
+      const {data:{session}}=await client.auth.getSession();
+      if(!session){
+        localStorage.removeItem('romano_role');
+        localStorage.removeItem('romano_user');
+        localStorage.removeItem('romano_auth_user_id');
+        localStorage.removeItem('romano_display_name');
+        location.replace('acesso-funcionario.html');
+        return;
+      }
+      const {data:p,error}=await client.from('user_profiles').select('role,display_name,active,employee_id').eq('id',session.user.id).maybeSingle();
+      if(error || !p || p.active===false){ await client.auth.signOut(); localStorage.removeItem('romano_role'); localStorage.removeItem('romano_user'); localStorage.removeItem('romano_auth_user_id'); localStorage.removeItem('romano_display_name'); location.replace('acesso-funcionario.html'); return; }
+      const nextRole=p.role||'FUNCIONÁRIO';
+      const nextUser=session.user.email||'';
+      const changed=localStorage.getItem('romano_role')!==nextRole || localStorage.getItem('romano_user')!==nextUser || localStorage.getItem('romano_auth_user_id')!==session.user.id;
+      localStorage.setItem('romano_role',nextRole);
+      localStorage.setItem('romano_user',nextUser);
+      localStorage.setItem('romano_auth_user_id',session.user.id);
+      localStorage.setItem('romano_display_name',p.display_name||session.user.email||'');
+      if(changed){ location.reload(); return; }
+      document.documentElement.classList.remove('romano-auth-checking');
+    }catch(e){
+      console.error('ROMANO auth sync',e);
+      document.documentElement.classList.remove('romano-auth-checking');
+    }
+  }
+  window.romanoSupabase=client;
+  window.romanoAuthSync=sync;
+  window.addEventListener('DOMContentLoaded',sync,{once:true});
+  window.logout=async function(){
+    try{ if(client) await client.auth.signOut(); }catch(e){}
+    localStorage.removeItem('romano_role');
+    localStorage.removeItem('romano_user');
+    localStorage.removeItem('romano_auth_user_id');
+    localStorage.removeItem('romano_display_name');
+    location.replace('acesso-funcionario.html');
+  };
+  window.setTestRole=function(r){
+    if(window.role!=='ADMIN' && r!=='ADMIN') return;
+    localStorage.setItem('romano_role',r);
+    if(r!=='ADMIN') localStorage.removeItem('romano_user');
+    location.reload();
+  };
+})();
+</script>
+
 </body></html>
