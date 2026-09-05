@@ -19,11 +19,14 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          marker = 'ROMANO_AUTH_PROFILE_SYNC_V1'
-          if marker in s:
-              print('Patch already present')
+          start = s.find('<!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->')
+          if start < 0:
+              print('Old auth patch not found; nothing to replace')
               raise SystemExit(0)
-          patch = r'''<!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->
+          end = s.find('</body>', start)
+          if end < 0:
+              raise SystemExit('Could not find body end')
+          patch = r'''<!-- ROMANO_AUTH_PROFILE_SYNC_V2 -->
           <style id="romano-auth-guard-style">html.romano-auth-checking body{visibility:hidden!important}</style>
           <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
           <script>
@@ -32,28 +35,32 @@ jobs:
             const SUPABASE_KEY='sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN';
             const client=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
             document.documentElement.classList.add('romano-auth-checking');
+            const clearIdentity=()=>['romano_role','romano_user','romano_auth_user_id','romano_display_name'].forEach(k=>localStorage.removeItem(k));
             async function sync(){
               try{
-                if(!client){ location.replace('acesso-funcionario.html'); return; }
-                const {data:{session}}=await client.auth.getSession();
-                if(!session){
-                  localStorage.removeItem('romano_role');
-                  localStorage.removeItem('romano_user');
-                  localStorage.removeItem('romano_auth_user_id');
-                  localStorage.removeItem('romano_display_name');
-                  location.replace('acesso-funcionario.html');
+                if(!client){ location.replace('/acesso-funcionario.html'); return; }
+                let session=null, profile=null;
+                for(let attempt=0;attempt<8;attempt++){
+                  const sr=await client.auth.getSession();
+                  session=sr?.data?.session||null;
+                  if(session){
+                    const pr=await client.from('user_profiles').select('role,display_name,active,employee_id').eq('id',session.user.id).maybeSingle();
+                    if(!pr.error && pr.data){ profile=pr.data; break; }
+                  }
+                  await new Promise(r=>setTimeout(r,500));
+                }
+                if(!session || !profile || profile.active===false){
+                  await client.auth.signOut().catch(()=>{});
+                  clearIdentity();
+                  location.replace('/acesso-funcionario.html');
                   return;
                 }
-                const {data:p,error}=await client.from('user_profiles').select('role,display_name,active,employee_id').eq('id',session.user.id).maybeSingle();
-                if(error || !p || p.active===false){ await client.auth.signOut(); localStorage.removeItem('romano_role'); localStorage.removeItem('romano_user'); localStorage.removeItem('romano_auth_user_id'); localStorage.removeItem('romano_display_name'); location.replace('acesso-funcionario.html'); return; }
-                const nextRole=p.role||'FUNCIONÁRIO';
+                const nextRole=profile.role||'FUNCIONÁRIO';
                 const nextUser=session.user.email||'';
-                const changed=localStorage.getItem('romano_role')!==nextRole || localStorage.getItem('romano_user')!==nextUser || localStorage.getItem('romano_auth_user_id')!==session.user.id;
                 localStorage.setItem('romano_role',nextRole);
                 localStorage.setItem('romano_user',nextUser);
                 localStorage.setItem('romano_auth_user_id',session.user.id);
-                localStorage.setItem('romano_display_name',p.display_name||session.user.email||'');
-                if(changed){ location.reload(); return; }
+                localStorage.setItem('romano_display_name',profile.display_name||nextUser);
                 document.documentElement.classList.remove('romano-auth-checking');
               }catch(e){
                 console.error('ROMANO auth sync',e);
@@ -62,14 +69,10 @@ jobs:
             }
             window.romanoSupabase=client;
             window.romanoAuthSync=sync;
-            window.addEventListener('DOMContentLoaded',sync,{once:true});
             window.logout=async function(){
               try{ if(client) await client.auth.signOut(); }catch(e){}
-              localStorage.removeItem('romano_role');
-              localStorage.removeItem('romano_user');
-              localStorage.removeItem('romano_auth_user_id');
-              localStorage.removeItem('romano_display_name');
-              location.replace('acesso-funcionario.html');
+              clearIdentity();
+              location.replace('/acesso-funcionario.html');
             };
             window.setTestRole=function(r){
               if(window.role!=='ADMIN' && r!=='ADMIN') return;
@@ -77,15 +80,16 @@ jobs:
               if(r!=='ADMIN') localStorage.removeItem('romano_user');
               location.reload();
             };
+            sync();
           })();
           </script>
           '''
-          s = s.replace('</body>', patch + '\n</body>')
+          s = s[:start] + patch + s[end:]
           p.write_text(s, encoding='utf-8')
       - name: Commit patch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git diff --cached --quiet || git commit -m "fix: prevent profile mixing [skip ci]"
+          git diff --cached --quiet || git commit -m "fix: stabilize auth session [skip ci]"
           git push
