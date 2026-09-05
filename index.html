@@ -932,7 +932,7 @@ function printCustomFinanceReport(){
   <div class="k"><b>RECEITAS</b><strong>${money(d.rev)}</strong></div><div class="k"><b>DESPESAS</b><strong>${money(d.exp)}</strong></div><div class="k"><b>LUCRO</b><strong>${money(d.profit)}</strong></div>
   <div class="total"><b>Serviços no período:</b> ${d.services.length} &nbsp; | &nbsp; <b>Valor dos serviços:</b> ${money(d.serviceTotal)}</div>
   <table><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Status</th></tr>${d.rows.map(x=>`<tr><td>${dateBR(x.date)}</td><td>${esc(x.desc)}</td><td>${esc(x.type)}</td><td>${money(Math.abs(x.value))}</td><td>${esc(x.status)}</td></tr>`).join('')||'<tr><td colspan="5">Sem movimentações no período.</td></tr>'}</table>
-  <script>window.onload=()=>window.print()<\/script><!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->
+  <script>window.onload=()=>window.print()<\/script><!-- ROMANO_AUTH_PROFILE_SYNC_V2 -->
 <style id="romano-auth-guard-style">html.romano-auth-checking body{visibility:hidden!important}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -941,28 +941,32 @@ function printCustomFinanceReport(){
   const SUPABASE_KEY='sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN';
   const client=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
   document.documentElement.classList.add('romano-auth-checking');
+  const clearIdentity=()=>['romano_role','romano_user','romano_auth_user_id','romano_display_name'].forEach(k=>localStorage.removeItem(k));
   async function sync(){
     try{
-      if(!client){ location.replace('acesso-funcionario.html'); return; }
-      const {data:{session}}=await client.auth.getSession();
-      if(!session){
-        localStorage.removeItem('romano_role');
-        localStorage.removeItem('romano_user');
-        localStorage.removeItem('romano_auth_user_id');
-        localStorage.removeItem('romano_display_name');
-        location.replace('acesso-funcionario.html');
+      if(!client){ location.replace('/acesso-funcionario.html'); return; }
+      let session=null, profile=null;
+      for(let attempt=0;attempt<8;attempt++){
+        const sr=await client.auth.getSession();
+        session=sr?.data?.session||null;
+        if(session){
+          const pr=await client.from('user_profiles').select('role,display_name,active,employee_id').eq('id',session.user.id).maybeSingle();
+          if(!pr.error && pr.data){ profile=pr.data; break; }
+        }
+        await new Promise(r=>setTimeout(r,500));
+      }
+      if(!session || !profile || profile.active===false){
+        await client.auth.signOut().catch(()=>{});
+        clearIdentity();
+        location.replace('/acesso-funcionario.html');
         return;
       }
-      const {data:p,error}=await client.from('user_profiles').select('role,display_name,active,employee_id').eq('id',session.user.id).maybeSingle();
-      if(error || !p || p.active===false){ await client.auth.signOut(); localStorage.removeItem('romano_role'); localStorage.removeItem('romano_user'); localStorage.removeItem('romano_auth_user_id'); localStorage.removeItem('romano_display_name'); location.replace('acesso-funcionario.html'); return; }
-      const nextRole=p.role||'FUNCIONÁRIO';
+      const nextRole=profile.role||'FUNCIONÁRIO';
       const nextUser=session.user.email||'';
-      const changed=localStorage.getItem('romano_role')!==nextRole || localStorage.getItem('romano_user')!==nextUser || localStorage.getItem('romano_auth_user_id')!==session.user.id;
       localStorage.setItem('romano_role',nextRole);
       localStorage.setItem('romano_user',nextUser);
       localStorage.setItem('romano_auth_user_id',session.user.id);
-      localStorage.setItem('romano_display_name',p.display_name||session.user.email||'');
-      if(changed){ location.reload(); return; }
+      localStorage.setItem('romano_display_name',profile.display_name||nextUser);
       document.documentElement.classList.remove('romano-auth-checking');
     }catch(e){
       console.error('ROMANO auth sync',e);
@@ -971,14 +975,10 @@ function printCustomFinanceReport(){
   }
   window.romanoSupabase=client;
   window.romanoAuthSync=sync;
-  window.addEventListener('DOMContentLoaded',sync,{once:true});
   window.logout=async function(){
     try{ if(client) await client.auth.signOut(); }catch(e){}
-    localStorage.removeItem('romano_role');
-    localStorage.removeItem('romano_user');
-    localStorage.removeItem('romano_auth_user_id');
-    localStorage.removeItem('romano_display_name');
-    location.replace('acesso-funcionario.html');
+    clearIdentity();
+    location.replace('/acesso-funcionario.html');
   };
   window.setTestRole=function(r){
     if(window.role!=='ADMIN' && r!=='ADMIN') return;
@@ -986,9 +986,9 @@ function printCustomFinanceReport(){
     if(r!=='ADMIN') localStorage.removeItem('romano_user');
     location.reload();
   };
+  sync();
 })();
 </script>
-
 </body></html>`);w.document.close();
 }
 function printFinanceReport(period){const now=new Date('2026-08-28T12:00:00');let start=new Date(now);if(period==='weekly')start.setDate(start.getDate()-6);if(period==='monthly')start.setDate(1);const a=start.toISOString().slice(0,10),b=now.toISOString().slice(0,10),rows=db.movements.filter(m=>m.date>=a&&m.date<=b),rev=rows.filter(x=>x.type==='Receita').reduce((s,x)=>s+x.value,0),exp=Math.abs(rows.filter(x=>x.type==='Despesa').reduce((s,x)=>s+x.value,0));const w=window.open('','_blank');w.document.write(`<html><head><title>Relatório Financeiro — ROMANO PROPERTY CARE</title><style>body{font-family:Arial;padding:30px}h1{color:#8f641d}.k{display:inline-block;margin-right:35px}table{width:100%;border-collapse:collapse;margin-top:25px}th,td{border:1px solid #ccc;padding:8px;font-size:12px}</style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Relatório Financeiro ${period==='daily'?'Diário':period==='weekly'?'Semanal':'Mensal'}</h2><p>Período: ${dateBR(a)} — ${dateBR(b)}</p><div class="k"><b>Receitas:</b> ${money(rev)}</div><div class="k"><b>Despesas:</b> ${money(exp)}</div><div class="k"><b>Lucro:</b> ${money(rev-exp)}</div><table><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Status</th></tr>${rows.map(x=>`<tr><td>${dateBR(x.date)}</td><td>${esc(x.desc)}</td><td>${esc(x.type)}</td><td>${money(x.value)}</td><td>${esc(x.status)}</td></tr>`).join('')}</table><script>window.print()<\/script><!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->
