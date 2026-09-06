@@ -810,7 +810,7 @@ function openUrgentModal(){const list=db.urgencies.slice().reverse();openModal('
 function markUrgency(id){const u=db.urgencies.find(x=>x.id===id);if(u)u.seen=true;save();closeModal();renderDashboard();toast('Chamado marcado como visto.')}
 function showUrgencies(){openUrgentModal()}
 function ringUrgent(){document.getElementById('urgentBtn').classList.add('pulse');try{const ctx=new (window.AudioContext||window.webkitAudioContext)();let o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=880;g.gain.value=.12;o.connect(g);g.connect(ctx.destination);o.start();setTimeout(()=>{o.frequency.value=660},180);setTimeout(()=>{o.stop();ctx.close()},420)}catch(e){}setTimeout(()=>document.getElementById('urgentBtn').classList.remove('pulse'),5000)}
-function printIncidents(){let rows=[];db.services.forEach(s=>(s.incidents||[]).forEach(i=>rows.push([dateBR(s.date),s.id,s.client,s.address,i.text,i.urgent?'URGENTE':'Normal',i.at,i.by])));const w=window.open('','_blank');w.document.write(`<html><head><title>Incidências — ROMANO PROPERTY CARE</title><style>body{font-family:Arial;padding:30px}h1{color:#8f641d}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px;font-size:12px;text-align:left}</style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Relatório de Incidências</h2><table><tr><th>Data</th><th>Serviço</th><th>Cliente</th><th>Endereço</th><th>Ocorrência</th><th>Prioridade</th><th>Hora</th><th>Responsável</th></tr>${rows.map(r=>'<tr>'+r.map(x=>`<td>${esc(x)}</td>`).join('')+'</tr>').join('')}</table><script>window.print()<\/script><!-- ROMANO_AUTH_PROFILE_SYNC_V2 -->
+function printIncidents(){let rows=[];db.services.forEach(s=>(s.incidents||[]).forEach(i=>rows.push([dateBR(s.date),s.id,s.client,s.address,i.text,i.urgent?'URGENTE':'Normal',i.at,i.by])));const w=window.open('','_blank');w.document.write(`<html><head><title>Incidências — ROMANO PROPERTY CARE</title><style>body{font-family:Arial;padding:30px}h1{color:#8f641d}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px;font-size:12px;text-align:left}</style></head><body><h1>ROMANO PROPERTY CARE</h1><h2>Relatório de Incidências</h2><table><tr><th>Data</th><th>Serviço</th><th>Cliente</th><th>Endereço</th><th>Ocorrência</th><th>Prioridade</th><th>Hora</th><th>Responsável</th></tr>${rows.map(r=>'<tr>'+r.map(x=>`<td>${esc(x)}</td>`).join('')+'</tr>').join('')}</table><script>window.print()<\/script><!-- ROMANO_AUTH_PROFILE_SYNC_V3 -->
 <style id="romano-auth-guard-style">html.romano-auth-checking body{visibility:hidden!important}</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -824,7 +824,7 @@ function printIncidents(){let rows=[];db.services.forEach(s=>(s.incidents||[]).f
     try{
       if(!client){ location.replace('/acesso-funcionario.html'); return; }
       let session=null, profile=null;
-      for(let attempt=0;attempt<8;attempt++){
+      for(let attempt=0;attempt<10;attempt++){
         const sr=await client.auth.getSession();
         session=sr?.data?.session||null;
         if(session){
@@ -833,18 +833,20 @@ function printIncidents(){let rows=[];db.services.forEach(s=>(s.incidents||[]).f
         }
         await new Promise(r=>setTimeout(r,500));
       }
-      if(!session || !profile || profile.active===false){
+      if(profile && profile.active===false){
         await client.auth.signOut().catch(()=>{});
         clearIdentity();
         location.replace('/acesso-funcionario.html');
         return;
       }
-      const nextRole=profile.role||'FUNCIONÁRIO';
-      const nextUser=session.user.email||'';
-      localStorage.setItem('romano_role',nextRole);
-      localStorage.setItem('romano_user',nextUser);
-      localStorage.setItem('romano_auth_user_id',session.user.id);
-      localStorage.setItem('romano_display_name',profile.display_name||nextUser);
+      if(session && profile){
+        const nextRole=profile.role||'FUNCIONÁRIO';
+        const nextUser=session.user.email||'';
+        localStorage.setItem('romano_role',nextRole);
+        localStorage.setItem('romano_user',nextUser);
+        localStorage.setItem('romano_auth_user_id',session.user.id);
+        localStorage.setItem('romano_display_name',profile.display_name||nextUser);
+      }
       document.documentElement.classList.remove('romano-auth-checking');
     }catch(e){
       console.error('ROMANO auth sync',e);
