@@ -19,14 +19,14 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          start = s.find('<!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->')
+          start = s.find('<!-- ROMANO_AUTH_PROFILE_SYNC_V2 -->')
           if start < 0:
-              print('Old auth patch not found; nothing to replace')
+              print('Auth patch not found; nothing to replace')
               raise SystemExit(0)
           end = s.find('</body>', start)
           if end < 0:
               raise SystemExit('Could not find body end')
-          patch = r'''<!-- ROMANO_AUTH_PROFILE_SYNC_V2 -->
+          patch = r'''<!-- ROMANO_AUTH_PROFILE_SYNC_V3 -->
           <style id="romano-auth-guard-style">html.romano-auth-checking body{visibility:hidden!important}</style>
           <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
           <script>
@@ -40,7 +40,7 @@ jobs:
               try{
                 if(!client){ location.replace('/acesso-funcionario.html'); return; }
                 let session=null, profile=null;
-                for(let attempt=0;attempt<8;attempt++){
+                for(let attempt=0;attempt<10;attempt++){
                   const sr=await client.auth.getSession();
                   session=sr?.data?.session||null;
                   if(session){
@@ -49,18 +49,20 @@ jobs:
                   }
                   await new Promise(r=>setTimeout(r,500));
                 }
-                if(!session || !profile || profile.active===false){
+                if(profile && profile.active===false){
                   await client.auth.signOut().catch(()=>{});
                   clearIdentity();
                   location.replace('/acesso-funcionario.html');
                   return;
                 }
-                const nextRole=profile.role||'FUNCIONÁRIO';
-                const nextUser=session.user.email||'';
-                localStorage.setItem('romano_role',nextRole);
-                localStorage.setItem('romano_user',nextUser);
-                localStorage.setItem('romano_auth_user_id',session.user.id);
-                localStorage.setItem('romano_display_name',profile.display_name||nextUser);
+                if(session && profile){
+                  const nextRole=profile.role||'FUNCIONÁRIO';
+                  const nextUser=session.user.email||'';
+                  localStorage.setItem('romano_role',nextRole);
+                  localStorage.setItem('romano_user',nextUser);
+                  localStorage.setItem('romano_auth_user_id',session.user.id);
+                  localStorage.setItem('romano_display_name',profile.display_name||nextUser);
+                }
                 document.documentElement.classList.remove('romano-auth-checking');
               }catch(e){
                 console.error('ROMANO auth sync',e);
@@ -91,6 +93,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git diff --cached --quiet || git commit -m "fix: stabilize auth session [skip ci]"
+          git diff --cached --quiet || git commit -m "fix: auth redirect loop [skip ci]"
           git push
-# session-fix-trigger
+# auth-loop-fix
