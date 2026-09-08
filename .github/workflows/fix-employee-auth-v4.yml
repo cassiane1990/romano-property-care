@@ -1,0 +1,47 @@
+name: Remove employee auth redirect guard
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove V3 auth guard only from employee page
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index-funcionario.html')
+          s=p.read_text(encoding='utf-8')
+          marker='<!-- ROMANO_AUTH_PROFILE_SYNC_V3 -->'
+          i=s.rfind(marker)
+          if i < 0:
+              raise SystemExit('V3 guard not found')
+          j=s.find('</script>', i)
+          if j < 0:
+              raise SystemExit('guard closing script not found')
+          j += len('</script>')
+          s=s[:i]+s[j:]
+          p.write_text(s,encoding='utf-8')
+          print('employee guard removed')
+          PY
+      - name: Verify employee page has no auth guard
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('index-funcionario.html').read_text(encoding='utf-8')
+          for x in ['ROMANO_AUTH_PROFILE_SYNC_V3','romano-auth-guard-style','romano-auth-checking']:
+              print(x, s.count(x))
+          if 'ROMANO_AUTH_PROFILE_SYNC_V3' in s or 'romano-auth-guard-style' in s:
+              raise SystemExit('auth guard still present')
+          PY
+      - name: Commit and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/fix-employee-auth-v4.yml
+          git add index-funcionario.html .github/workflows/fix-employee-auth-v4.yml
+          git commit -m "fix: remove employee auth redirect guard"
+          git push origin HEAD:main
