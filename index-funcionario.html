@@ -1,24 +1,22 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ROMANO PROPERTY CARE — Funcionário</title></head><body><div id="loading">Carregando área do funcionário…</div><script>
 (async()=>{try{
-/* Este arquivo é exclusivamente a entrada do funcionário. O perfil vem do Supabase/login e não pode cair no ADMIN por padrão. */
 localStorage.setItem('romano_role','FUNCIONÁRIO');
 const r=await fetch('/index.html?employee-source='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('load');
 let h=await r.text();
 const doc=new DOMParser().parseFromString(h,'text/html');
-/* Remove somente os guards de autenticação herdados do painel administrativo. */
 for(const sc of [...doc.querySelectorAll('script')]){
  const t=sc.textContent||'';
  if(t.includes('romano-auth-checking')||t.includes('ROMANO_AUTH_PROFILE_SYNC_')||t.includes("location.replace('acesso-funcionario.html')")||t.includes('location.replace(\"acesso-funcionario.html\")')||t.includes("location.replace('/acesso-funcionario.html')")||t.includes('location.replace(\"/acesso-funcionario.html\")')) sc.remove();
 }
-/* Impede que o valor padrão ADMIN do painel seja usado nesta entrada. */
 for(const sc of [...doc.querySelectorAll('script')]){
  let t=sc.textContent||'';
- if(t.includes("let role=localStorage.getItem('romano_role')||'ADMIN'")){
-   t=t.replace("let role=localStorage.getItem('romano_role')||'ADMIN'","let role='FUNCIONÁRIO'");
-   sc.textContent=t;
- }
+ if(t.includes("let role=localStorage.getItem('romano_role')||'ADMIN'")) t=t.replace("let role=localStorage.getItem('romano_role')||'ADMIN'","let role='FUNCIONÁRIO'");
+ sc.textContent=t;
 }
-/* Mantém a identificação do funcionário antes da execução dos scripts do painel. */
+for(const el of doc.querySelectorAll('#userName')) el.textContent=localStorage.getItem('romano_display_name')||'Funcionário';
+for(const el of doc.querySelectorAll('#userEmail')) el.textContent=localStorage.getItem('romano_user')||'';
+for(const el of doc.querySelectorAll('#roleBadge')) el.textContent='FUNCIONÁRIO';
+for(const el of doc.querySelectorAll('.user[onclick]')) el.removeAttribute('onclick');
 const guard=doc.createElement('script');
 guard.textContent="localStorage.setItem('romano_role','FUNCIONÁRIO');";
 doc.head.insertBefore(guard,doc.head.firstChild);
