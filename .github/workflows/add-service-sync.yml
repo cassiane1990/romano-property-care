@@ -1,0 +1,29 @@
+name: add-service-sync
+on:
+  push:
+    paths:
+      - 'service-sync.js'
+      - '.github/workflows/add-service-sync.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Include service sync
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for name in ['index.html','index-funcionario.html']:
+              p=Path(name); s=p.read_text()
+              if '/service-sync.js' not in s:
+                  pos=s.rfind('</body></html>')
+                  s=s[:pos]+'<script src="/service-sync.js"></script>\n'+s[pos:]
+                  p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html index-funcionario.html
+          git commit -m 'fix: enable shared service sync' || true
+          git push
