@@ -1,0 +1,45 @@
+name: Diagnose employee login loop
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'index-funcionario.html'
+      - 'acesso-funcionario.html'
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect auth and redirects
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          for name in ['index-funcionario.html','acesso-funcionario.html','index.html','vercel.json']:
+              p=Path(name)
+              print(f'===== {name} =====')
+              if not p.exists():
+                  print('MISSING')
+                  continue
+              s=p.read_text(errors='replace')
+              print('bytes=',len(s))
+              patterns=[
+                r'ROMANO_AUTH_PROFILE_SYNC_V1', r'location\\.(?:replace|href|assign)',
+                r'window\\.location\\.(?:replace|href|assign)', r'acesso-funcionario\\.html',
+                r'index-funcionario\\.html', r'auth\\.getSession', r'auth\\.signOut',
+                r'localStorage\\.(?:getItem|setItem|removeItem)\\([\\\'\"]romano_',
+                r'const role\\s*=', r'let role\\s*=', r'var role\\s*='
+              ]
+              for pat in patterns:
+                  ms=list(re.finditer(pat,s,re.I))
+                  print(pat, 'COUNT', len(ms))
+                  for m in ms[:20]:
+                      a=max(0,m.start()-220); b=min(len(s),m.end()+320)
+                      print('---',repr(s[a:b]))
+          PY
+      - name: Save diagnostic
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add -A
+          git status --short
