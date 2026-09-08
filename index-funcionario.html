@@ -400,6 +400,7 @@ function printService(id){
 </body></html>`);
   w.document.close();
 }
+let role=localStorage.getItem('romano_role')||'FUNCIONÁRIO';
 function logout(){localStorage.removeItem('romano_role');location.reload()}function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open')}
 function init(){db.editablePrices=db.editablePrices||{...defaultEditablePrices};save();setupNav();renderPricing();renderDashboard();renderServices();renderAgenda();renderClosing();renderPending();renderClients();renderFinance();renderEmployees();document.getElementById('roleBadge').textContent=role;document.getElementById('userName').textContent=role==='ADMIN'?'Administrador':role==='FUNCIONÁRIO'?'Funcionário':'Cliente';document.querySelectorAll('.adminOnly').forEach(x=>{if(role!=='ADMIN')x.style.display='none'});
 document.querySelectorAll('.clientOnly').forEach(x=>{x.style.display=role==='CLIENTE'?'inline-flex':'none'});if(role!=='ADMIN'){document.querySelectorAll('[data-page="clients"],[data-page="finance"],[data-page="employees"],[data-page="settings"]').forEach(x=>x.style.display='none');showPage('services')}if(db.urgencies.some(u=>!u.seen))document.getElementById('urgentBtn').classList.add('pulse');
