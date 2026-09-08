@@ -1,4 +1,4 @@
-name: Remove remaining employee auth guards
+name: Remove employee auth guard styles
 on:
   push:
     branches: [main]
@@ -9,32 +9,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Remove all employee auth guard scripts
+      - name: Remove remaining guard styles from employee page
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
           p=Path('index-funcionario.html')
           s=p.read_text(encoding='utf-8')
-          pattern=r'<script>\s*\(function\(\)\{\s*const SUPABASE_URL=.*?</script>'
-          matches=re.findall(pattern,s,flags=re.S)
-          print('guard_scripts=',len(matches))
-          if not matches:
-              raise SystemExit('No remaining employee auth scripts found')
-          s2=re.sub(pattern,'',s,flags=re.S)
-          s2=s2.replace('<!-- ROMANO_AUTH_PROFILE_SYNC_V3 -->','')
-          p.write_text(s2,encoding='utf-8')
-          print('remaining_getSession=',s2.count('client.auth.getSession'))
-          print('remaining_guard_style=',s2.count('romano-auth-guard-style'))
+          pattern=r'<style id="romano-auth-guard-style">.*?</style>'
+          n=len(re.findall(pattern,s,flags=re.S))
+          print('guard_styles=',n)
+          if not n: raise SystemExit('No guard styles found')
+          s=re.sub(pattern,'',s,flags=re.S)
+          s=s.replace('romano-auth-checking','')
+          p.write_text(s,encoding='utf-8')
           PY
-      - name: Verify employee page has no auth guard
+      - name: Verify employee page is clean
         run: |
           python3 - <<'PY'
           from pathlib import Path
           s=Path('index-funcionario.html').read_text(encoding='utf-8')
-          checks=['ROMANO_AUTH_PROFILE_SYNC_V3','romano-auth-guard-style','romano-auth-checking','client.auth.getSession']
+          checks=['ROMANO_AUTH_PROFILE_SYNC_V3','romano-auth-guard-style','romano-auth-checking','client.auth.getSession','location.replace(\'/acesso-funcionario.html\')']
           for x in checks: print(x, s.count(x))
-          if any(x in s for x in checks): raise SystemExit('employee auth guard still present')
+          if any(x in s for x in checks): raise SystemExit('employee auth redirect code still present')
           PY
       - name: Commit and remove workflow
         run: |
@@ -42,5 +39,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           rm -f .github/workflows/fix-employee-auth-v4.yml
           git add index-funcionario.html .github/workflows/fix-employee-auth-v4.yml
-          git commit -m "fix: remove remaining employee auth guards"
+          git commit -m "fix: clean employee auth redirect code"
           git push origin HEAD:main
