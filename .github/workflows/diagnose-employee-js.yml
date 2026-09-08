@@ -1,0 +1,32 @@
+name: diagnose-employee-js
+on:
+  push:
+    paths:
+      - '.github/workflows/diagnose-employee-js.yml'
+permissions:
+  contents: write
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Diagnose
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index-funcionario.html').read_text()
+          for needle in ['function save','function setupNav','function renderServices','function renderDashboard','const DBKEY','const defaultEditablePrices','let seed','function openModal','function showPage','function openServiceModal','<body>','</body></html>','function openReportModal']:
+            poss=[]; st=0
+            while True:
+              p=s.find(needle,st)
+              if p<0: break
+              poss.append(p); st=p+1
+            print(needle,poss)
+          print('AROUND_30000',repr(s[29500:32550]))
+          PY
+          rm .github/workflows/diagnose-employee-js.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'chore: remove diagnostic workflow' || true
+          git push
