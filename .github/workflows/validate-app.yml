@@ -1,0 +1,33 @@
+name: validate-app
+on:
+  push:
+    paths:
+      - 'index.html'
+      - 'index-funcionario.html'
+      - 'acesso-funcionario.html'
+      - 'service-sync.js'
+      - '.github/workflows/validate-app.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          for name in ['index.html','index-funcionario.html']:
+              s=Path(name).read_text()
+              a=s.find('<script>\nconst IVA=')
+              b=s.find('</script>\n<!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->',a)
+              assert a>=0 and b>a, name
+              Path('/tmp/'+name+'.js').write_text(s[a+len('<script>\n'):b])
+          s=Path('acesso-funcionario.html').read_text();a=s.rfind('<script>\nconst SUPABASE_URL=');b=s.find('</script>',a);Path('/tmp/access.js').write_text(s[a+len('<script>\n'):b])
+          PY
+          node --check /tmp/index.html.js
+          node --check /tmp/index-funcionario.html.js
+          node --check /tmp/access.js
+          node --check service-sync.js
