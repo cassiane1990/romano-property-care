@@ -1,0 +1,36 @@
+name: Build employee app
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build clean employee entry
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='<!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->'
+          i=s.rfind(marker)
+          if i<0: raise SystemExit('final auth guard not found')
+          Path('index-funcionario.html').write_text(s[:i].rstrip()+'\n</body></html>\n',encoding='utf-8')
+          p=Path('acesso-funcionario.html')
+          s=p.read_text(encoding='utf-8')
+          old="window.location.replace('/index.html')"
+          new="window.location.replace('/index-funcionario.html')"
+          if old not in s: raise SystemExit('login redirect not found')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
+      - name: Commit fix and remove this temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/build-employee-app.yml
+          git add index-funcionario.html acesso-funcionario.html .github/workflows/build-employee-app.yml
+          git commit -m "fix: remove duplicate employee auth redirect guard"
+          git push origin HEAD:main
