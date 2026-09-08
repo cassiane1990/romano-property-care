@@ -1,29 +1,35 @@
-name: Inspect employee role initializer
+name: Restore employee role initialization
 on:
   push:
     paths:
       - '.github/workflows/fix-role-fallback.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
-  inspect:
+  fix:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect role code
+      - name: Restore role initialization only
         run: |
           python - <<'PY'
           from pathlib import Path
-          s=Path('index-funcionario.html').read_text(encoding='utf-8')
-          for needle in ['romano_role','role=','let role','const role','var role']:
-              print('\n###',needle)
-              pos=0
-              found=0
-              while True:
-                  pos=s.find(needle,pos)
-                  if pos<0: break
-                  print(repr(s[max(0,pos-180):pos+300]))
-                  found+=1; pos+=len(needle)
-                  if found>=10: break
-          print('\nlength',len(s))
+          p=Path('index-funcionario.html')
+          s=p.read_text(encoding='utf-8')
+          if "localStorage.getItem('romano_role')" in s and "let role=" in s:
+              raise SystemExit('role initializer already present')
+          marker='function save(){'
+          if marker not in s:
+              raise SystemExit('function save marker not found')
+          s2=s.replace(marker,"let role=localStorage.getItem('romano_role')||'FUNCIONÁRIO';\nfunction save(){",1)
+          p.write_text(s2,encoding='utf-8')
+          print('role initializer restored')
           PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index-funcionario.html
+          git commit -m 'fix: restore employee role initialization'
+          git push
+          git rm .github/workflows/fix-role-fallback.yml
+          git commit -m 'chore: remove temporary role workflow'
+          git push
