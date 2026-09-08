@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - '.github/workflows/diagnose-login-loop.yml'
       - 'index-funcionario.html'
       - 'acesso-funcionario.html'
 jobs:
