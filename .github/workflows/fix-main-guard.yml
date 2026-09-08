@@ -1,0 +1,110 @@
+name: Patch main auth guard correctly
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore and patch only main guard
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          import subprocess
+          original=subprocess.check_output(['git','show','e8596e2d2ac89c91d682daab3f9b634865017137:index.html'],text=True)
+          s=original
+          anchor="init();\n</script>\n<!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->"
+          a=s.find(anchor)
+          if a<0:
+              raise SystemExit('main guard anchor not found')
+          i=s.find('<!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->',a)
+          j=s.find('</script>',i)
+          if j<0:
+              raise SystemExit('main guard closing script not found')
+          j+=len('</script>')
+          guard=r'''<!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->
+<style id="romano-auth-guard-style">html.romano-auth-checking body{visibility:hidden!important}</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  const SUPABASE_URL='https://dhzptogrzuqreflcnsnb.supabase.co';
+  const SUPABASE_KEY='sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN';
+  const client=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
+  document.documentElement.classList.add('romano-auth-checking');
+  const clearIdentity=()=>['romano_role','romano_user','romano_auth_user_id','romano_display_name'].forEach(k=>localStorage.removeItem(k));
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  async function sync(){
+    try{
+      if(!client){ location.replace('/acesso-funcionario.html'); return; }
+      for(let attempt=0;attempt<10;attempt++){
+        const sr=await client.auth.getSession();
+        const session=sr?.data?.session||null;
+        if(session){
+          const pr=await client.from('user_profiles').select('role,display_name,active,employee_id').eq('id',session.user.id).maybeSingle();
+          if(!pr.error && pr.data){
+            if(pr.data.active===false){
+              await client.auth.signOut().catch(()=>{});
+              clearIdentity();
+              location.replace('/acesso-funcionario.html');
+              return;
+            }
+            const nextRole=pr.data.role||'FUNCIONÁRIO';
+            const nextUser=session.user.email||'';
+            localStorage.setItem('romano_role',nextRole);
+            localStorage.setItem('romano_user',nextUser);
+            localStorage.setItem('romano_auth_user_id',session.user.id);
+            localStorage.setItem('romano_display_name',pr.data.display_name||nextUser);
+            localStorage.setItem('romano_login_ok_at',String(Date.now()));
+            document.documentElement.classList.remove('romano-auth-checking');
+            return;
+          }
+        }
+        await wait(500);
+      }
+      clearIdentity();
+      location.replace('/acesso-funcionario.html');
+    }catch(e){
+      console.error('ROMANO auth sync',e);
+      document.documentElement.classList.remove('romano-auth-checking');
+    }
+  }
+  window.romanoSupabase=client;
+  window.romanoAuthSync=sync;
+  window.addEventListener('DOMContentLoaded',sync,{once:true});
+  window.logout=async function(){
+    try{if(client)await client.auth.signOut();}catch(e){}
+    clearIdentity();
+    location.replace('/acesso-funcionario.html');
+  };
+  window.setTestRole=function(r){
+    if(window.role!=='ADMIN'&&r!=='ADMIN')return;
+    localStorage.setItem('romano_role',r);
+    if(r!=='ADMIN')localStorage.removeItem('romano_user');
+    location.reload();
+  };
+})();
+</script>'''
+          s=s[:i]+guard+s[j:]
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Verify exact scope
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text()
+          marker='<!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->'
+          print('marker_count=',s.count(marker))
+          print('main_anchor_count=',s.count('init();\n</script>\n<!-- ROMANO_AUTH_PROFILE_SYNC_V1 -->'))
+          PY
+      - name: Commit fix and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/fix-main-guard.yml
+          git add index.html .github/workflows/fix-main-guard.yml
+          git commit -m "fix: make auth handoff resilient" || exit 0
+          git push origin HEAD:main
