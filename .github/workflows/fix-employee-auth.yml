@@ -1,10 +1,12 @@
 name: Fix employee auth guard
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
 permissions:
   contents: write
 jobs:
   fix:
+    if: github.event.head_commit.message != 'fix: stop employee login redirect loop'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
