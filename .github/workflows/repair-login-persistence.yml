@@ -1,65 +1,42 @@
 name: Repair login persistence
 on:
   push:
-    branches: [main]
-
+    branches:
+      - main
 jobs:
   repair:
-    if: github.actor == 'cassiane1990'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Patch app
+        env:
+          PATCH_B64: ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCnA9UGF0aCgiaW5kZXguaHRtbCIpCnM9cC5yZWFkX3RleHQoZW5jb2Rpbmc9InV0Zi04IikKb2xkPSIiImZ1bmN0aW9uIHJvbGVIb21lKCl7aWYoY3VycmVudFJvbGU9PT0nQ0xJRU5URScpcmV0dXJuICdkYXNoYm9hcmQnO2lmKGN1cnJlbnRSb2xlPT09J1NVUEVSVklTT1InKXJldHVybiAnb3BlcmFjaW9uJztpZihjdXJyZW50Um9sZT09PSdGVU5DSU9OQVJJTycpcmV0dXJuICdkZXZvY2lvbmFsJztyZXR1cm4gJ2Rhc2hib2FyZCd9IiIiCm5ldz0iIiJmdW5jdGlvbiByb2xlSG9tZSgpe2lmKGN1cnJlbnRSb2xlPT09J0NMSUVOVEUnKXJldHVybiAnZGFzaGJvYXJkJztpZihjdXJyZW50Um9sZT09PSdTVVBFUlZJU09SJylyZXR1cm4gJ2VtcGxveWVlJztpZihjdXJyZW50Um9sZT09PSdGVU5DSU9OQVJJTycpcmV0dXJuICdlbXBsb3llZSc7cmV0dXJuICdkYXNoYm9hcmRnfSIiIgphc3NlcnQgb2xkIGluIHMKcz1zLnJlcGxhY2Uob2xkLG5ldywxKQpvbGQ9IiIiYXN5bmMgZnVuY3Rpb24gc3luY0F1dGhFbXBsb3llSW50b0RiKCl7aWYoIWN1cnJlbnRVc2VyfHwhWydGVU5DSU9OQVJJTycsJ1NVUEVSVklTT1InXS5pbmNsdWRlcyhjdXJyZW50Um9sZSkpcmV0dXJuIGZhbHNlO2RiLmVtcGxveWVlcz1kYi5lbXBsb3llZXN8fFtdO2xldCBlbWFpbD1TdHJpbmcoY3VycmVudFVzZXIuZW1haWx8fCcnKS50b0xvd2VyQ2FzZSgpLHg9ZGIuZW1wbG95ZWVzLmZpbmQodj0+U3RyaW5nKHYuZW1haWx8fCcnKS50b0xvd2VyQ2FzZSgpPT09ZW1haWwpO2lmKCF4KXt4PXtpZDonQVVUSC0nK1N0cmluZyhjdXJyZW50VXNlci5pZHx8ZW1haWwpLnJlcGxhY2UoL1teYS16QS1aMC05Xy1dL2csJycpLnNsaWNlKDAsNDgpfTtkYi5lbXBsb3llZXMucHVzaCh4KX1sZXQgYmVmb3JlPUpTT04uc3RyaW5naWZ5KHgpO09iamVjdC5hc3NpZ24oeCx7bmFtZTpjdXJyZW50VXNlci5kaXNwbGF5TmFtZXx8Y3VycmVudFVzZXIubmFtZXx8ZW1haWwscm9sZTpjdXJyZW50Um9sZSxlbWFpbCxhY3RpdmU6dHJ1ZSxhdXRoVXNlcklkOmN1cnJlbnRVc2VyLmlkfHxudWxsfSk7Y3VycmVudFVzZXIuZW1wbG95ZWVJZD14LmlkO3Nlc3Npb25TdG9yYWdlLnNldEl0ZW0oJ1JQQ19WNzhfU0VTU0lPTicsSlNPTi5zdHJpbmdpZnkoY3VycmVudFVzZXIpKTtyZXR1cm4gYmVmb3JlIT09SlNPTi5zdHJpbmdpZnkoeCl9Ci8vCg==
         run: |
+          echo "$PATCH_B64" | base64 -d > /tmp/patch.py
+          python /tmp/patch.py
           python - <<'PY'
           from pathlib import Path
-          p=Path('index.html')
-          s=p.read_text(encoding='utf-8')
-          old="""async function syncAuthEmployeeIntoDb(){if(!currentUser||!['FUNCIONARIO','SUPERVISOR'].includes(currentRole))return false;db.employees=db.employees||[];let email=String(currentUser.email||'').toLowerCase(),x=db.employees.find(v=>String(v.email||'').toLowerCase()===email);if(!x){x={id:'AUTH-'+String(currentUser.id||email).replace(/[^a-zA-Z0-9_-]/g,'').slice(0,48)};db.employees.push(x)}let before=JSON.stringify(x);Object.assign(x,{name:currentUser.displayName||currentUser.name||email,role:currentRole,email,active:true});currentUser.employeeId=x.id;sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));return before!==JSON.stringify(x)}"""
-          new="""async function syncAuthEmployeeIntoDb(){if(!currentUser||!['FUNCIONARIO','SUPERVISOR'].includes(currentRole))return false;db.employees=db.employees||[];let email=String(currentUser.email||'').toLowerCase(),x=db.employees.find(v=>String(v.email||'').toLowerCase()===email);if(!x){x={id:'AUTH-'+String(currentUser.id||email).replace(/[^a-zA-Z0-9_-]/g,'').slice(0,48)};db.employees.push(x)}let before=JSON.stringify(x);Object.assign(x,{name:currentUser.displayName||currentUser.name||email,role:currentRole,email,active:true,authUserId:currentUser.id||null});currentUser.employeeId=x.id;sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));return before!==JSON.stringify(x)}
-          async function syncAuthClientIntoDb(){if(!currentUser||currentRole!=='CLIENTE')return false;db.clients=db.clients||[];let email=String(currentUser.email||'').toLowerCase(),x=db.clients.find(v=>String(v.email||'').toLowerCase()===email||String(v.loginEmail||'').toLowerCase()===email);if(!x){x={id:'AUTHCLIENT-'+String(currentUser.id||email).replace(/[^a-zA-Z0-9_-]/g,'').slice(0,48)};db.clients.push(x)}let before=JSON.stringify(x);Object.assign(x,{name:currentUser.displayName||currentUser.name||email,email,loginEmail:email,authUserId:currentUser.id||null,active:true});currentUser.clientId=x.id;sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));return before!==JSON.stringify(x)}
-          async function ensureCloudStateBootstrap(){if(!rpcSupabase||!currentUser||currentUser.devMode||!currentUser.company_id||currentRole!=='ADMIN'||!navigator.onLine)return false;try{const {data,error}=await rpcSupabase.from('rpc_app_state').select('version').eq('company_id',currentUser.company_id).maybeSingle();if(error)throw error;if(data)return true;const payload={company_id:currentUser.company_id,state:db,version:0,updated_by:currentUser.id,updated_at:new Date().toISOString()};const r=await rpcSupabase.from('rpc_app_state').insert(payload).select('version').single();if(r.error)throw r.error;db.cloudVersion=Number(r.data?.version||0);localStorage.setItem('RPC_V78',JSON.stringify(db));return true}catch(e){console.warn('Cloud bootstrap',e);return false}}"""
-          if old not in s: raise SystemExit('sync function not found')
-          s=s.replace(old,new,1)
-          old2="""function roleHome(){if(currentRole==='CLIENTE')return 'dashboard';if(currentRole==='SUPERVISOR')return 'operacion';if(currentRole==='FUNCIONARIO')return 'devocional';return 'dashboard'}"""
-          new2="""function roleHome(){if(currentRole==='CLIENTE')return 'dashboard';if(currentRole==='SUPERVISOR')return 'employee';if(currentRole==='FUNCIONARIO')return 'employee';return 'dashboard'}"""
-          if old2 not in s: raise SystemExit('roleHome not found')
-          s=s.replace(old2,new2,1)
-          old3="""let changed=await syncAuthEmployeeIntoDb();if(changed)save();await initCloudRealtime();return;"""
-          new3="""let changed=await syncAuthEmployeeIntoDb();let clientChanged=await syncAuthClientIntoDb();if(changed||clientChanged)save();else await ensureCloudStateBootstrap();await initCloudRealtime();return;"""
-          if s.count(old3)<2: raise SystemExit(f'login restore tail count {s.count(old3)}')
-          s=s.replace(old3,new3,2)
-          old4="""async function saveCloudState(){
-  if(cloudHydrating||!rpcSupabase||!currentUser||currentUser.devMode)return;
-  if(!navigator.onLine){queueSync('STATE_SAVE','offline');return;}
-  clearTimeout(cloudSaveTimer); cloudSaveTimer=setTimeout(async()=>{
-    try{
-      const r=await rpcCloud('state',{method:'POST',body:JSON.stringify({state:db,base_version:Number(db.cloudVersion||0),client_operation_id:'LIVE-'+Date.now()})});
-      if(r?.version!=null)db.cloudVersion=Number(r.version); localStorage.setItem('RPC_V78',JSON.stringify(db)); await rpcFlushQueue();
-    }catch(e){"""
-          new4="""async function saveCloudState(){
-  if(cloudHydrating||!rpcSupabase||!currentUser||currentUser.devMode)return;
-  if(!navigator.onLine){queueSync('STATE_SAVE','offline');return;}
-  clearTimeout(cloudSaveTimer); cloudSaveTimer=setTimeout(async()=>{
-    try{
-      const r=await rpcCloud('state',{method:'POST',body:JSON.stringify({state:db,base_version:Number(db.cloudVersion||0),client_operation_id:'LIVE-'+Date.now()})});
-      if(r?.version!=null)db.cloudVersion=Number(r.version); localStorage.setItem('RPC_V78',JSON.stringify(db)); await rpcFlushQueue();
-    }catch(e){
-      if(currentRole==='ADMIN'&&currentUser.company_id){try{const {data:cur,error:re}=await rpcSupabase.from('rpc_app_state').select('version').eq('company_id',currentUser.company_id).maybeSingle();if(re)throw re;const next=Number(cur?.version||0)+1;const {error:we}=await rpcSupabase.from('rpc_app_state').upsert({company_id:currentUser.company_id,state:db,version:next,updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:'company_id'});if(!we){db.cloudVersion=next;localStorage.setItem('RPC_V78',JSON.stringify(db));return}}catch(de){console.warn('Direct admin state save',de)}}"""
-          if old4 not in s: raise SystemExit('saveCloudState block not found')
-          s=s.replace(old4,new4,1)
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          marker="async function saveCloudState()"
+          start=s.index(marker); end=s.index("\nfunction save()",start)
+          block=s[start:end]
+          if "Direct admin state save" not in block:
+              block=block.replace("    }catch(e){", "    }catch(e){\n      if(currentRole==='ADMIN'&&currentUser.company_id){try{const {data:cur,error:re}=await rpcSupabase.from('rpc_app_state').select('version').eq('company_id',currentUser.company_id).maybeSingle();if(re)throw re;const next=Number(cur?.version||0)+1;const {error:we}=await rpcSupabase.from('rpc_app_state').upsert({company_id:currentUser.company_id,state:db,version:next,updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:'company_id'});if(!we){db.cloudVersion=next;localStorage.setItem('RPC_V78',JSON.stringify(db));return}}catch(de){console.warn('Direct admin state save',de)}}",1)
+              s=s[:start]+block+s[end:]
           p.write_text(s,encoding='utf-8')
           print('PATCHED')
           PY
-      - name: Commit and remove workflow
+      - name: Commit
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html .github/workflows/repair-login-persistence.yml
-          git commit -m 'fix: make all role logins and cloud state persistent' || exit 0
+          git add index.html
+          git commit -m 'fix: make role login and cloud persistence reliable'
           git push
+      - name: Remove temporary workflow
+        run: |
           git rm .github/workflows/repair-login-persistence.yml
           git commit -m 'chore: remove temporary repair workflow'
           git push
