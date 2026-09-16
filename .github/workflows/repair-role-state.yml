@@ -1,0 +1,40 @@
+name: Repair role state
+on: push
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch app
+        run: |
+          echo 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCnA9UGF0aCgnaW5kZXguaHRtbCcpCnM9cC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04JykKb2xkPSJmdW5jdGlvbiByb2xlSG9tZSgpe2lmKGN1cnJlbnRSb2xlPT09J0NMSUVOVEUnKXJldHVybiAnZGFzaGJvYXJkJztpZihjdXJyZW50Um9sZT09PSdTVVBFUlZJU09SJylyZXR1cm4gJ29wZXJhY2lvbic7aWYoY3VycmVudFJvbGU9PT0nRlVOQ0lPTkFSSU8nKXJldHVybiAnZGV2b2Npb25hbCc7cmV0dXJuICdkYXNoYm9hcmQnfSIKbmV3PSJmdW5jdGlvbiByb2xlSG9tZSgpe2lmKGN1cnJlbnRSb2xlPT09J0NMSUVOVEUnKXJldHVybiAnZGFzaGJvYXJkJztpZihjdXJyZW50Um9sZT09PSdTVVBFUlZJU09SJylyZXR1cm4gJ2VtcGxveWVlJztpZihjdXJyZW50Um9sZT09PSdGVU5DSU9OQVJJTycpcmV0dXJuICdlbXBsb3llZSc7cmV0dXJuICdkYXNoYm9hcmQnfSIKaWYgb2xkIGluIHM6IHM9cy5yZXBsYWNlKG9sZCxuZXcsMSkKbGlmIGFzeW5jIGZ1bmN0aW9uIHN5bmNBdXRoQ2xpZW50SW50b0RiIG5vdCBpbiBzOgo=' | base64 -d > /tmp/patch.py
+          # The patch script is intentionally minimal; role landing is applied below directly.
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          s=s.replace("function roleHome(){if(currentRole==='CLIENTE')return 'dashboard';if(currentRole==='SUPERVISOR')return 'operacion';if(currentRole==='FUNCIONARIO')return 'devocional';return 'dashboard'}", "function roleHome(){if(currentRole==='CLIENTE')return 'dashboard';if(currentRole==='SUPERVISOR')return 'employee';if(currentRole==='FUNCIONARIO')return 'employee';return 'dashboard'}",1)
+          if 'async function syncAuthClientIntoDb' not in s:
+              marker='\nasync function syncAuthEmployeeIntoDb'
+              i=s.find(marker)
+              if i<0: raise SystemExit('employee sync marker missing')
+              ins="\nasync function syncAuthClientIntoDb(){if(!currentUser||currentRole!=='CLIENTE')return false;db.clients=db.clients||[];let email=String(currentUser.email||'').toLowerCase(),x=db.clients.find(v=>String(v.email||'').toLowerCase()===email||String(v.loginEmail||'').toLowerCase()===email);if(!x){x={id:'AUTHCLIENT-'+String(currentUser.id||email).replace(/[^a-zA-Z0-9_-]/g,'').slice(0,48)};db.clients.push(x)}let before=JSON.stringify(x);Object.assign(x,{name:currentUser.displayName||currentUser.name||email,email,loginEmail:email,authUserId:currentUser.id||null,active:true});currentUser.clientId=x.id;sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));return before!==JSON.stringify(x)}\nasync function ensureCloudStateBootstrap(){if(!rpcSupabase||!currentUser||currentUser.devMode||!currentUser.company_id||currentRole!=='ADMIN'||!navigator.onLine)return false;try{const {data,error}=await rpcSupabase.from('rpc_app_state').select('version').eq('company_id',currentUser.company_id).maybeSingle();if(error)throw error;if(data)return true;const r=await rpcSupabase.from('rpc_app_state').insert({company_id:currentUser.company_id,state:db,version:0,updated_by:currentUser.id,updated_at:new Date().toISOString()}).select('version').single();if(r.error)throw r.error;db.cloudVersion=Number(r.data?.version||0);localStorage.setItem('RPC_V78',JSON.stringify(db));return true}catch(e){console.warn('Cloud bootstrap',e);return false}}\n"
+              s=s[:i]+ins+s[i:]
+          tail="let changed=await syncAuthEmployeeIntoDb();if(changed)save();await initCloudRealtime();return;"
+          repl="let changed=await syncAuthEmployeeIntoDb();let clientChanged=await syncAuthClientIntoDb();if(changed||clientChanged)save();else await ensureCloudStateBootstrap();await initCloudRealtime();return;"
+          if s.count(tail): s=s.replace(tail,repl,2)
+          if 'Direct admin state save' not in s:
+              marker="      queueSync('STATE_SAVE','cloud_error'); console.warn('Cloud state save',e)"
+              if marker not in s: raise SystemExit('save marker missing')
+              fb="      if(currentRole==='ADMIN'&&currentUser.company_id){try{const {data:cur,error:re}=await rpcSupabase.from('rpc_app_state').select('version').eq('company_id',currentUser.company_id).maybeSingle();if(re)throw re;const next=Number(cur?.version||0)+1;const {error:we}=await rpcSupabase.from('rpc_app_state').upsert({company_id:currentUser.company_id,state:db,version:next,updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:'company_id'});if(!we){db.cloudVersion=next;localStorage.setItem('RPC_V78',JSON.stringify(db));return}}catch(de){console.warn('Direct admin state save',de)}}\n"+marker
+              s=s.replace(marker,fb,1)
+          p.write_text(s,encoding='utf-8'); print('PATCHED',len(s))
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git commit -m 'fix: role landing and state bootstrap'
+          git push
