@@ -1,0 +1,52 @@
+name: Force mobile support for all roles
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply mobile overrides
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          if 'RPC_MOBILE_ALL_ROLES_V1' not in s:
+              style='''<style id="RPC_MOBILE_ALL_ROLES_V1">@media(max-width:720px){.rpcMobileBackdrop{display:none;position:fixed;inset:0;background:rgba(36,24,15,.38);z-index:80}.rpcMobileBackdrop.show{display:block}.side{display:block!important;width:275px!important;position:fixed!important;left:0!important;top:0!important;bottom:0!important;transform:translateX(-100%)!important;transition:transform .2s ease!important;z-index:90!important;overflow:auto!important}.side.open{transform:translateX(0)!important}.main{margin:0!important;width:100%!important;padding:15px 13px 78px!important}.menuToggle{display:grid!important;touch-action:manipulation}.bottom{display:flex!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:50!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}.bottom button{min-width:76px!important;flex:0 0 auto!important}.modal{max-width:calc(100vw - 24px)!important;max-height:92vh!important}.tablewrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}.card,.page{max-width:100%!important;overflow-wrap:anywhere}}</style>'''
+              s=s.replace('</head>',style+'</head>',1)
+          if '<div id="rpcMobileBackdrop"' not in s:
+              marker='<div class="app"><aside class="side">'
+              if marker not in s: raise SystemExit('APP_MARKUP_NOT_FOUND')
+              s=s.replace(marker,'<div class="app"><div id="rpcMobileBackdrop" class="rpcMobileBackdrop" onclick="toggleMobileMenu(false)"></div><aside class="side">',1)
+          if 'onclick="toggleMobileMenu()"' not in s:
+              old='onclick="document.querySelector(\'.side\').classList.toggle(\'open\')"'
+              if old in s: s=s.replace(old,'onclick="toggleMobileMenu()"',1)
+              else: raise SystemExit('MENU_BUTTON_NOT_FOUND')
+          if 'function toggleMobileMenu(' not in s:
+              marker='function buildNav(){'
+              if marker not in s: raise SystemExit('BUILD_NAV_NOT_FOUND')
+              fn="function toggleMobileMenu(force){const side=document.querySelector('.side'),back=document.getElementById('rpcMobileBackdrop');if(!side)return;const isMobile=window.innerWidth<=720;if(!isMobile){side.classList.remove('open');back?.classList.remove('show');return;}const open=force===undefined?!side.classList.contains('open'):!!force;side.classList.toggle('open',open);back?.classList.toggle('show',open);}\n"
+              s=s.replace(marker,fn+marker,1)
+          old_go="function go(page){if(!new Set(allowedPages()).has(page)){page=roleHome()}currentPage=page;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('on',b.dataset.page===page));q('title').textContent=NAV.find(n=>n[0]===page)?.[2]||(db.settings.customModules||[]).find(x=>x.id===page)?.name||page;render(page)}"
+          new_go="function go(page){if(!new Set(allowedPages()).has(page)){page=roleHome()}currentPage=page;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('on',b.dataset.page===page));q('title').textContent=NAV.find(n=>n[0]===page)?.[2]||(db.settings.customModules||[]).find(x=>x.id===page)?.name||page;render(page);if(window.innerWidth<=720)toggleMobileMenu(false)}"
+          if old_go in s: s=s.replace(old_go,new_go,1)
+          p.write_text(s,encoding='utf-8')
+          print('MOBILE_ALL_ROLES_PATCHED')
+          PY
+      - name: Validate and remove temporary workflows
+        run: |
+          grep -q 'RPC_MOBILE_ALL_ROLES_V1' index.html
+          grep -q 'function toggleMobileMenu' index.html
+          grep -q 'onclick="toggleMobileMenu()"' index.html
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add index.html
+          git rm -f .github/workflows/fix-responsive-mobile.yml .github/workflows/fix-mobile-all-roles.yml 2>/dev/null || true
+          git add -u
+          git commit -m "fix: responsive mobile experience for employee supervisor and client"
+          git push
