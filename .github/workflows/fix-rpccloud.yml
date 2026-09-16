@@ -1,31 +1,19 @@
-name: Fix RPC cloud transport
+name: Remove temporary RPC transport workflow
 on:
   push:
     branches: [main]
 permissions:
   contents: write
 jobs:
-  fix:
+  cleanup:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Patch rpcCloud transport
+      - name: Remove temporary workflow
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html')
-          s=p.read_text(encoding='utf-8')
-          old="async function rpcCloud(path,options={}){if(!rpcSupabase)throw new Error('SUPABASE_CLIENT_UNAVAILABLE');const {data:{session}}=await rpcSupabase.auth.getSession();if(!session?.access_token)return null;const r=await fetch(RPC_CLOUD.api+'/'+path,{...options,headers:{'Authorization':'Bearer '+session.access_token,'apikey':RPC_CLOUD.key,'Content-Type':'application/json',...(options.headers||{})}});let body=null;try{body=await r.json()}catch{}if(!r.ok)throw new Error(body?.error||'API error '+r.status);return body;}"
-          new="async function rpcCloud(path,options={}){if(!rpcSupabase)throw new Error('SUPABASE_CLIENT_UNAVAILABLE');const {data:{session}}=await rpcSupabase.auth.getSession();if(!session?.access_token)return null;let body=options.body;if(typeof body==='string'){try{body=JSON.parse(body)}catch{}}const {data,error}=await rpcSupabase.functions.invoke('romano-api/'+path,{method:options.method||'GET',body,headers:{apikey:RPC_CLOUD.key,...(options.headers||{})}});if(error)throw error;return data;}"
-          if old not in s:
-              raise SystemExit('target rpcCloud function not found; no changes made')
-          p.write_text(s.replace(old,new,1),encoding='utf-8')
-          PY
-      - name: Commit patch
-        run: |
+          rm -f .github/workflows/fix-rpccloud.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git diff --cached --quiet && exit 0
-          git commit -m "fix: use Supabase function client for cloud API"
+          git add -A
+          git commit -m "chore: remove temporary RPC transport workflow" || exit 0
           git push
