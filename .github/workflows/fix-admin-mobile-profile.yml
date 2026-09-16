@@ -12,59 +12,33 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
 
-          old_css='@media(max-width:720px){.side{width:270px;transform:translateX(-100%);transition:.2s}.side.open{transform:translateX(0)}'
-          new_css='''@media(max-width:720px){.rpcMobileBackdrop{display:none;position:fixed;inset:0;background:rgba(36,24,15,.38);z-index:80}.rpcMobileBackdrop.show{display:block}.side{width:270px;transform:translateX(-100%);transition:.2s;z-index:90}.side.open{transform:translateX(0)}'''
-          if old_css not in s:
-              old_css='@media(max-width:720px){.side{display:none}'
-              if old_css not in s:
-                  raise SystemExit('MOBILE_CSS_PATTERN_NOT_FOUND')
-              new_css='''@media(max-width:720px){.rpcMobileBackdrop{display:none;position:fixed;inset:0;background:rgba(36,24,15,.38);z-index:80}.rpcMobileBackdrop.show{display:block}.side{display:block;width:270px;transform:translateX(-100%);transition:.2s;z-index:90}.side.open{transform:translateX(0)}'''
-          s=s.replace(old_css,new_css,1)
+          if 'rpcMobileBackdrop' not in s:
+              s=re.sub(r'@media\(max-width:720px\)\{\.side\{width:270px;transform:translateX\(-100%\);transition:\.2s\}\.side\.open\{transform:translateX\(0\)\}', '@media(max-width:720px){.rpcMobileBackdrop{display:none;position:fixed;inset:0;background:rgba(36,24,15,.38);z-index:80}.rpcMobileBackdrop.show{display:block}.side{width:270px;transform:translateX(-100%);transition:.2s;z-index:90}.side.open{transform:translateX(0)}', s, count=1)
+              if 'rpcMobileBackdrop' not in s:
+                  s=s.replace('@media(max-width:720px){.side{display:none}', '@media(max-width:720px){.rpcMobileBackdrop{display:none;position:fixed;inset:0;background:rgba(36,24,15,.38);z-index:80}.rpcMobileBackdrop.show{display:block}.side{display:block;width:270px;transform:translateX(-100%);transition:.2s;z-index:90}.side.open{transform:translateX(0)}', 1)
+              if 'rpcMobileBackdrop' not in s: raise SystemExit('MOBILE_CSS_NOT_FOUND')
 
-          old_html='<div class="app"><aside class="side">'
-          new_html='<div class="app"><div id="rpcMobileBackdrop" class="rpcMobileBackdrop" onclick="toggleMobileMenu(false)"></div><aside class="side">'
-          if old_html not in s:
-              raise SystemExit('APP_HTML_PATTERN_NOT_FOUND')
-          s=s.replace(old_html,new_html,1)
+              if '<div id="rpcMobileBackdrop"' not in s:
+                  s=s.replace('<div class="app"><aside class="side">','<div class="app"><div id="rpcMobileBackdrop" class="rpcMobileBackdrop" onclick="toggleMobileMenu(false)"></div><aside class="side">',1)
+              if '<div id="rpcMobileBackdrop"' not in s: raise SystemExit('APP_MARKUP_NOT_FOUND')
 
-          old_toggle='onclick="document.querySelector(\'.side\').classList.toggle(\'open\')"'
-          new_toggle='onclick="toggleMobileMenu()"'
-          if old_toggle not in s:
-              raise SystemExit('MENU_TOGGLE_PATTERN_NOT_FOUND')
-          s=s.replace(old_toggle,new_toggle,1)
+              s=s.replace("onclick=\"document.querySelector('.side').classList.toggle('open')\"", 'onclick="toggleMobileMenu()"', 1)
 
-          marker='function buildNav(){'
-          if marker not in s:
-              raise SystemExit('BUILDNAV_NOT_FOUND')
-          mobile_fn="""function toggleMobileMenu(force){const side=document.querySelector('.side'),back=document.getElementById('rpcMobileBackdrop');if(!side)return;const isMobile=window.innerWidth<=720;const open=force===undefined?!side.classList.contains('open'):!!force;if(!isMobile){side.classList.remove('open');back?.classList.remove('show');return;}side.classList.toggle('open',open);back?.classList.toggle('show',open);}\n"""
-          s=s.replace(marker,mobile_fn+marker,1)
+              if 'function toggleMobileMenu(' not in s:
+                  s=s.replace('function buildNav(){', "function toggleMobileMenu(force){const side=document.querySelector('.side'),back=document.getElementById('rpcMobileBackdrop');if(!side)return;const isMobile=window.innerWidth<=720;const open=force===undefined?!side.classList.contains('open'):!!force;if(!isMobile){side.classList.remove('open');back?.classList.remove('show');return;}side.classList.toggle('open',open);back?.classList.toggle('show',open);}\nfunction buildNav(){",1)
 
-          old_go='function go(page){if(!new Set(allowedPages()).has(page)){page=roleHome()}currentPage=page;document.querySelectorAll(\'[data-page]\').forEach(b=>b.classList.toggle(\'on\',b.dataset.page===page));q(\'title\').textContent=NAV.find(n=>n[0]===page)?.[2]||(db.settings.customModules||[]).find(x=>x.id===page)?.name||page;render(page)}'
-          new_go='function go(page){if(!new Set(allowedPages()).has(page)){page=roleHome()}currentPage=page;document.querySelectorAll(\'[data-page]\').forEach(b=>b.classList.toggle(\'on\',b.dataset.page===page));q(\'title\').textContent=NAV.find(n=>n[0]===page)?.[2]||(db.settings.customModules||[]).find(x=>x.id===page)?.name||page;render(page);if(window.innerWidth<=720)toggleMobileMenu(false)}'
-          if old_go not in s:
-              raise SystemExit('GO_PATTERN_NOT_FOUND')
-          s=s.replace(old_go,new_go,1)
+              old_go="function go(page){if(!new Set(allowedPages()).has(page)){page=roleHome()}currentPage=page;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('on',b.dataset.page===page));q('title').textContent=NAV.find(n=>n[0]===page)?.[2]||(db.settings.customModules||[]).find(x=>x.id===page)?.name||page;render(page)}"
+              new_go="function go(page){if(!new Set(allowedPages()).has(page)){page=roleHome()}currentPage=page;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('on',b.dataset.page===page));q('title').textContent=NAV.find(n=>n[0]===page)?.[2]||(db.settings.customModules||[]).find(x=>x.id===page)?.name||page;render(page);if(window.innerWidth<=720)toggleMobileMenu(false)}"
+              if old_go in s: s=s.replace(old_go,new_go,1)
 
-          old_persist="""function persistMyProfilePhoto(photo){db.settings=db.settings||{};db.settings.userProfiles=db.settings.userProfiles||{};let email=currentUser?.email||('role:'+currentRole);db.settings.userProfiles[email]={...(db.settings.userProfiles[email]||{}),photo};currentUser=currentUser||{};currentUser.photo=photo;sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));save();closeModal();applyRoleUI();toast('Foto de perfil guardada.')}"""
-          new_persist="""function persistMyProfilePhoto(photo){db.settings=db.settings||{};db.settings.userProfiles=db.settings.userProfiles||{};let email=currentUser?.email||('role:'+currentRole);db.settings.userProfiles[email]={...(db.settings.userProfiles[email]||{}),photo};currentUser=currentUser||{};currentUser.photo=photo;sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));localStorage.setItem('RPC_V78_PROFILE_PHOTO_'+email,photo);save();closeModal();applyRoleUI();toast('Foto de perfil guardada.')}"""
-          if old_persist not in s:
-              raise SystemExit('PERSIST_PATTERN_NOT_FOUND')
-          s=s.replace(old_persist,new_persist,1)
-
-          old_profile="function profilePhotoForCurrent(){let email=currentUser?.email||'';db.settings=db.settings||{};db.settings.userProfiles=db.settings.userProfiles||{};return currentUser?.photo||db.settings.userProfiles[email]?.photo||db.settings.profilePhotos?.[currentRole]||''}"
-          new_profile="function profilePhotoForCurrent(){let email=currentUser?.email||'';db.settings=db.settings||{};db.settings.userProfiles=db.settings.userProfiles||{};return currentUser?.photo||db.settings.userProfiles[email]?.photo||localStorage.getItem('RPC_V78_PROFILE_PHOTO_'+email)||db.settings.profilePhotos?.[currentRole]||''}"
-          if old_profile not in s:
-              raise SystemExit('PROFILE_PATTERN_NOT_FOUND')
-          s=s.replace(old_profile,new_profile,1)
-
-          old_load="""cloudHydrating=true; db=r.state; db.cloudVersion=Number(r.version||db.cloudVersion||0);\n      localStorage.setItem('RPC_V78',JSON.stringify(db)); cloudHydrating=false;"""
-          new_load="""const localProfilePhotos=(JSON.parse(localStorage.getItem('RPC_V78')||'null')?.settings?.userProfiles)||{};\n      cloudHydrating=true; db=r.state; db.settings=db.settings||{}; db.settings.userProfiles={...localProfilePhotos,...(db.settings.userProfiles||{})}; db.cloudVersion=Number(r.version||db.cloudVersion||0);\n      localStorage.setItem('RPC_V78',JSON.stringify(db)); cloudHydrating=false;"""
-          if old_load not in s:
-              raise SystemExit('LOAD_PATTERN_NOT_FOUND')
-          s=s.replace(old_load,new_load,1)
+          if "localStorage.setItem('RPC_V78_PROFILE_PHOTO_'+email,photo)" not in s:
+              s=s.replace("sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));save();closeModal();applyRoleUI();toast('Foto de perfil guardada.')", "sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));localStorage.setItem('RPC_V78_PROFILE_PHOTO_'+email,photo);save();closeModal();applyRoleUI();toast('Foto de perfil guardada.')", 1)
+          if "localStorage.getItem('RPC_V78_PROFILE_PHOTO_'+email)" not in s:
+              s=s.replace("return currentUser?.photo||db.settings.userProfiles[email]?.photo||db.settings.profilePhotos?.[currentRole]||''", "return currentUser?.photo||db.settings.userProfiles[email]?.photo||localStorage.getItem('RPC_V78_PROFILE_PHOTO_'+email)||db.settings.profilePhotos?.[currentRole]||''", 1)
 
           p.write_text(s,encoding='utf-8')
           print('PATCHED')
