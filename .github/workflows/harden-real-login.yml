@@ -1,0 +1,45 @@
+name: Harden real login flow
+on:
+  push:
+    branches: [main]
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch login fallback
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old="async function login(ev){ev.preventDefault();let loginValue=q('loginEmail').value.trim().toLowerCase(),pass=q('loginPassword').value; q('authError').style.display='none';\n  try{\n    if(rpcSupabase){let realEmail=TEST_EMAIL_MAP[loginValue]||loginValue;let {data,error}=await rpcSupabase.auth.signInWithPassword({email:realEmail,password:pass);"
+          # Use exact smaller replacements instead of replacing the whole function.
+          a="async function login(ev){ev.preventDefault();let loginValue=q('loginEmail').value.trim().toLowerCase(),pass=q('loginPassword').value; q('authError').style.display='none';\n  try{\n    if(rpcSupabase){let realEmail=TEST_EMAIL_MAP[loginValue]||loginValue;let {data,error}=await rpcSupabase.auth.signInWithPassword({email:realEmail,password:pass});"
+          b="async function login(ev){ev.preventDefault();let loginValue=q('loginEmail').value.trim().toLowerCase(),pass=q('loginPassword').value; q('authError').style.display='none';let realAuthSucceeded=false;\n  try{\n    if(rpcSupabase){let realEmail=TEST_EMAIL_MAP[loginValue]||loginValue;let {data,error}=await rpcSupabase.auth.signInWithPassword({email:realEmail,password:pass});"
+          if a not in s: raise SystemExit('login header not found')
+          s=s.replace(a,b,1)
+          a2="if(!error&&data?.user){await completeMFAIfRequired();"
+          b2="if(!error&&data?.user){realAuthSucceeded=true;await completeMFAIfRequired();"
+          if a2 not in s: raise SystemExit('success marker not found')
+          s=s.replace(a2,b2,1)
+          a3="  }catch(err){console.warn('Cloud login:',err);}\n  let a=TEST_ACCOUNTS[loginValue];"
+          b3="  }catch(err){console.warn('Cloud login:',err);if(realAuthSucceeded){q('authError').textContent='No se pudo completar el inicio de sesión real: '+(err?.message||'error de sesión');q('authError').style.display='block';try{await rpcSupabase?.auth.signOut();}catch{}return;}}\n  let a=TEST_ACCOUNTS[loginValue];"
+          if a3 not in s: raise SystemExit('catch marker not found')
+          s=s.replace(a3,b3,1)
+          p.write_text(s)
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Harden real login fallback'
+          git push
+      - name: Remove temporary workflow
+        if: always()
+        run: |
+          rm -f .github/workflows/harden-real-login.yml
+          git add .github/workflows/harden-real-login.yml
+          git diff --cached --quiet || git commit -m 'Remove temporary login workflow'
+          git push
