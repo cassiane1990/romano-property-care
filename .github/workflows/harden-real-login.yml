@@ -2,6 +2,8 @@ name: Harden real login flow
 on:
   push:
     branches: [main]
+permissions:
+  contents: write
 jobs:
   patch:
     runs-on: ubuntu-latest
@@ -13,8 +15,6 @@ jobs:
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text()
-          old="async function login(ev){ev.preventDefault();let loginValue=q('loginEmail').value.trim().toLowerCase(),pass=q('loginPassword').value; q('authError').style.display='none';\n  try{\n    if(rpcSupabase){let realEmail=TEST_EMAIL_MAP[loginValue]||loginValue;let {data,error}=await rpcSupabase.auth.signInWithPassword({email:realEmail,password:pass);"
-          # Use exact smaller replacements instead of replacing the whole function.
           a="async function login(ev){ev.preventDefault();let loginValue=q('loginEmail').value.trim().toLowerCase(),pass=q('loginPassword').value; q('authError').style.display='none';\n  try{\n    if(rpcSupabase){let realEmail=TEST_EMAIL_MAP[loginValue]||loginValue;let {data,error}=await rpcSupabase.auth.signInWithPassword({email:realEmail,password:pass});"
           b="async function login(ev){ev.preventDefault();let loginValue=q('loginEmail').value.trim().toLowerCase(),pass=q('loginPassword').value; q('authError').style.display='none';let realAuthSucceeded=false;\n  try{\n    if(rpcSupabase){let realEmail=TEST_EMAIL_MAP[loginValue]||loginValue;let {data,error}=await rpcSupabase.auth.signInWithPassword({email:realEmail,password:pass});"
           if a not in s: raise SystemExit('login header not found')
