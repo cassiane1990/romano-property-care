@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f4efe6" />
+  <title>ROMANO PROPERTY CARE</title>
+  <style>
+    :root{--ivory:#f7f3ec;--paper:#fffdf9;--champagne:#e9dfcf;--gold:#b9975b;--ink:#171614;--muted:#7b7469;--line:#e7dfd3;--shadow:0 18px 50px rgba(42,34,24,.08)}
+    *{box-sizing:border-box}body{margin:0;background:var(--ivory);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button{font:inherit}.app{min-height:100vh;display:flex}.sidebar{width:286px;background:#1b1a18;color:#f8f2e8;padding:24px 18px;display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:10}.brand{padding:4px 10px 28px;border-bottom:1px solid rgba(255,255,255,.1)}.brand-mark{width:46px;height:46px;border:1px solid var(--gold);border-radius:50%;display:grid;place-items:center;color:var(--gold);font-family:Georgia,serif;font-size:25px;margin-bottom:13px}.brand-name{font-family:Georgia,serif;font-size:19px;letter-spacing:.12em}.brand-sub{font-size:9px;letter-spacing:.24em;color:#cdb98e;margin-top:4px}.nav{padding-top:18px;overflow:auto}.group{margin:18px 10px 7px;color:#a99e8e;font-size:9px;letter-spacing:.2em;text-transform:uppercase}.nav button{width:100%;border:0;background:transparent;color:#ddd5c9;text-align:left;padding:11px 12px;border-radius:10px;cursor:pointer;display:flex;gap:11px;align-items:center;font-size:13px}.nav button:hover,.nav button.active{background:#292723;color:#fff}.nav button.active:before{content:"";width:3px;height:20px;background:var(--gold);border-radius:4px;margin-left:-12px}.main{margin-left:286px;width:calc(100% - 286px);min-height:100vh}.topbar{height:76px;background:rgba(255,253,249,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 34px;position:sticky;top:0;z-index:5}.crumb{font-size:12px;color:var(--muted)}.user{display:flex;align-items:center;gap:10px;font-size:12px}.avatar{width:36px;height:36px;border-radius:50%;background:var(--champagne);display:grid;place-items:center;font-family:Georgia,serif}.content{padding:34px;max-width:1500px;margin:auto}.eyebrow{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}h1{font-family:Georgia,serif;font-weight:500;font-size:38px;margin:8px 0 7px} .lead{color:var(--muted);margin:0 0 30px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)}.label{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}.value{font-family:Georgia,serif;font-size:28px;margin-top:9px}.section{margin-top:22px}.section-title{font-family:Georgia,serif;font-size:20px;margin-bottom:12px}.wide{min-height:250px}.empty{height:190px;display:grid;place-items:center;border:1px dashed #d8cebf;border-radius:14px;color:var(--muted);font-size:13px;background:#fcfaf6}.mobile-nav{display:none}
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0;width:100%}.topbar{padding:0 18px}.content{padding:24px 18px 88px}.grid{grid-template-columns:repeat(2,1fr)}.mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#1b1a18;color:#eee;padding:9px;z-index:20;justify-content:space-around}.mobile-nav button{border:0;background:none;color:#ddd;font-size:10px}.mobile-nav button span{display:block;font-size:18px;margin-bottom:2px}}
+    @media(max-width:560px){h1{font-size:30px}.grid{grid-template-columns:1fr 1fr}.value{font-size:23px}.card{padding:15px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">R</div><div class="brand-name">ROMANO</div><div class="brand-sub">PROPERTY CARE</div></div>
+    <nav class="nav">
+      <div class="group">Principal</div><button class="active">⌂ <span>Dashboard</span></button><button>◈ <span>Operación en tiempo real</span></button><button>◷ <span>Agenda</span></button><button>◉ <span>Alertas</span></button>
+      <div class="group">Operación</div><button>▦ <span>Servicios</span></button><button>⌂ <span>Propiedades</span></button><button>♙ <span>Clientes</span></button><button>♧ <span>Equipo</span></button><button>✓ <span>Checklists</span></button><button>! <span>Incidencias</span></button><button>⌖ <span>Mapa y rutas</span></button>
+      <div class="group">Gestión</div><button>▤ <span>Contratos y documentos</span></button><button>▥ <span>Materiales y stock</span></button><button>↗ <span>Compras</span></button><button>⚒ <span>Mantenimiento</span></button><button>▧ <span>Lavandería</span></button>
+      <div class="group">Financiero</div><button>€ <span>Facturación</span></button><button>▣ <span>Facturas</span></button><button>✓ <span>Pagos y recibos</span></button><button>◌ <span>Costes y márgenes</span></button><button>▥ <span>Informes</span></button>
+      <div class="group">Comunicación</div><button>◌ <span>Chat</span></button><button>◉ <span>Notificaciones</span></button>
+      <div class="group">Inteligencia</div><button>✦ <span>ROMANO IA</span></button><button>⌁ <span>Radar operacional</span></button>
+      <div class="group">Sistema</div><button>⌘ <span>Auditoría</span></button><button>⚙ <span>Configuración</span></button>
+    </nav>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div class="crumb">ROMANO PROPERTY CARE · <strong>Dashboard</strong></div><div class="user"><span>Administrador</span><div class="avatar">R</div></div></header>
+    <section class="content"><div class="eyebrow">Centro de control</div><h1>Buenos días, Romano</h1><p class="lead">Visión central de la operación, equipo, servicios y actividad de la empresa.</p>
+      <div class="grid"><div class="card"><div class="label">Servicios hoy</div><div class="value">—</div></div><div class="card"><div class="label">En operación</div><div class="value">—</div></div><div class="card"><div class="label">Alertas</div><div class="value">—</div></div><div class="card"><div class="label">Solicitudes</div><div class="value">—</div></div></div>
+      <div class="section"><div class="section-title">Operación en vivo</div><div class="card wide"><div class="empty">La operación real aparecerá aquí cuando el backend y los servicios estén conectados.</div></div></div>
+    </section>
+  </main>
+  <nav class="mobile-nav"><button>⌂<span>Inicio</span></button><button>◈<span>Operación</span></button><button>◷<span>Agenda</span></button><button>◌<span>Chat</span></button><button>☰<span>Menú</span></button></nav>
+</div>
+</body></html>
