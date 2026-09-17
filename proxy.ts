@@ -11,21 +11,13 @@ export async function proxy(request: NextRequest) {
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll: cookies => {
-        cookies.forEach(({ name, value, options }) => request.cookies.set(name, value))
+        cookies.forEach(({ name, value }) => request.cookies.set(name, value))
         response = NextResponse.next({ request })
         cookies.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
       },
     },
   })
-
-  const { data: { user } } = await client.auth.getUser()
-  const pathname = request.nextUrl.pathname
-  if (!user && pathname !== '/login') {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-  if (user && pathname === '/login') {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
+  await client.auth.getUser()
   return response
 }
 
