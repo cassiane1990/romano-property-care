@@ -23,20 +23,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Configure Pages
         uses: actions/configure-pages@v5
-
       - name: Harden production login
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-
-          login = r'''async function login(ev){
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          login=r'''async function login(ev){
             ev.preventDefault();
             const loginValue=q('loginEmail').value.trim().toLowerCase(), pass=q('loginPassword').value;
             q('authError').style.display='none';
@@ -46,72 +42,30 @@ jobs:
               if(error) throw error;
               if(!data?.user) throw new Error('AUTH_USER_NOT_FOUND');
               await completeMFAIfRequired();
-              const {data:profile,error:profileError}=await rpcSupabase
-                .from('user_profiles')
-                .select('id,role,display_name,username,employee_id,client_id,company_id,active')
-                .eq('id',data.user.id)
-                .maybeSingle();
+              const {data:profile,error:profileError}=await rpcSupabase.from('user_profiles').select('id,role,display_name,username,employee_id,client_id,company_id,active').eq('id',data.user.id).maybeSingle();
               if(profileError) throw new Error('PROFILE_READ_FAILED:'+profileError.message);
               if(!profile?.active||!profile.company_id) throw new Error('USUARIO_INACTIVO');
               currentRole=String(profile.role||'').toUpperCase();
               currentUser={id:data.user.id,email:data.user.email,name:profile.display_name||data.user.email,displayName:profile.display_name||data.user.email,username:profile.username||null,employee_id:profile.employee_id||null,client_id:profile.client_id||null,role:currentRole,company_id:profile.company_id,aal:null};
-              sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));
-              q('authScreen').style.display='none';applyRoleUI();go(roleHome());
-              toast('Sesión segura iniciada · '+currentRole);
-              if(currentRole==='ADMIN') loadCloudState();
+              sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));q('authScreen').style.display='none';applyRoleUI();go(roleHome());toast('Sesión segura iniciada · '+currentRole);if(currentRole==='ADMIN')loadCloudState();
             }catch(err){
-              console.warn('Cloud login:',err);
-              try{await rpcSupabase.auth.signOut()}catch{}
-              const code=String(err?.message||'');
-              let msg='No se pudo iniciar sesión. Verifica tu cuenta y vuelve a intentarlo.';
-              if(code.includes('Invalid login credentials')) msg='Correo o contraseña incorrectos.';
-              else if(code.includes('MFA_REQUIRED')) msg='Se requiere autenticación MFA.';
-              else if(code.includes('PROFILE_READ_FAILED')) msg='La cuenta fue autenticada, pero el perfil no pudo ser cargado. Contacta con Administración.';
-              else if(code.includes('USUARIO_INACTIVO')) msg='Usuario sin empresa o desactivado. Contacta con Administración.';
+              console.warn('Cloud login:',err);try{await rpcSupabase.auth.signOut()}catch{};const code=String(err?.message||'');let msg='No se pudo iniciar sesión. Verifica tu cuenta y vuelve a intentarlo.';
+              if(code.includes('Invalid login credentials'))msg='Correo o contraseña incorrectos.';else if(code.includes('MFA_REQUIRED'))msg='Se requiere autenticación MFA.';else if(code.includes('PROFILE_READ_FAILED'))msg='La cuenta fue autenticada, pero el perfil no pudo ser cargado. Contacta con Administración.';else if(code.includes('USUARIO_INACTIVO'))msg='Usuario sin empresa o desactivado. Contacta con Administración.';
               q('authError').textContent=msg;q('authError').style.display='block';
             }
           }'''
-
-          restore = r'''async function restoreSession(){
-            try{
-              if(rpcSupabase){
-                const {data:{session}}=await rpcSupabase.auth.getSession();
-                if(session?.user){
-                  const {data:profile,error}=await rpcSupabase
-                    .from('user_profiles')
-                    .select('id,role,display_name,username,employee_id,client_id,company_id,active')
-                    .eq('id',session.user.id)
-                    .maybeSingle();
-                  if(!error&&profile?.active&&profile.company_id){
-                    currentUser={id:session.user.id,email:session.user.email,name:profile.display_name||session.user.email,displayName:profile.display_name||session.user.email,username:profile.username||null,employee_id:profile.employee_id||null,client_id:profile.client_id||null,role:String(profile.role||'').toUpperCase(),company_id:profile.company_id,aal:null};
-                    currentRole=currentUser.role;
-                    sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));
-                    q('authScreen').style.display='none';applyRoleUI();go(roleHome());
-                    if(currentRole==='ADMIN')loadCloudState();
-                    return true;
-                  }
-                }
-              }
-            }catch(e){console.warn('restoreSession',e)}
-            try{sessionStorage.removeItem('RPC_V78_SESSION')}catch{}
-            q('authScreen').style.display='grid';return false
-          }'''
-
-          s2, n1 = re.subn(r'async function login\(ev\)\{.*?\n\}\nfunction roleHome\(\)', login + "\nfunction roleHome()", s, count=1, flags=re.S)
-          if n1 != 1:
-              raise SystemExit('login block not found')
-          s2, n2 = re.subn(r'async function restoreSession\(\)\{.*?\n\}\n\nlet cloudSaveTimer=', restore + "\n\nlet cloudSaveTimer=", s2, count=1, flags=re.S)
-          if n2 != 1:
-              raise SystemExit('restoreSession block not found')
-          p.write_text(s2, encoding='utf-8')
-          print('production login patch applied')
+          restore=r'''async function restoreSession(){
+            try{if(rpcSupabase){const {data:{session}}=await rpcSupabase.auth.getSession();if(session?.user){const {data:profile,error}=await rpcSupabase.from('user_profiles').select('id,role,display_name,username,employee_id,client_id,company_id,active').eq('id',session.user.id).maybeSingle();if(!error&&profile?.active&&profile.company_id){currentUser={id:session.user.id,email:session.user.email,name:profile.display_name||session.user.email,displayName:profile.display_name||session.user.email,username:profile.username||null,employee_id:profile.employee_id||null,client_id:profile.client_id||null,role:String(profile.role||'').toUpperCase(),company_id:profile.company_id,aal:null};currentRole=currentUser.role;sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));q('authScreen').style.display='none';applyRoleUI();go(roleHome());if(currentRole==='ADMIN')loadCloudState();return true;}}}}catch(e){console.warn('restoreSession',e)}try{sessionStorage.removeItem('RPC_V78_SESSION')}catch{}q('authScreen').style.display='grid';return false}'''
+          s,n1=re.subn(r'async function login\(ev\)\{.*?\n\}\nfunction roleHome\(\)',login+'\nfunction roleHome()',s,count=1,flags=re.S)
+          if n1!=1: raise SystemExit('login block not found')
+          s,n2=re.subn(r'async function restoreSession\(\)\{.*?\n\}\n\nlet cloudSaveTimer=',restore+'\n\nlet cloudSaveTimer=',s,count=1,flags=re.S)
+          if n2!=1: raise SystemExit('restoreSession block not found')
+          p.write_text(s,encoding='utf-8')
           PY
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
-
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
