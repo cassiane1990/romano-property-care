@@ -240,7 +240,7 @@ const status0=s=>({solicitado:'Solicitado',planeado:'Planeado',a_caminho:'A cami
 function date0(v){return v?new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(v+'T00:00:00')):'—'}
 function actions0(j){
  const editable=['ADMIN','SUPERVISOR','FUNCIONÁRIO','FUNCIONARIO'].includes(svcRole);
- if(!editable)return '<span style="font-size:9px;color:#7b7469">Só leitura</span>';
+ if(!editable)return '<div class="rpc-svc-actions"><button data-view-job="'+esc0(j.id)+'">Ver ficha</button></div>';
  const st=j.status;
  const buttons=[];
  buttons.push(['__view','Ver ficha']);
@@ -367,10 +367,11 @@ async function showJob(jobId){
  h+='<div class="section-title" style="font-size:17px">Checklist de qualidade</div><div id="rpc-checklist-box">';
  (items.data||[]).forEach(it=>{const ch=cm.get(it.id);h+='<label class="rpc-check"><input type="checkbox" data-check-item="'+esc(it.id)+'" '+(ch?.completed?'checked':'')+'><span>'+esc(it.label)+(it.required?' <b>*</b>':'')+(ch?.note?'<small>'+esc(ch.note)+'</small>':'')+'</span></label>'});
  h+='</div><div style="margin:18px 0"><label style="font-size:9px;text-transform:uppercase;color:#7b7469">Nota do checklist</label><input id="rpc-check-note" style="width:100%;margin-top:5px;padding:9px;border:1px solid #e5ddd1;border-radius:9px" placeholder="Nota opcional"></div>';
- h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px"><input id="rpc-media-file" type="file" accept="image/*,video/*" multiple><select id="rpc-media-stage" style="border:1px solid #e5ddd1;border-radius:9px;padding:8px"><option value="antes">Antes</option><option value="execucao" selected>Execução</option><option value="depois">Depois</option></select><button id="rpc-upload-media" class="rpc-primary" type="button">Enviar fotos/vídeos</button></div>';
+ h+=(ctx?.role==='CLIENTE'?'':'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px"><input id="rpc-media-file" type="file" accept="image/*,video/*" multiple><select id="rpc-media-stage" style="border:1px solid #e5ddd1;border-radius:9px;padding:8px"><option value="antes">Antes</option><option value="execucao" selected>Execução</option><option value="depois">Depois</option></select><button id="rpc-upload-media" class="rpc-primary" type="button">Enviar fotos/vídeos</button></div>')+'<div class="section-title" style="font-size:17px">Evidências</div><div id="rpc-media-box" class="rpc-media"></div>';
  h+='<div class="section-title" style="font-size:17px">Evidências</div><div id="rpc-media-box" class="rpc-media"></div>';
  const canSup=['ADMIN','SUPERVISOR'].includes(ctx?.role);if(canSup)h+='<div style="display:flex;gap:8px;margin-top:18px"><button id="rpc-approve-job" class="rpc-primary" type="button">Aprovar serviço</button><button id="rpc-reject-job" class="rpc-secondary" type="button">Rejeitar / pedir correção</button></div>';
  q('#rpc-job-modal-body').innerHTML=h;openM('rpc-job-modal');
+ if(ctx?.role==='CLIENTE')qa('#rpc-checklist-box input').forEach(function(x){x.disabled=true});
  (items.data||[]).forEach(function(it){const cb=q('[data-check-item="'+it.id+'"]');if(cb)cb.addEventListener('change',async function(){const r=await sbp.rpc('rpc_set_job_checklist_item',{p_job_id:jobId,p_item_id:it.id,p_completed:cb.checked,p_note:q('#rpc-check-note')?.value||null});if(r.error){cb.checked=!cb.checked;alert(r.error.message)}})});
  q('#rpc-upload-media')?.addEventListener('click',function(){uploadMedia(jobId)});
  q('#rpc-approve-job')?.addEventListener('click',function(){supervise(jobId,true)});
