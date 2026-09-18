@@ -45,6 +45,11 @@ body.rpc-locked .app{display:none!important}
 .rpc-check{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee8df;font-size:12px}
 .rpc-check input{margin-top:3px}.rpc-check small{display:block;color:#9a9185;margin-top:3px}.rpc-media{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.rpc-media-item{border:1px solid #e7dfd3;border-radius:12px;padding:8px;background:#fff}.rpc-media-item img,.rpc-media-item video{width:100%;height:150px;object-fit:cover;border-radius:8px;background:#f2ede5}.rpc-media-item a{display:block;font-size:9px;color:#655a4e;margin-top:6px}.rpc-kpi{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}.rpc-pill{background:#f2ede5;border-radius:999px;padding:6px 9px;font-size:9px;color:#655a4e}
 @media(max-width:700px){.rpc-form{grid-template-columns:1fr}.rpc-form .full{grid-column:auto}.rpc-media{grid-template-columns:1fr 1fr}.rpc-modal-box{padding:18px}}
+</style><style id="rpc-finance-css">
+#rpc-finance-live{display:none}.rpc-finance-panel{display:none}.rpc-finance-panel.admin-visible{display:block}
+.rpc-finance-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.rpc-finance-summary .card{padding:16px}.rpc-finance-table{width:100%;border-collapse:collapse;font-size:11px;min-width:900px}.rpc-finance-table th{text-align:left;color:#7b7469;text-transform:uppercase;letter-spacing:.1em;font-size:9px;padding:10px;border-bottom:1px solid #e7dfd3}.rpc-finance-table td{padding:11px 10px;border-bottom:1px solid #eee8df;vertical-align:middle}.rpc-finance-status{display:inline-flex;border-radius:999px;padding:5px 8px;background:#f0ebe3;color:#655a4e;font-size:9px}.rpc-finance-actions{display:flex;gap:6px;flex-wrap:wrap}.rpc-finance-actions button{border:1px solid #e7dfd3;background:#fff;border-radius:8px;padding:6px 8px;font-size:9px;cursor:pointer}.rpc-finance-actions button:hover{border-color:#b9975b}
+@media(max-width:800px){.rpc-finance-summary{grid-template-columns:1fr 1fr}}
 </style></head>
 <body class="rpc-locked"><div id="rpc-auth" class="hidden">
   <div class="box">
@@ -99,7 +104,27 @@ body.rpc-locked .app{display:none!important}
     <div id="rpc-services-list" style="overflow:auto"><div class="empty">A carregar serviços…</div></div>
   </div>
 </div>
-<div id="rpc-workspace" class="section">
+<div id="rpc-finance-panel" class="section rpc-finance-panel">
+<div class="section-title">Financeiro</div><div class="card">
+<div class="rpc-toolbar" style="margin-bottom:14px"><button id="rpc-finance-refresh" class="rpc-primary">Atualizar financeiro</button><button id="rpc-finance-statuses" class="rpc-secondary">Atualizar estados</button></div>
+<div id="rpc-finance-msg" style="font-size:11px;color:#7b7469;margin-bottom:10px"></div>
+<div class="rpc-finance-summary">
+<div class="card"><div class="label">Documentos</div><div id="rpc-fd" class="value">—</div></div>
+<div class="card"><div class="label">Total</div><div id="rpc-ftotal" class="value">—</div></div>
+<div class="card"><div class="label">Cobrado</div><div id="rpc-fpaid" class="value">—</div></div>
+<div class="card"><div class="label">Pendiente</div><div id="rpc-fout" class="value">—</div></div>
+</div>
+<div id="rpc-finance-list"><div class="empty" style="height:150px">Selecione Financeiro para carregar os dados.</div></div>
+</div></div>
+<div id="rpc-finance-payment-modal" class="rpc-modal hidden"><div class="rpc-modal-box">
+<div class="rpc-modal-head"><div><h2 class="rpc-modal-title">Registar pagamento</h2><div class="rpc-modal-sub">O pagamento será gravado através do RPC financeiro.</div></div><button class="rpc-close" data-close="rpc-finance-payment-modal">Fechar</button></div>
+<form id="rpc-finance-payment-form" class="rpc-form">
+<div><label>Valor</label><input id="rpc-pay-amount" type="number" min="0.01" step="0.01" required></div>
+<div><label>Método</label><select id="rpc-pay-method"><option>TRANSFERENCIA</option><option>CARTAO</option><option>EFECTIVO</option><option>OTRO</option></select></div>
+<div><label>Referência</label><input id="rpc-pay-reference"></div><div><label>Observações</label><input id="rpc-pay-notes"></div>
+<div class="full" style="display:flex;justify-content:flex-end;gap:8px"><button type="button" class="rpc-secondary" data-close="rpc-finance-payment-modal">Cancelar</button><button class="rpc-primary">Registar pagamento</button></div>
+</form><div id="rpc-pay-msg" style="font-size:11px;color:#7b7469;margin-top:10px"></div>
+</div></div><div id="rpc-workspace" class="section">
   <div class="section-title">Gestão operacional</div>
   <div class="card">
     <div class="rpc-toolbar" style="margin-bottom:14px">
@@ -526,4 +551,28 @@ async function team(){
 async function open(name){q('#rpc-workspace-body').innerHTML='<div class="empty" style="height:150px">A carregar…</div>';q('#rpc-workspace-msg').textContent='';try{if(name==='agenda')await agenda();if(name==='properties')await properties();if(name==='clients')await clients();if(name==='team')await team()}catch(x){q('#rpc-workspace-msg').textContent='Erro: '+x.message;q('#rpc-workspace-body').innerHTML='<div class="empty" style="height:120px">Não foi possível carregar esta área.</div>'}}
 document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('[data-work]').forEach(b=>b.addEventListener('click',()=>open(b.dataset.work)))});
 })();
-</script></body></html>
+</script><script id="rpc-finance-runtime">(function(){
+'use strict';
+const sf=window.supabase?.createClient?.('https://dhzptogrzuqreflcnsnb.supabase.co','sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});if(!sf)return;
+const q=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>\"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[ch])), money=v=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(Number(v||0));let docs=[],payDoc=null;
+function financeAllowed(ctx){return ctx?.role==='ADMIN'}
+async function ctx(){const r=await sf.rpc('rpc_auth_context');if(r.error)throw r.error;return r.data}
+async function loadFinance(){
+ const c=await ctx();const panel=q('#rpc-finance-panel');if(!panel)return;
+ if(!financeAllowed(c)){panel.classList.remove('admin-visible');panel.style.display='none';return}
+ panel.classList.add('admin-visible');panel.style.display='block';q('#rpc-finance-list').innerHTML='<div class="empty" style="height:130px">A carregar documentos financeiros…</div>';
+ const r=await sf.from('rpc_finance_documents').select('id,job_id,client_id,document_type,number,period,base_amount,vat_amount,total_amount,paid_amount,status,issued_at,due_at,paid_at,sent_status,fiscal_series,fiscal_number,veri_factu_status,currency').order('issued_at',{ascending:false}).limit(500);
+ if(r.error)throw r.error;docs=r.data||[];
+ const total=docs.reduce((a,x)=>a+Number(x.total_amount||0),0),paid=docs.reduce((a,x)=>a+Number(x.paid_amount||0),0);
+ q('#rpc-fd').textContent=String(docs.length);q('#rpc-ftotal').textContent=money(total);q('#rpc-fpaid').textContent=money(paid);q('#rpc-fout').textContent=money(total-paid);
+ const ids=docs.map(x=>x.client_id).filter(Boolean);let cm=new Map();if(ids.length){const cr=await sf.from('rpc_clients').select('id,name').in('id',[...new Set(ids)]);if(cr.error)throw cr.error;cm=new Map((cr.data||[]).map(x=>[x.id,x]))}
+ if(!docs.length){q('#rpc-finance-list').innerHTML='<div class="empty" style="height:130px">Nenhum documento financeiro acessível.</div>';return}
+ q('#rpc-finance-list').innerHTML='<div style="overflow:auto"><table class="rpc-finance-table"><thead><tr><th>Documento</th><th>Cliente</th><th>Emissão</th><th>Vencimento</th><th>Total</th><th>Pago</th><th>Estado</th><th>Fiscal</th><th>Ações</th></tr></thead><tbody>'+docs.map(d=>'<tr><td><b>'+esc(d.number||d.document_type||'Documento')+'</b><br><span style="color:#7b7469">'+esc(d.period||'')+'</span></td><td>'+esc(cm.get(d.client_id)?.name||'—')+'</td><td>'+esc(d.issued_at||'—')+'</td><td>'+esc(d.due_at||d.due_date||'—')+'</td><td>'+money(d.total_amount)+'</td><td>'+money(d.paid_amount)+'</td><td><span class="rpc-finance-status">'+esc(d.status||'—')+'</span></td><td>'+esc([d.fiscal_series,d.fiscal_number,d.veri_factu_status].filter(Boolean).join(' · ')||'—')+'</td><td><div class="rpc-finance-actions"><button data-pay="'+esc(d.id)+'">Pagamento</button><button data-fiscal="'+esc(d.id)+'">Preparar fiscal</button></div></td></tr>').join('')+'</tbody></table></div>';
+ q('#rpc-finance-list').querySelectorAll('[data-pay]').forEach(b=>b.addEventListener('click',()=>{payDoc=b.dataset.pay;q('#rpc-pay-amount').value='';q('#rpc-pay-reference').value='';q('#rpc-pay-notes').value='';q('#rpc-pay-msg').textContent='';q('#rpc-finance-payment-modal').classList.remove('hidden')}));
+ q('#rpc-finance-list').querySelectorAll('[data-fiscal]').forEach(b=>b.addEventListener('click',async()=>{b.disabled=true;const r=await sf.rpc('rpc_prepare_fiscal_invoice',{p_document_id:b.dataset.fiscal});if(r.error){q('#rpc-finance-msg').textContent='Fiscal: '+r.error.message;b.disabled=false;return}q('#rpc-finance-msg').textContent='Registo fiscal preparado no backend.';await loadFinance()}));
+}
+async function pay(e){e.preventDefault();if(!payDoc)return;q('#rpc-pay-msg').textContent='A registar…';const r=await sf.rpc('rpc_finance_register_payment',{p_document_id:payDoc,p_amount:Number(q('#rpc-pay-amount').value),p_method:q('#rpc-pay-method').value,p_reference:q('#rpc-pay-reference').value.trim()||null,p_notes:q('#rpc-pay-notes').value.trim()||null});if(r.error){q('#rpc-pay-msg').textContent='Erro: '+r.error.message;return}q('#rpc-pay-msg').textContent='Pagamento registado.';setTimeout(()=>{q('#rpc-finance-payment-modal').classList.add('hidden');loadFinance()},400)}
+async function refreshStatuses(){const r=await sf.rpc('rpc_finance_refresh_statuses');if(r.error){q('#rpc-finance-msg').textContent='Não foi possível atualizar estados: '+r.error.message;return}q('#rpc-finance-msg').textContent='Estados financeiros atualizados ('+r.data+').';await loadFinance()}
+document.addEventListener('DOMContentLoaded',()=>{q('#rpc-finance-refresh')?.addEventListener('click',()=>loadFinance().catch(e=>q('#rpc-finance-msg').textContent=e.message));q('#rpc-finance-statuses')?.addEventListener('click',()=>refreshStatuses());q('#rpc-finance-payment-form')?.addEventListener('submit',pay);q('[data-close="rpc-finance-payment-modal"]')?.addEventListener('click',()=>q('#rpc-finance-payment-modal').classList.add('hidden'));q('#rpc-finance-panel')?.addEventListener('click',e=>{if(e.target.id==='rpc-finance-panel')e.target.classList.remove('admin-visible')});
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{const n=b.querySelector('span')?.textContent||'';if(n==='Facturación'||n==='Facturas'||n==='Pagos y recibos'||n==='Costes y márgenes'||n==='Informes'){ctx().then(c=>{if(c.role==='ADMIN'){q('#rpc-finance-panel').style.display='block';loadFinance().catch(x=>q('#rpc-finance-msg').textContent=x.message)}})}}));
+});})();</script></body></html>
