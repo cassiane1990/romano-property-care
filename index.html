@@ -464,7 +464,12 @@ function applyRoleUI(){buildNav();let prof=profileDisplay();let av=q('avatar');i
 async function restoreSession(){try{if(rpcSupabase){let {data:{session}}=await rpcSupabase.auth.getSession();if(session?.user){let ctx=await directAuthContext(session.user);if(ctx?.active){currentUser={id:session.user.id,email:session.user.email,displayName:ctx.display_name,name:ctx.display_name,role:ctx.role,company_id:ctx.company_id,aal:session.aal||'aal1'};currentRole=currentUser.role;q('authScreen').style.display='none';applyRoleUI();go(roleHome());await loadCloudState(false);let changed=await syncAuthEmployeeIntoDb();if(changed)save();await initCloudRealtime();return true;}}}}catch(e){console.warn('restoreSession',e)}q('authScreen').style.display='grid';return false}
 
 let cloudSaveTimer=null,cloudHydrating=false,cloudRealtimeChannel=null;
-async function loadCloudState(showToast=false){if(!rpcSupabase||!currentUser||currentUser.devMode||!navigator.onLine)return false;try{const r=await rpcCloud('state');if(r?.state&&Object.keys(r.state).length){cloudHydrating=true;db=r.state;db.cloudVersion=Number(r.version||db.cloudVersion||0);localStorage.setItem('RPC_V78',JSON.stringify(db));cloudHydrating=false;buildNav();render(currentPage||roleHome());if(showToast)toast('Datos centrales sincronizados');return true;}}catch(e){console.warn('Cloud state load via Edge Function',e)}try{const {data,error}=await rpcSupabase.from('rpc_app_state').select('state,version,updated_at').eq('company_id',currentUser.company_id).maybeSingle();if(error)throw error;if(data?.state&&Object.keys(data.state).length){cloudHydrating=true;db=data.state;db.cloudVersion=Number(data.version||0);localStorage.setItem('RPC_V78',JSON.stringify(db));cloudHydrating=false;buildNav();render(currentPage||roleHome());if(showToast)toast('Datos centrales sincronizados');return true;}}catch(e){console.warn('Cloud state direct fallback',e)}return false}
+
+async function refreshDashboard360(){
+ if(!rpcSupabase||!currentUser||currentUser.devMode||!navigator.onLine)return null;
+ try{const {data,error}=await rpcSupabase.rpc('rpc_dashboard_360');if(error)throw error;db.dashboard360=data||null;return data}catch(e){console.warn('Dashboard 360',e);return null}
+}
+async function loadCloudState(showToast=false){if(!rpcSupabase||!currentUser||currentUser.devMode||!navigator.onLine)return false;try{const r=await rpcCloud('state');if(r?.state&&Object.keys(r.state).length){cloudHydrating=true;db=r.state;db.cloudVersion=Number(r.version||db.cloudVersion||0);localStorage.setItem('RPC_V78',JSON.stringify(db));cloudHydrating=false;if(currentPage==='dashboard'||roleHome()==='dashboard')await refreshDashboard360();buildNav();render(currentPage||roleHome());if(showToast)toast('Datos centrales sincronizados');return true;}}catch(e){console.warn('Cloud state load via Edge Function',e)}try{const {data,error}=await rpcSupabase.from('rpc_app_state').select('state,version,updated_at').eq('company_id',currentUser.company_id).maybeSingle();if(error)throw error;if(data?.state&&Object.keys(data.state).length){cloudHydrating=true;db=data.state;db.cloudVersion=Number(data.version||0);localStorage.setItem('RPC_V78',JSON.stringify(db));cloudHydrating=false;if(currentPage==='dashboard'||roleHome()==='dashboard')await refreshDashboard360();buildNav();render(currentPage||roleHome());if(showToast)toast('Datos centrales sincronizados');return true;}}catch(e){console.warn('Cloud state direct fallback',e)}return false}
 async function initCloudRealtime(){
   if(!rpcSupabase||!currentUser||currentUser.devMode||!currentUser.company_id)return;
   try{
@@ -562,7 +567,7 @@ function employeeQuick(id){
  for(const k of ['f','m']){try{const t=(await fetch(urls[k],{cache:'no-store'})).text();const src='data:image/jpeg;base64,'+t.trim();document.querySelectorAll('[data-rpc-avatar="'+k+'"]').forEach(x=>x.src=src)}catch(e){console.warn('RPC 3D avatar',k,e)}}
 }
 function dashboard(){
- const ss=db.services||[], emps=(db.employees||[]).filter(x=>x.active!==false);
+ const cloud=db.dashboard360||{}; const ss=db.services||[], emps=(db.employees||[]).filter(x=>x.active!==false);
  const today=todayISO(), todayServices=ss.filter(x=>String(x.date||'')===today);
  const done=todayServices.filter(x=>['Finalizado','Revisado y aprobado','aprovado','finalizado'].includes(String(x.status||''))).length;
  const maint=ss.filter(x=>String(x.category||'').toLowerCase().includes('mantenimiento')).length;
@@ -581,7 +586,7 @@ function dashboard(){
  const activeName=firstSvc?(e(firstSvc.assignedEmployeeId)?.name||first.name):first.name;
  const empLoc=(db.employeeLocations||[]).slice(-6);
  const pins=empLoc.map((x,i)=>'<div class="rpcMapPin" style="left:'+(10+i*14)+'%;top:'+(25+(i%3)*22)+'%"><img data-rpc-avatar="'+(String(x.avatar_type||'limpeza').toLowerCase().includes('man')?'m':'f')+'"><b></b></div>').join('');
- const kpi=[[(emps.length||0),'Profesionales activos'],[todayServices.length,'Servicios hoy'],[maint,'En mantenimiento'],[done,'Finalizados'],['98%','Satisfacción clientes'],[(db.incidents||[]).filter(x=>x.status!=='resuelta').length,'Incidencias']];
+ const kpi=[[cloud.employees_count??(emps.length||0),'Profesionales activos'],[cloud.jobs_today??todayServices.length,'Servicios hoy'],[cloud.maintenance_open??maint,'En mantenimiento'],[cloud.jobs_finished_today??done,'Finalizados'],[cloud.client_count??(db.clients||[]).length,'Clientes'],[cloud.open_incidents??(db.incidents||[]).filter(x=>x.status!=='resuelta').length,'Incidencias abiertas']];
  return '<div class="rpcDash">'+
  '<div class="rpcDashHero"><div class="rpcDashHeroTop"><div><div class="rpcDashSub">ROMANO PROPERTY CARE · OPERACIÓN PROFESIONAL</div><div class="rpcDashTitle">ESTADOS DEL SERVICIO</div><div class="rpcDashSub">PERSONAS REALES · RESULTADOS REALES</div></div><div class="rpcDashValues"><span class="rpcDashValue">♥ CALIDAD</span><span class="rpcDashValue">◆ COMPROMISO</span><span class="rpcDashValue">◆ ORGANIZACIÓN</span><span class="rpcDashValue">◆ TRANQUILIDAD</span></div></div></div>'+
  '<section><div class="rpcTeamTitle">EQUIPO DE LIMPIEZA</div><div class="rpcTeamGrid">'+cards('f')+'</div></section>'+
