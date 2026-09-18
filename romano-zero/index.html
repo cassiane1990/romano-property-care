@@ -12,8 +12,38 @@
     @media(max-width:900px){.sidebar{display:none}.main{margin-left:0;width:100%}.topbar{padding:0 18px}.content{padding:24px 18px 88px}.grid{grid-template-columns:repeat(2,1fr)}.mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#1b1a18;color:#eee;padding:9px;z-index:20;justify-content:space-around}.mobile-nav button{border:0;background:none;color:#ddd;font-size:10px}.mobile-nav button span{display:block;font-size:18px;margin-bottom:2px}}
     @media(max-width:560px){h1{font-size:30px}.grid{grid-template-columns:1fr 1fr}.value{font-size:23px}.card{padding:15px}}
   </style>
-</head>
-<body>
+<style id="rpc-zero-auth">
+#rpc-auth{position:fixed;inset:0;z-index:999;background:radial-gradient(circle at 50% 0,#fffdf9 0,#f7f3ec 55%,#eee6da 100%);display:grid;place-items:center;padding:22px}
+#rpc-auth .box{width:min(430px,100%);background:#fffdf9;border:1px solid #e5ddd1;border-radius:26px;padding:34px;box-shadow:0 28px 90px rgba(39,31,22,.14)}
+#rpc-auth .mark{width:62px;height:62px;border:1px solid #b9975b;border-radius:50%;display:grid;place-items:center;color:#b9975b;font:34px Georgia,serif;margin:0 auto 15px}
+#rpc-auth h2{font:26px Georgia,serif;text-align:center;font-weight:500;margin:0 0 6px}
+#rpc-auth p{font-size:12px;color:#7b7469;text-align:center;margin:0 0 24px}
+#rpc-auth label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:#7b7469;margin:13px 0 6px}
+#rpc-auth input{width:100%;padding:13px;border:1px solid #e5ddd1;border-radius:11px;outline:none;background:#fff}
+#rpc-auth input:focus{border-color:#b9975b;box-shadow:0 0 0 3px rgba(185,151,91,.12)}
+#rpc-auth button{width:100%;border:0;border-radius:11px;padding:13px;background:#1b1917;color:#fff;margin-top:15px}
+#rpc-auth .err{background:#f8ebe8;border:1px solid #e6c9c3;color:#80483f;padding:10px;border-radius:10px;font-size:11px;margin:12px 0}
+#rpc-auth .note{font-size:10px;line-height:1.5;margin-top:17px}
+body.rpc-locked .app{display:none!important}
+</style></head>
+<body class="rpc-locked"><div id="rpc-auth" class="hidden">
+  <div class="box">
+    <div class="mark">R</div>
+    <h2>ROMANO PROPERTY CARE</h2>
+    <p>Centro de controlo · produção</p>
+    <div id="rpc-auth-err" class="err hidden"></div>
+    <form id="rpc-login">
+      <label for="rpc-email">E-mail</label><input id="rpc-email" type="email" autocomplete="username" required>
+      <label for="rpc-password">Palavra-passe</label><input id="rpc-password" type="password" autocomplete="current-password" required>
+      <button id="rpc-login-btn" type="submit">Entrar</button>
+    </form>
+    <div id="rpc-mfa" class="hidden">
+      <label for="rpc-code">Código MFA</label><input id="rpc-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+      <button id="rpc-mfa-btn" type="button">Validar código</button>
+    </div>
+    <div class="note">Autenticação por Supabase Auth. O acesso e os dados são controlados no backend por sessão, papel e RLS.</div>
+  </div>
+</div>
 <div class="app">
   <aside class="sidebar">
     <div class="brand"><div class="brand-mark">R</div><div class="brand-name">ROMANO</div><div class="brand-sub">PROPERTY CARE</div></div>
@@ -36,4 +66,90 @@
   </main>
   <nav class="mobile-nav"><button>⌂<span>Inicio</span></button><button>◈<span>Operación</span></button><button>◷<span>Agenda</span></button><button>◌<span>Chat</span></button><button>☰<span>Menú</span></button></nav>
 </div>
-</body></html>
+<script id="rpc-zero-runtime">
+(function(){
+  'use strict';
+  const U='https://dhzptogrzuqreflcnsnb.supabase.co';
+  const K='sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN';
+  const client=window.supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  let context=null,factor=null;
+  const el=s=>document.querySelector(s), all=s=>document.querySelectorAll(s);
+  const errText=e=>{const m=e?.message||String(e||'');return m.includes('Invalid login credentials')?'E-mail ou palavra-passe incorretos.':m.includes('Email not confirmed')?'O e-mail ainda não foi confirmado.':m};
+  const setErr=m=>{el('#rpc-auth-err').textContent=m;el('#rpc-auth-err').classList.remove('hidden')};
+  const clearErr=()=>el('#rpc-auth-err').classList.add('hidden');
+  const roleName=r=>r==='FUNCIONARIO'?'FUNCIONÁRIO':(r||'—');
+  const fmtMoney=v=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(Number(v||0));
+  function locked(){document.body.classList.add('rpc-locked');el('#rpc-auth').classList.remove('hidden')}
+  function unlocked(){document.body.classList.remove('rpc-locked');el('#rpc-auth').classList.add('hidden')}
+  async function context(){
+    const r=await client.rpc('rpc_auth_context');if(r.error)throw r.error;
+    if(!r.data?.authenticated)throw new Error('Sessão não autenticada.');
+    if(!r.data.active)throw new Error('Utilizador inativo.');
+    return r.data;
+  }
+  async function mfaGate(){
+    const r=await client.auth.mfa.getAuthenticatorAssuranceLevel();if(r.error)throw r.error;
+    if(r.data?.currentLevel==='aal2'||r.data?.nextLevel!=='aal2')return true;
+    const f=await client.auth.mfa.listFactors();if(f.error)throw f.error;
+    factor=(f.data?.totp||[]).find(x=>x.status==='verified')||null;
+    if(!factor)return true;
+    el('#rpc-login').classList.add('hidden');el('#rpc-mfa').classList.remove('hidden');return false;
+  }
+  async function finish(){
+    context=await context();
+    if(!(await mfaGate()))return;
+    unlocked();
+    const name=context.display_name||context.email||'Romano';
+    const avatar=el('.avatar');if(avatar)avatar.textContent=(name[0]||'R').toUpperCase();
+    const user=el('.user span');if(user)user.textContent=name;
+    const crumb=el('.crumb');if(crumb)crumb.innerHTML='ROMANO PROPERTY CARE · <strong>Dashboard</strong>';
+    await refreshDashboard();
+  }
+  async function refreshDashboard(){
+    const d=await client.rpc('rpc_dashboard_360');if(d.error)throw d.error;
+    const x=d.data||{};
+    const cards=[...all('.card')];
+    const vals=[x.jobs_today??0,x.jobs_open??0,x.incidents_open??0,x.pending_notifications??0];
+    const targets=cards.filter(c=>c.querySelector('.label')).slice(0,4);
+    targets.forEach((c,i)=>{const v=c.querySelector('.value');if(v)v.textContent=String(vals[i])});
+    const lead=el('.lead');if(lead)lead.textContent='Operação real ligada ao Supabase · '+roleName(x.role);
+    const live=el('.empty');if(live)live.textContent='Backend conectado. '+(x.jobs_today??0)+' serviço(s) previsto(s) para hoje.';
+    const f=cards.find(c=>(c.querySelector('.label')?.textContent||'').toLowerCase().includes('facturado'));
+    if(context?.role==='ADMIN'){
+      let section=el('#rpc-finance-live');
+      if(!section){
+        section=document.createElement('div');section.id='rpc-finance-live';section.className='section';
+        section.innerHTML='<div class="section-title">Visão financeira</div><div class="grid" style="margin-top:12px"><div class="card"><div class="label">Facturado</div><div id="rpc-ft" class="value">—</div></div><div class="card"><div class="label">Cobrado</div><div id="rpc-fp" class="value">—</div></div><div class="card"><div class="label">Pendiente</div><div id="rpc-fo" class="value">—</div></div></div>';
+        const content=el('.content');if(content)content.appendChild(section);
+      }
+      el('#rpc-ft').textContent=fmtMoney(x.finance_total);el('#rpc-fp').textContent=fmtMoney(x.finance_paid);el('#rpc-fo').textContent=fmtMoney(x.finance_outstanding);
+    }
+  }
+  async function login(e){
+    e.preventDefault();clearErr();
+    const b=el('#rpc-login-btn');b.disabled=true;b.textContent='A entrar…';
+    try{const r=await client.auth.signInWithPassword({email:el('#rpc-email').value.trim(),password:el('#rpc-password').value});if(r.error)throw r.error;await finish()}
+    catch(ex){setErr(errText(ex))}
+    finally{b.disabled=false;b.textContent='Entrar'}
+  }
+  async function verify(){
+    clearErr();const code=el('#rpc-code').value.trim();
+    if(!factor||!/^[0-9]{6}$/.test(code)){setErr('Introduza o código MFA de 6 dígitos.');return}
+    const b=el('#rpc-mfa-btn');b.disabled=true;
+    try{const c=await client.auth.mfa.challenge({factorId:factor.id});if(c.error)throw c.error;const v=await client.auth.mfa.verify({factorId:factor.id,challengeId:c.data.id,code});if(v.error)throw v.error;await finish()}
+    catch(ex){setErr(errText(ex))}
+    finally{b.disabled=false}
+  }
+  function wire(){
+    el('#rpc-login').addEventListener('submit',login);el('#rpc-mfa-btn').addEventListener('click',verify);
+    const refresh=el('.content button');if(refresh)refresh.addEventListener('click',()=>refreshDashboard().catch(e=>setErr(errText(e))));
+    const buttons=all('.nav button');
+    buttons.forEach(b=>b.addEventListener('click',()=>{if(context&&context.role!=='ADMIN'&&b.textContent.includes('Facturación'))return;const n=b.querySelector('span')?.textContent||b.textContent; if(!['Dashboard'].includes(n)){const old=el('.crumb');if(old)old.innerHTML='ROMANO PROPERTY CARE · <strong>'+n+'</strong>'}}));
+  }
+  client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){context=null;locked()}});
+  document.addEventListener('DOMContentLoaded',async()=>{
+    wire();locked();
+    try{const s=await client.auth.getSession();if(s.data?.session)await finish()}catch(e){setErr(errText(e))}
+  });
+})();
+</script></body></html>
