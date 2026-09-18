@@ -1011,24 +1011,7 @@ function chat(){
   let subtitle=target==='ADMIN_SUPERVISOR'?'Conversación privada entre Administración y Supervisor.':currentRole==='CLIENTE'?'Canal privado y directo con Administración.':'Conversación de equipo: Funcionario, Supervisor y Admin.';
   return `${jornadaBox}<div class="sectionhead"><div><h2>Chat ROMANO</h2><p class="micro">${subtitle}</p></div><button class="contactBtn" onclick="openContacts()">Mis contactos</button></div><div class="grid g2"><div class="card"><h3>Conversaciones</h3><div class="chatList">${threads.map(t=>{let count=db.chat.filter(m=>m.thread===t.id).length;return `<div class="chatItem ${target===t.id?'on':''}" onclick="currentChatTarget='${t.id}';render('chat')"><div class="chatThreadLabel"><b>${esc(t.label)}</b><span class="pill">${count}</span></div><div class="micro">${esc(t.sub)}</div></div>`}).join('')}</div></div><div class="chatBox"><div style="padding:12px;border-bottom:1px solid var(--line);background:#fffaf3"><b>${esc(threads.find(t=>t.id===target)?.label||'Chat')}</b><div class="micro">Cada mensaje muestra nombre, cargo, fecha y hora.</div></div><div class="chatMsgs">${msgs.map(m=>`<div class="msg ${m.from===currentUser?.name?'me':'them'}"><b>${esc(m.from||'Usuario')}</b> <span class="roleBadge">${esc(m.role||'')}</span><br>${esc(m.text)}<small>${esc(m.atDisplay||m.at||'')}</small></div>`).join('')||'<div class="empty">No hay mensajes todavía.</div>'}</div><div style="padding:10px;border-top:1px solid var(--line);display:flex;gap:7px"><input id="chatText" class="field" placeholder="Escriba su mensaje..." onkeydown="if(event.key==='Enter')sendChat()"><button class="actionBtn primary" onclick="sendChat()">Enviar</button></div></div></div>`
 }
-function sendChat(){
-  let text=q('chatText')?.value.trim();if(!text)return;
-  let thread=currentRole==='CLIENTE'?`CLIENTE:${currentClientId()}`:(currentChatTarget||'OPERACION');
-  if(thread==='ADMIN_SUPERVISOR'&&currentRole!=='ADMIN'&&currentRole!=='SUPERVISOR')return;
-  let now=new Date(),atDisplay=now.toLocaleString('es-ES',{dateStyle:'short',timeStyle:'short'});
-  db.chat.push({id:'CH'+Date.now(),thread,from:currentUser?.name||currentRole,role:currentRole,text,at:now.toISOString(),atDisplay});
-  if(thread==='OPERACION'){
-    if(currentRole!=='ADMIN')notify('ADMIN','Nuevo mensaje de equipo',currentUser?.name+': '+text);
-    if(currentRole!=='SUPERVISOR')notify('SUPERVISOR','Nuevo mensaje de equipo',currentUser?.name+': '+text);
-  }else if(thread==='ADMIN_SUPERVISOR'){
-    if(currentRole==='ADMIN')notify('SUPERVISOR','Mensaje de Administración',currentUser?.name+': '+text);
-    if(currentRole==='SUPERVISOR')notify('ADMIN','Mensaje del Supervisor',currentUser?.name+': '+text);
-  }else if(thread.startsWith('CLIENTE:')){
-    if(currentRole==='CLIENTE')notify('ADMIN','Mensaje de cliente',currentUser?.name+': '+text);
-    else if(currentRole==='ADMIN'){let cid=thread.split(':')[1];if(cid)notify('CLIENTE','Respuesta de Administración',text,thread)}
-  }
-  audit('Mensaje chat',currentUser?.name+' → '+(thread==='OPERACION'?'EQUIPO ROMANO':thread==='ADMIN_SUPERVISOR'?'ADMIN ↔ SUPERVISOR':thread));save();render('chat')
-}
+async function sendChat(){let el=q('chatText'),body=el?.value.trim();if(!body)return;let key=currentRole==='CLIENTE'?'CLIENTE:'+currentClientId():(currentChatTarget||'OPERACION');if(rpcSupabase&&!currentUser?.devMode){try{let {data:ts,error}=await rpcSupabase.from('rpc_chat_threads').select('id,thread_type,client_id').eq('company_id',currentUser.company_id);if(error)throw error;let t=(ts||[]).find(x=>key==='OPERACION'?x.thread_type==='INTERNAL':key==='ADMIN_SUPERVISOR'?x.thread_type==='INTERNAL_ADMIN_SUPERVISOR':('CLIENTE:'+x.client_id)===key);if(!t)throw new Error('CONVERSATION_NOT_FOUND');let r=await rpcSupabase.rpc('rpc_chat_send_message',{p_thread_id:t.id,p_message_type:'text',p_body:body});if(r.error)throw r.error;el.value='';toast('Mensaje enviado');return render('chat')}catch(e){console.warn('Real chat send',e);return toast('No se pudo enviar el mensaje.')}}}
 async function logout(){try{if(cloudRealtimeChannel&&rpcSupabase){await rpcSupabase.removeChannel(cloudRealtimeChannel);cloudRealtimeChannel=null;}if(rpcSupabase)await rpcSupabase.auth.signOut()}catch(e){}sessionStorage.removeItem('RPC_V78_SESSION');currentUser=null;currentRole='ADMIN';currentChatTarget='';closeModal();q('authScreen').style.display='grid';q('loginEmail').value='';q('loginPassword').value='';toast('Sesión cerrada correctamente.')}
 if('serviceWorker' in navigator && location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
 document.addEventListener('click',function(ev){const b=ev.target.closest('[data-page]');if(b){ev.preventDefault();go(b.dataset.page)}});
