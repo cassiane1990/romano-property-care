@@ -27,6 +27,24 @@
 body.rpc-locked .app{display:none!important}
 </style><style id="rpc-service-css">
 .rpc-svc-table{width:100%;border-collapse:collapse;font-size:11px;min-width:760px}.rpc-svc-table th{text-align:left;color:#7b7469;text-transform:uppercase;letter-spacing:.1em;font-size:9px;padding:10px;border-bottom:1px solid #e7dfd3}.rpc-svc-table td{padding:12px 10px;border-bottom:1px solid #eee8df;vertical-align:middle}.rpc-svc-status{display:inline-flex;border-radius:999px;padding:5px 8px;background:#f0ebe3;color:#655a4e;font-size:9px}.rpc-svc-actions{display:flex;gap:5px;flex-wrap:wrap}.rpc-svc-actions button{border:1px solid #e7dfd3;background:#fff;border-radius:7px;padding:5px 7px;font-size:9px;cursor:pointer}.rpc-svc-actions button:hover{border-color:#b9975b}.rpc-svc-actions button[data-danger]{color:#8a5149}
+</style>
+<style id="rpc-service-pro-css">
+.rpc-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.rpc-primary{border:0;background:#1b1917;color:#fff;border-radius:10px;padding:9px 13px;font-size:11px;cursor:pointer}
+.rpc-secondary{border:1px solid #e7dfd3;background:#fff;color:#332f2a;border-radius:10px;padding:9px 13px;font-size:11px;cursor:pointer}
+.rpc-modal{position:fixed;inset:0;background:rgba(25,22,18,.42);backdrop-filter:blur(7px);z-index:1000;display:grid;place-items:center;padding:18px}
+.rpc-modal.hidden{display:none}
+.rpc-modal-box{width:min(920px,100%);max-height:92vh;overflow:auto;background:#fffdf9;border:1px solid #e5ddd1;border-radius:22px;box-shadow:0 30px 100px rgba(20,16,12,.25);padding:24px}
+.rpc-modal-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}
+.rpc-modal-title{font:25px Georgia,serif;margin:0 0 5px}.rpc-modal-sub{font-size:11px;color:#7b7469}
+.rpc-close{border:1px solid #e7dfd3;background:#fff;border-radius:9px;padding:7px 10px;cursor:pointer}
+.rpc-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.rpc-form .full{grid-column:1/-1}
+.rpc-form label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#7b7469;display:block;margin-bottom:5px}
+.rpc-form input,.rpc-form select,.rpc-form textarea{width:100%;border:1px solid #e5ddd1;border-radius:9px;background:#fff;padding:10px;font:inherit;font-size:12px;outline:none}
+.rpc-form textarea{min-height:80px;resize:vertical}.rpc-form input:focus,.rpc-form select:focus,.rpc-form textarea:focus{border-color:#b9975b}
+.rpc-check{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee8df;font-size:12px}
+.rpc-check input{margin-top:3px}.rpc-check small{display:block;color:#9a9185;margin-top:3px}.rpc-media{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.rpc-media-item{border:1px solid #e7dfd3;border-radius:12px;padding:8px;background:#fff}.rpc-media-item img,.rpc-media-item video{width:100%;height:150px;object-fit:cover;border-radius:8px;background:#f2ede5}.rpc-media-item a{display:block;font-size:9px;color:#655a4e;margin-top:6px}.rpc-kpi{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}.rpc-pill{background:#f2ede5;border-radius:999px;padding:6px 9px;font-size:9px;color:#655a4e}
+@media(max-width:700px){.rpc-form{grid-template-columns:1fr}.rpc-form .full{grid-column:auto}.rpc-media{grid-template-columns:1fr 1fr}.rpc-modal-box{padding:18px}}
 </style></head>
 <body class="rpc-locked"><div id="rpc-auth" class="hidden">
   <div class="box">
@@ -67,6 +85,11 @@ body.rpc-locked .app{display:none!important}
 <div id="rpc-services" class="section">
   <div class="section-title">Serviços</div>
   <div class="card">
+    
+<div class="rpc-toolbar" style="margin-bottom:12px">
+  <button id="rpc-new-service" class="rpc-primary">+ Nuevo servicio</button>
+  <button id="rpc-service-request" class="rpc-secondary">+ Solicitud de cliente</button>
+</div>
     <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
       <div style="color:#7b7469;font-size:12px">Serviços reais do PostgreSQL · visíveis segundo o perfil e o RLS.</div>
       <button id="rpc-services-refresh" style="border:1px solid #e7dfd3;background:#fff;border-radius:9px;padding:8px 12px;font-size:11px;cursor:pointer">Atualizar</button>
@@ -78,6 +101,46 @@ body.rpc-locked .app{display:none!important}
     </section>
   </main>
   <nav class="mobile-nav"><button>⌂<span>Inicio</span></button><button>◈<span>Operación</span></button><button>◷<span>Agenda</span></button><button>◌<span>Chat</span></button><button>☰<span>Menú</span></button></nav>
+</div>
+
+<div id="rpc-job-modal" class="rpc-modal hidden">
+  <div class="rpc-modal-box">
+    <div class="rpc-modal-head"><div><h2 id="rpc-job-modal-title" class="rpc-modal-title">Serviço</h2><div id="rpc-job-modal-sub" class="rpc-modal-sub"></div></div><button class="rpc-close" data-close="rpc-job-modal">Fechar</button></div>
+    <div id="rpc-job-modal-body"></div>
+  </div>
+</div>
+<div id="rpc-create-modal" class="rpc-modal hidden">
+  <div class="rpc-modal-box">
+    <div class="rpc-modal-head"><div><h2 id="rpc-create-title" class="rpc-modal-title">Novo serviço</h2><div class="rpc-modal-sub">Criação gravada diretamente no PostgreSQL.</div></div><button class="rpc-close" data-close="rpc-create-modal">Fechar</button></div>
+    <form id="rpc-create-form" class="rpc-form">
+      <div><label>Cliente</label><select id="rpc-c-client" required></select></div>
+      <div><label>Propriedade</label><select id="rpc-c-property" required></select></div>
+      <div><label>Categoria</label><select id="rpc-c-category"><option value="LIMPIEZA">Limpeza</option><option value="MANTENIMIENTO">Manutenção</option><option value="LAVANDERIA">Lavandaria</option><option value="OTRO">Outro</option></select></div>
+      <div><label>Tipologia</label><select id="rpc-c-typology"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>T5</option><option value="">Sem tipologia</option></select></div>
+      <div><label>Data</label><input id="rpc-c-date" type="date" required></div>
+      <div><label>Hora</label><input id="rpc-c-time" type="time"></div>
+      <div><label>Duração prevista (minutos)</label><input id="rpc-c-minutes" type="number" min="0" value="120"></div>
+      <div><label>Funcionário</label><select id="rpc-c-employee"><option value="">Auto-dispatch / sem atribuição</option></select></div>
+      <div><label>Supervisor</label><select id="rpc-c-supervisor"><option value="">Sem supervisor</option></select></div>
+      <div class="full"><label>Instruções</label><textarea id="rpc-c-instructions" placeholder="Detalhes operacionais do serviço"></textarea></div>
+      <div class="full" style="display:flex;justify-content:flex-end;gap:8px"><button type="button" class="rpc-secondary" data-close="rpc-create-modal">Cancelar</button><button class="rpc-primary" type="submit">Criar serviço</button></div>
+    </form>
+    <div id="rpc-create-msg" style="font-size:11px;color:#7b7469;margin-top:10px"></div>
+  </div>
+</div>
+<div id="rpc-request-modal" class="rpc-modal hidden">
+  <div class="rpc-modal-box">
+    <div class="rpc-modal-head"><div><h2 class="rpc-modal-title">Solicitar serviço</h2><div class="rpc-modal-sub">A solicitação fica pendente de aprovação da operação.</div></div><button class="rpc-close" data-close="rpc-request-modal">Fechar</button></div>
+    <form id="rpc-request-form" class="rpc-form">
+      <div><label>Propriedade</label><select id="rpc-r-property" required></select></div>
+      <div><label>Tipo de serviço</label><select id="rpc-r-type"><option value="LIMPIEZA">Limpeza</option><option value="MANTENIMIENTO">Manutenção</option><option value="LAVANDERIA">Lavandaria</option><option value="OTRO">Outro</option></select></div>
+      <div><label>Data pretendida</label><input id="rpc-r-date" type="date"></div>
+      <div><label>Hora pretendida</label><input id="rpc-r-time" type="time"></div>
+      <div class="full"><label>Descrição</label><textarea id="rpc-r-description" required placeholder="Descreva o serviço necessário"></textarea></div>
+      <div class="full" style="display:flex;justify-content:flex-end;gap:8px"><button type="button" class="rpc-secondary" data-close="rpc-request-modal">Cancelar</button><button class="rpc-primary" type="submit">Enviar solicitação</button></div>
+    </form>
+    <div id="rpc-request-msg" style="font-size:11px;color:#7b7469;margin-top:10px"></div>
+  </div>
 </div>
 <script id="rpc-zero-runtime">
 (function(){
@@ -180,11 +243,12 @@ function actions0(j){
  if(!editable)return '<span style="font-size:9px;color:#7b7469">Só leitura</span>';
  const st=j.status;
  const buttons=[];
+ buttons.push(['__view','Ver ficha']);
  if(['solicitado','planeado','AGENDADO'].includes(st))buttons.push(['a_caminho','Iniciar deslocação']);
  if(['a_caminho','A_CAMINO'].includes(st))buttons.push(['em_andamento','Iniciar serviço']);
  if(['em_andamento','EM_ANDAMENTO'].includes(st))buttons.push(['pausado','Pausar'],['finalizado','Finalizar']);
  if(st==='pausado')buttons.push(['em_andamento','Retomar']);
- return '<div class="rpc-svc-actions">'+buttons.map(x=>'<button data-job="'+esc0(j.id)+'" data-status="'+esc0(x[0])+'">'+esc0(x[1])+'</button>').join('')+'</div>';
+ return '<div class="rpc-svc-actions">'+buttons.map(x=>x[0]==='__view'?'<button data-view-job="'+esc0(j.id)+'">'+esc0(x[1])+'</button>':'<button data-job="'+esc0(j.id)+'" data-status="'+esc0(x[0])+'">'+esc0(x[1])+'</button>').join('')+'</div>';
 }
 async function load0(){
  const box=qs('#rpc-services-list');if(!box)return;
@@ -218,4 +282,146 @@ document.addEventListener('DOMContentLoaded',()=>{
  const app=document.querySelector('.app');if(app)obs.observe(app,{attributes:true,attributeFilter:['class']});
 });
 })();
+</script>
+<script id="rpc-service-pro-runtime">
+(function(){
+'use strict';
+const sbp=window.supabase?.createClient?.('https://dhzptogrzuqreflcnsnb.supabase.co','sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+if(!sbp)return;
+const q=s=>document.querySelector(s), qa=s=>document.querySelectorAll(s), esc=s=>String(s??'').replace(/[&<>\"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#039;'}[ch]});
+let ctx=null, staff=[], clients=[], props=[], activeJob=null;
+const msg=(id,t)=>{const x=q(id);if(x)x.textContent=t||''};
+function openM(id){q('#'+id)?.classList.remove('hidden')}
+function closeM(id){q('#'+id)?.classList.add('hidden')}
+function setToday(){const d=new Date();const x=d.toISOString().slice(0,10);if(q('#rpc-c-date'))q('#rpc-c-date').value=x;if(q('#rpc-r-date'))q('#rpc-r-date').value=x}
+function fillSelect(id,items,placeholder,getLabel){
+ const s=q(id);if(!s)return;s.innerHTML=placeholder?'<option value="">'+esc(placeholder)+'</option>':'';
+ items.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=getLabel(x);s.appendChild(o)});
+}
+async function loadLists(){
+ const c=await sbp.rpc('rpc_auth_context');if(c.error)throw c.error;ctx=c.data;
+ const cr=await sbp.from('rpc_clients').select('id,name').order('name').limit(500);if(cr.error)throw cr.error;clients=cr.data||[];
+ const pr=await sbp.from('rpc_properties').select('id,client_id,name,property_code,typology').order('name').limit(1000);if(pr.error)throw pr.error;props=pr.data||[];
+ fillSelect('#rpc-c-client',clients,'Selecione o cliente',x=>x.name||x.id);
+ fillSelect('#rpc-r-property',props,'Selecione a propriedade',x=>(x.name||x.property_code||x.id));
+ const emp=(await sbp.rpc('rpc_service_staff'));if(emp.error)throw emp.error;staff=emp.data||[];
+ fillSelect('#rpc-c-employee',staff.filter(x=>['FUNCIONÁRIO','FUNCIONARIO','EMPLOYEE'].includes(x.role)),'Auto-dispatch / sem atribuição',x=>x.display_name);
+ fillSelect('#rpc-c-supervisor',staff.filter(x=>x.role==='SUPERVISOR'),'Sem supervisor',x=>x.display_name);
+ const cc=q('#rpc-c-client');if(cc)cc.onchange=function(){fillSelect('#rpc-c-property',props.filter(x=>x.client_id===cc.value),'Selecione a propriedade',x=>(x.name||x.property_code||x.id))};
+}
+function createAllowed(){return ['ADMIN','SUPERVISOR'].includes(ctx?.role)}
+function requestAllowed(){return ctx?.role==='CLIENTE'}
+async function openCreate(){
+ if(!createAllowed()){msg('#rpc-services-msg','A criação manual está disponível para Admin/Supervisor.');return}
+ try{await loadLists();setToday();openM('rpc-create-modal')}catch(e){msg('#rpc-services-msg','Não foi possível carregar os dados: '+e.message)}
+}
+async function openRequest(){
+ if(!requestAllowed()){openCreate();return}
+ try{
+   const c=ctx.client_id;
+   const mine=props.filter(x=>String(x.client_id)===String(c));
+   fillSelect('#rpc-r-property',mine,'Selecione a propriedade',x=>(x.name||x.property_code||x.id));
+   setToday();openM('rpc-request-modal');
+ }catch(e){msg('#rpc-services-msg',e.message)}
+}
+async function createJob(e){
+ e.preventDefault();msg('#rpc-create-msg','A criar…');
+ const a=await sbp.rpc('rpc_create_job',{
+  p_client_id:q('#rpc-c-client').value,p_property_id:q('#rpc-c-property').value,p_category:q('#rpc-c-category').value,
+  p_typology:q('#rpc-c-typology').value||null,p_scheduled_date:q('#rpc-c-date').value,p_scheduled_start:q('#rpc-c-time').value||null,
+  p_expected_minutes:Number(q('#rpc-c-minutes').value||120),p_assigned_employee_id:q('#rpc-c-employee').value||null,
+  p_supervisor_id:q('#rpc-c-supervisor').value||null,p_instructions:q('#rpc-c-instructions').value.trim()||null,p_company_id:ctx.company_id||null
+ });
+ if(a.error){msg('#rpc-create-msg','Erro: '+a.error.message);return}
+ msg('#rpc-create-msg','Serviço criado no backend.');setTimeout(function(){closeM('rpc-create-modal');window.dispatchEvent(new Event('rpc-service-refresh'))},400);
+}
+async function requestService(e){
+ e.preventDefault();msg('#rpc-request-msg','A enviar…');
+ const propertyId=q('#rpc-r-property').value;
+ const p=props.find(x=>x.id===propertyId);
+ if(!p){msg('#rpc-request-msg','Selecione uma propriedade.');return}
+ const r=await sbp.from('rpc_service_requests').insert({
+   client_id:ctx.client_id,property_id:propertyId,requested_by:ctx.id||ctx.user_id,
+   service_type:q('#rpc-r-type').value,description:q('#rpc-r-description').value.trim(),
+   requested_date:q('#rpc-r-date').value||null,requested_time:q('#rpc-r-time').value||null,
+   company_id:ctx.company_id
+ }).select('id').single();
+ if(r.error){msg('#rpc-request-msg','Erro: '+r.error.message);return}
+ msg('#rpc-request-msg','Solicitação enviada e registada.');setTimeout(function(){closeM('rpc-request-modal')},500);
+}
+async function showJob(jobId){
+ const rows=await sbp.from('rpc_jobs').select('*').eq('id',jobId).limit(1);if(rows.error)throw rows.error;const j=rows.data?.[0];if(!j)throw new Error('Serviço não encontrado ou sem acesso.');
+ activeJob=j;
+ const p=props.find(x=>x.id===j.property_id);const cl=clients.find(x=>x.id===j.client_id);
+ q('#rpc-job-modal-title').textContent=p?.name||'Serviço';
+ q('#rpc-job-modal-sub').textContent=[cl?.name,j.category,j.typology,j.status].filter(Boolean).join(' · ');
+ const [items,checks,media]=await Promise.all([
+  sbp.from('rpc_checklist_items').select('id,label,required,sort_order,template_id').order('sort_order'),
+  sbp.from('rpc_job_checklist').select('item_id,completed,note').eq('job_id',jobId),
+  sbp.from('rpc_media').select('id,media_type,stage,storage_path,caption,created_at').eq('job_id',jobId).order('created_at',{ascending:false})
+ ]);
+ if(items.error)throw items.error;if(checks.error)throw checks.error;if(media.error)throw media.error;
+ const cm=new Map((checks.data||[]).map(x=>[x.item_id,x]));
+ const done=(items.data||[]).filter(x=>cm.get(x.id)?.completed).length;
+ let h='<div class="rpc-kpi"><span class="rpc-pill">Estado: '+esc(j.status)+'</span><span class="rpc-pill">Checklist: '+done+'/'+(items.data||[]).length+'</span><span class="rpc-pill">Media: '+(media.data||[]).length+'</span></div>';
+ h+='<div class="section-title" style="font-size:17px">Checklist de qualidade</div><div id="rpc-checklist-box">';
+ (items.data||[]).forEach(it=>{const ch=cm.get(it.id);h+='<label class="rpc-check"><input type="checkbox" data-check-item="'+esc(it.id)+'" '+(ch?.completed?'checked':'')+'><span>'+esc(it.label)+(it.required?' <b>*</b>':'')+(ch?.note?'<small>'+esc(ch.note)+'</small>':'')+'</span></label>'});
+ h+='</div><div style="margin:18px 0"><label style="font-size:9px;text-transform:uppercase;color:#7b7469">Nota do checklist</label><input id="rpc-check-note" style="width:100%;margin-top:5px;padding:9px;border:1px solid #e5ddd1;border-radius:9px" placeholder="Nota opcional"></div>';
+ h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px"><input id="rpc-media-file" type="file" accept="image/*,video/*" multiple><select id="rpc-media-stage" style="border:1px solid #e5ddd1;border-radius:9px;padding:8px"><option value="antes">Antes</option><option value="execucao" selected>Execução</option><option value="depois">Depois</option></select><button id="rpc-upload-media" class="rpc-primary" type="button">Enviar fotos/vídeos</button></div>';
+ h+='<div class="section-title" style="font-size:17px">Evidências</div><div id="rpc-media-box" class="rpc-media"></div>';
+ const canSup=['ADMIN','SUPERVISOR'].includes(ctx?.role);if(canSup)h+='<div style="display:flex;gap:8px;margin-top:18px"><button id="rpc-approve-job" class="rpc-primary" type="button">Aprovar serviço</button><button id="rpc-reject-job" class="rpc-secondary" type="button">Rejeitar / pedir correção</button></div>';
+ q('#rpc-job-modal-body').innerHTML=h;openM('rpc-job-modal');
+ (items.data||[]).forEach(function(it){const cb=q('[data-check-item="'+it.id+'"]');if(cb)cb.addEventListener('change',async function(){const r=await sbp.rpc('rpc_set_job_checklist_item',{p_job_id:jobId,p_item_id:it.id,p_completed:cb.checked,p_note:q('#rpc-check-note')?.value||null});if(r.error){cb.checked=!cb.checked;alert(r.error.message)}})});
+ q('#rpc-upload-media')?.addEventListener('click',function(){uploadMedia(jobId)});
+ q('#rpc-approve-job')?.addEventListener('click',function(){supervise(jobId,true)});
+ q('#rpc-reject-job')?.addEventListener('click',function(){const n=prompt('Motivo da correção:');if(n!==null)supervise(jobId,false,n)});
+ renderMedia(media.data||[]);
+}
+async function renderMedia(rows){
+ const box=q('#rpc-media-box');if(!box)return;
+ if(!rows.length){box.innerHTML='<div class="empty" style="grid-column:1/-1;height:100px">Ainda não há fotos ou vídeos.</div>';return}
+ const out=[];
+ for(const m of rows){const s=await sbp.storage.from('rpc-media').createSignedUrl(m.storage_path,3600);if(s.error)continue;const u=s.data?.signedUrl;if(!u)continue;out.push('<div class="rpc-media-item">'+(String(m.media_type).includes('video')?'<video controls src="'+esc(u)+'"></video>':'<img loading="lazy" src="'+esc(u)+'" alt="">')+'<a href="'+esc(u)+'" target="_blank" rel="noopener">Abrir evidência · '+esc(m.stage)+'</a></div>')}
+ box.innerHTML=out.join('')||'<div class="empty" style="grid-column:1/-1;height:100px">Sem evidências disponíveis.</div>';
+}
+async function uploadMedia(jobId){
+ const input=q('#rpc-media-file');const files=[...(input?.files||[])];if(!files.length){alert('Selecione pelo menos um ficheiro.');return}
+ const stage=q('#rpc-media-stage')?.value||'execucao';msg('#rpc-services-msg','A enviar evidências…');
+ for(const file of files){
+   const ext=(file.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'');
+   const path='jobs/'+jobId+'/'+stage+'/'+crypto.randomUUID()+'.'+ext;
+   const up=await sbp.storage.from('rpc-media').upload(path,file,{contentType:file.type||undefined,upsert:false});
+   if(up.error){msg('#rpc-services-msg','Falha no upload: '+up.error.message);continue}
+   const reg=await sbp.rpc('rpc_register_service_media',{p_job_id:jobId,p_storage_path:path,p_media_type:file.type?.startsWith('video/')?'video':'image',p_stage:stage,p_mime:file.type||null});
+   if(reg.error){msg('#rpc-services-msg','Upload feito, mas registo falhou: '+reg.error.message)}
+ }
+ msg('#rpc-services-msg','Evidências processadas no backend.');showJob(jobId).catch(function(e){msg('#rpc-services-msg',e.message)});
+}
+async function supervise(jobId,approved,note){
+ const r=await sbp.rpc('rpc_supervise_job',{p_job_id:jobId,p_approved:approved,p_notes:note||null});if(r.error){alert(r.error.message);return}
+ closeM('rpc-job-modal');window.dispatchEvent(new Event('rpc-service-refresh'));
+}
+function wire(){
+ q('#rpc-new-service')?.addEventListener('click',openCreate);
+ q('#rpc-service-request')?.addEventListener('click',function(){openRequest().catch(function(e){msg('#rpc-services-msg',e.message)})});
+ q('#rpc-create-form')?.addEventListener('submit',createJob);
+ q('#rpc-request-form')?.addEventListener('submit',requestService);
+ qa('[data-close]').forEach(function(b){b.addEventListener('click',function(){closeM(b.dataset.close)})});
+ qa('.rpc-modal').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)closeM(m.id)})});
+ document.addEventListener('click',function(e){const b=e.target.closest('#rpc-services-list button[data-view-job]');if(b)showJob(b.dataset.viewJob).catch(function(x){msg('#rpc-services-msg',x.message)})});
+ window.addEventListener('rpc-service-refresh',function(){q('#rpc-services-refresh')?.click()});
+}
+document.addEventListener('DOMContentLoaded',function(){wire()});
+})();
+</script>
+<script id="rpc-service-role-gate">
+document.addEventListener('DOMContentLoaded',function(){
+  function gate(){try{
+    const text=document.querySelector('.lead')?.textContent||'';
+    const req=document.querySelector('#rpc-service-request'), create=document.querySelector('#rpc-new-service');
+    if(req&&text.includes('CLIENTE')){req.style.display='inline-flex';if(create)create.style.display='none'}
+    else if(req){req.style.display='none'}
+  }catch(e){}}
+  setTimeout(gate,700);
+});
 </script></body></html>
