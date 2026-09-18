@@ -234,15 +234,23 @@ body.rpc-locked .app{display:none!important}
   }
   async function mfaGate(){
     const r=await client.auth.mfa.getAuthenticatorAssuranceLevel();if(r.error)throw r.error;
-    if(r.data?.currentLevel==='aal2'||r.data?.nextLevel!=='aal2')return true;
+    if(r.data?.currentLevel==='aal2')return true;
     const f=await client.auth.mfa.listFactors();if(f.error)throw f.error;
     factor=(f.data?.totp||[]).find(x=>x.status==='verified')||null;
-    if(!factor)return true;
+    if(!factor){
+      if(r.data?.nextLevel==='aal2')throw new Error('A sessão exige MFA, mas não existe um fator TOTP verificado.');
+      return true;
+    }
     el('#rpc-login').classList.add('hidden');el('#rpc-mfa').classList.remove('hidden');return false;
   }
   async function finish(){
     contextData=await getContext();
     if(!(await mfaGate()))return;
+    const assurance=await client.auth.mfa.getAuthenticatorAssuranceLevel();
+    if(assurance.error)throw assurance.error;
+    if(assurance.data?.currentLevel!=='aal2' && factor){
+      throw new Error('Validação MFA não concluída.');
+    }
     unlocked();
     const name=contextData.display_name||contextData.email||'Romano';
     const avatar=el('.avatar');if(avatar)avatar.textContent=(name[0]||'R').toUpperCase();
