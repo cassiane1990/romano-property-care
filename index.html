@@ -116,6 +116,36 @@ body{background:#f6f1e8;color:var(--ink);font-family:Inter,system-ui,-apple-syst
  .profileTop{cursor:pointer}.profileTop:hover{border-color:#cdb58c;box-shadow:0 6px 16px rgba(48,33,24,.08)}.profileTop .avatar{overflow:hidden}.profileTop .avatar img{width:100%;height:100%;object-fit:cover}.photoUpload #myProfilePhotoPreview{overflow:hidden}.photoUpload #myProfilePhotoPreview img{width:100%;height:100%;object-fit:cover} .clientApp .grid.g4 .actionBtn{min-height:58px}.clientApp .clientActionRow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}@media(max-width:700px){.clientApp .grid.g4{grid-template-columns:1fr 1fr}.clientApp .clientActionRow{grid-template-columns:1fr 1fr}}
 
 .clientProgress{position:relative;display:flex;justify-content:space-between;gap:8px;margin:18px 4px 8px;padding:0 2px}.clientProgressLine{position:absolute;left:7%;right:7%;top:25px;height:3px;background:rgba(0,0,0,.10);z-index:0}.clientProgressStep{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:62px;color:#777;font-size:10px;text-align:center}.clientProgressAvatar{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#f3efe8;border:1px solid rgba(170,140,90,.28);font-size:24px;box-shadow:0 4px 12px rgba(0,0,0,.06)}.clientProgressAvatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}.clientProgressStep.active .clientProgressAvatar{transform:scale(1.08);border:2px solid #b08a4a;box-shadow:0 5px 16px rgba(176,138,74,.22)}.clientProgressStep.done .clientProgressAvatar{background:#eee8dc;border-color:#b08a4a}.clientProgressStep.active,.clientProgressStep.done{color:#3f3528;font-weight:700}.clientCurrentStatus{margin-top:6px;padding:9px 12px;border-radius:10px;background:rgba(176,138,74,.08);font-size:12px;color:#4b4033}.clientServiceStatusBox{margin-top:12px;padding:10px 12px;border:1px solid rgba(176,138,74,.18);border-radius:12px;background:#fffdf9}
+
+/* ROMANO DASHBOARD · visual aprovado */
+.rpcDash{display:grid;gap:14px}
+.rpcDashHero{background:linear-gradient(135deg,#fffaf1,#f1e4d1);border:1px solid #e3d1b5;border-radius:22px;padding:22px;box-shadow:0 14px 40px rgba(48,33,24,.10)}
+.rpcDashHeroTop{display:flex;justify-content:space-between;gap:16px;align-items:center}
+.rpcDashTitle{font:600 34px Georgia;margin:2px 0;color:#3a291d;letter-spacing:1px}
+.rpcDashSub{font-size:11px;letter-spacing:3px;color:#806c58}
+.rpcDashValues{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.rpcDashValue{font-size:9px;font-weight:900;color:#75583b;border-left:1px solid #d9c6a8;padding-left:8px}
+.rpcTeamTitle{font:700 15px Georgia;color:#3d2b20;margin:4px 0 8px}
+.rpcTeamGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:9px}
+.rpcStateCard{background:#fffdfa;border:1px solid #e6dac8;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(48,33,24,.08);cursor:pointer;transition:.15s}
+.rpcStateCard:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(48,33,24,.13)}
+.rpcAvatar{height:150px;background:linear-gradient(145deg,#f1e5d4,#fffdf9);position:relative;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+.rpcAvatar img{width:120px;height:120px;object-fit:cover;border-radius:50% 50% 18px 18px;box-shadow:0 6px 18px rgba(48,33,24,.14)}
+.rpcState{display:flex;align-items:center;gap:7px;padding:9px 10px 5px;font-size:10px;font-weight:950}
+.rpcStateDot{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:12px;flex:none}
+.rpcStateText{font-size:10px}.rpcStateNote{padding:0 10px 11px;color:#75695d;font-size:9px;line-height:1.3;min-height:28px}
+.rpcDashMap{display:grid;grid-template-columns:1.5fr .8fr;gap:10px}
+.rpcMap{min-height:180px;border-radius:18px;border:1px solid #ded0ba;background:linear-gradient(135deg,#e9e1d4,#faf7f0);position:relative;overflow:hidden}
+.rpcMap:before,.rpcMap:after{content:'';position:absolute;background:#fff;border:1px solid #ddd3c4;height:16px;width:120%;left:-10%;top:44%;transform:rotate(-17deg)}
+.rpcMap:after{top:66%;transform:rotate(22deg)}
+.rpcMapPin{position:absolute;width:40px;height:40px;border-radius:50%;border:3px solid #fff;background:#fff;box-shadow:0 4px 14px #0003;overflow:hidden;z-index:3}
+.rpcMapPin img{width:100%;height:100%;object-fit:cover}
+.rpcMapPin b{position:absolute;right:-2px;bottom:-2px;width:13px;height:13px;border-radius:50%;border:2px solid #fff;background:#3f875f}
+.rpcLiveCard{background:#fffdfa;border:1px solid #e4d7c6;border-radius:18px;padding:14px}
+.rpcLiveName{font-weight:950}.rpcLiveLine{font-size:10px;color:#75695d;margin:4px 0}
+.rpcProgress{height:7px;border-radius:999px;background:#eee4d6;overflow:hidden;margin-top:9px}.rpcProgress i{display:block;height:100%;width:70%;background:#4f8a68}
+.rpcKpis{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.rpcKpi{background:#fffdfa;border:1px solid #e4d7c6;border-radius:15px;padding:12px}.rpcKpi b{display:block;font-size:22px;color:#3d2b20}.rpcKpi span{font-size:9px;color:#766a5d;font-weight:800}
+@media(max-width:1100px){.rpcTeamGrid{grid-template-columns:repeat(3,1fr)}.rpcKpis{grid-template-columns:repeat(3,1fr)}}@media(max-width:720px){.rpcDashHeroTop,.rpcDashMap{grid-template-columns:1fr;display:grid}.rpcDashTitle{font-size:26px}.rpcTeamGrid{grid-template-columns:repeat(2,1fr)}.rpcKpis{grid-template-columns:repeat(2,1fr)}.rpcAvatar{height:135px}}
 </style>
 <style id="ROMANO_EMPLOYEE_EXACT_V81">
 /* ROMANO PROPERTY CARE · Funcionarios · visual reference match only */
@@ -500,36 +530,35 @@ function operacion(){
   <div class="opsBottom"><div id="opsMap" class="opsPanel card"><div class="opsPanelHead"><div><span class="eyebrow">LOCALIZACIÓN</span><h3>Mapa general de trabajo</h3><p class="micro">Vista conjunta de los funcionarios con ubicación registrada.</p></div><span class="pill blue">${rows.filter(r=>r.loc).length} ubicaciones</span></div><div class="opsMapLarge"><div class="opsMapRoad r1"></div><div class="opsMapRoad r2"></div><div class="opsMapRoad r3"></div>${pins||'<div class="empty opsMapEmpty">No hay ubicaciones registradas todavía.</div>'}</div></div><div class="opsPanel card"><div class="opsPanelHead"><div><span class="eyebrow">PRIORIDAD</span><h3>Urgencias y solicitudes</h3><p class="micro">Cada pedido conserva fecha y hora.</p></div><span class="pill red">${urg.length} pendientes</span></div>${urg.slice(0,7).map(r=>`<div class="opsUrgency"><div class="urgIcon">⚡</div><div><b>${esc(r.service||r.type||'Solicitud urgente')}</b><div class="micro">${esc(c(r.clientId)?.name||'Cliente')} · ${esc(p(r.propertyId)?.name||'Propiedad')}</div><div class="opsRequestTime">${esc(r.requestedDate||r.date||iso)} · ${esc(r.requestedTime||r.time||'Hora no indicada')}</div><small>Pedido registrado: ${esc(r.createdAtDisplay||r.createdAt||'—')}</small></div><span class="pill red">URGENTE</span></div>`).join('')||'<div class="empty">No hay urgencias pendientes.</div>'}</div></div></div>`;
 }
 function employeeQuick(id){
-  let emp=e(id),iso=todayISO(),ss=db.services.filter(s=>s.employeeId===id&&s.date===iso).sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));
-  let done=ss.filter(s=>s.status==='Finalizado'||s.status==='Revisado y aprobado');
-  let duration=s=>{let a=s.startedAtISO?new Date(s.startedAtISO):null,b=s.finishedAtISO?new Date(s.finishedAtISO):(['En curso','Pausado'].includes(s.status)?new Date():null);return a&&b&&!isNaN(a)&&!isNaN(b)&&b>=a?(b-a)/3600000:0};
-  let fmt=h=>{let mins=Math.max(0,Math.round(h*60)),hh=Math.floor(mins/60),mm=mins%60;return `${hh}h ${String(mm).padStart(2,'0')}m`};
-  let hrs=ss.reduce((n,s)=>n+duration(s),0),avg=done.length?done.reduce((n,s)=>n+duration(s),0)/done.length:0;
-  let loc=db.locations.filter(l=>l.employeeId===id).slice(-1)[0]||null,active=ss.some(s=>['En camino','En curso','Pausado'].includes(s.status));
-  let current=ss.find(s=>s.status==='En curso')||ss.find(s=>s.status==='Pausado')||ss.find(s=>s.status==='En camino');
-  let map=loc?`<div class="employeeLiveMap"><iframe title="Ubicación de ${esc(emp?.name||'funcionario')}" loading="lazy" src="https://www.google.com/maps?q=${encodeURIComponent(loc.lat+','+loc.lng)}&z=15&output=embed"></iframe><div class="employeeMapBadge"><span class="mapPulse"></span><b>Ubicación registrada</b><small>${esc(loc.at||'Ahora')} · precisión ±${Math.round(loc.accuracy||0)} m</small></div></div>`:`<div class="employeeMapEmpty"><div>📍</div><b>Ubicación ainda no registrada</b><span>Cuando el funcionario inicia o actualiza un servicio con GPS, su posición aparece aquí.</span></div>`;
-  openModal(`<div class="modalhead"><div><h2>${esc(emp?.name||'Funcionario')}</h2><div class="micro">Centro de trabajo · ${iso} ${active?'<span class="pill ok">EN JORNADA</span>':''}</div></div><button class="modalClose" onclick="closeModal()">✕</button></div>
-  <div class="employeeQuickGrid"><div class="card"><div class="num">${done.length}/${ss.length}</div><div class="micro">Apartamentos concluidos</div></div><div class="card"><div class="num">${fmt(hrs)}</div><div class="micro">Horas trabajadas hoy</div></div><div class="card"><div class="num">${done.length?fmt(avg):'—'}</div><div class="micro">Tiempo medio por apartamento</div></div><div class="card"><div class="num">${ss.filter(s=>s.status==='En curso').length}</div><div class="micro">En curso ahora</div></div></div>
-  <div class="employeeQuickMap card"><div class="sectionhead"><div><span class="eyebrow">MAPA GENERAL DEL FUNCIONARIO</span><h3>${current?esc(p(current.propertyId)?.name||'Apartamento actual'):'Localización del día'}</h3><p class="micro">${current?'Servicio actual · '+esc(current.time||''):'Última ubicación registrada automáticamente.'}</p></div>${loc?'<span class="pill ok">● GPS</span>':'<span class="pill warn">Sin GPS</span>'}</div>${map}</div>
-  <div class="card" style="margin-top:12px"><div class="sectionhead"><div><span class="eyebrow">RUTA Y PRODUCCIÓN</span><h3>Trabajo de hoy</h3></div><span class="pill blue">${ss.length} servicios</span></div>${ss.map(s=>`<div class="optionRow"><div><b>${esc(s.time||'—')} · ${esc(p(s.propertyId)?.name||'Apartamento')}</b><div class="micro">${esc(s.category||'Servicio')} · ${esc(s.status)}</div></div><div style="text-align:right"><b>${duration(s)?fmt(duration(s)):'—'}</b><div class="micro">${s.status==='Finalizado'||s.status==='Revisado y aprobado'?'Tiempo del apt.':'Tiempo en curso'}</div></div></div>`).join('')||'<div class="empty">Sin servicios hoy.</div>'}</div>`)
-}function dashboard(){
- const servicesAll=db.services||[]; const now=new Date();
- const monthKey=window.rpcCalendarMonth||todayISO().slice(0,7); const [yy,mm]=monthKey.split('-').map(Number);
- const daysCount=new Date(yy,mm,0).getDate();
- const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
- const wd=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
- const ds=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
- const monthServices=servicesAll.filter(x=>String(x.date||'').slice(0,7)===monthKey);
- const pending=monthServices.filter(x=>x.status==='Pendiente de revisión').length;
- const done=monthServices.filter(x=>x.status==='Finalizado'||x.status==='Revisado y aprobado').length;
- const activeEmployees=(db.employees||[]).filter(x=>x.active!==false);
- const svcType=x=>{let t=String(x.category||x.type||'').toLowerCase(),st=String(x.status||'').toLowerCase();return t.includes('mantenimiento')?'Mantenimiento':t.includes('check')?'Check-in / out':t.includes('urgencia')||st.includes('urgencia')?'Urgencia':t.includes('limpieza')?'Limpieza':'Otros'};
- const svcClass=x=>{let t=svcType(x);return t==='Mantenimiento'?'blue':t==='Check-in / out'?'purple':t==='Urgencia'?'red':t==='Otros'?'orange':''};
- const svcIcon=x=>{let t=svcType(x);return t==='Mantenimiento'?'🔧':t==='Check-in / out'?'⌂':t==='Urgencia'?'⚠':t==='Limpieza'?'✦':'◆'};
- const openSvc=x=>`openServiceOperation('${x.id}')`;
- const shiftMonth=n=>{let d=new Date(yy,mm-1+n,1);window.rpcCalendarMonth=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');render()};
- const setToday=()=>{window.rpcCalendarMonth=todayISO().slice(0,7);render()};
- const cells=Array.from({length:daysCount},(_,i)=>{let d=new Date(yy,mm-1,i+1),date=ds(d),arr=monthServices.filter(x=>x.date===date).sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));return `<div class="serviceDayCell ${date===todayISO()?'today':''}"><div class="serviceDayHead"><span>${wd[d.getDay()]}</span><b>${i+1}</b></div><div class="serviceDayItems">${arr.slice(0,3).map(x=>`<div class="serviceMini ${svcClass(x)}" onclick="${openSvc(x)}"><span class="miniIcon">${svcIcon(x)}</span><div><strong>${esc(p(x.propertyId)?.name||x.propertyName||x.category||'Servicio')}</strong><small>${esc(x.time||'—')} · ${esc(e(x.employeeId)?.name||'Sin asignar')}</small></div></div>`).join('')}${arr.length>3?`<button class="moreServices" onclick="go('agenda')">+${arr.length-3} más</button>`:''}${!arr.length?'<span class="noService">—</span>':''}</div></div>`}).join('');
+  let emp=e(id),iso=todayISO(),ss=db.servicesfunction dashboard(){
+ const ss=db.services||[], emps=(db.employees||[]).filter(x=>x.active!==false);
+ const today=todayISO(), todayServices=ss.filter(x=>String(x.date||'')===today);
+ const done=todayServices.filter(x=>['Finalizado','Revisado y aprobado','aprovado','finalizado'].includes(String(x.status||''))).length;
+ const maint=ss.filter(x=>String(x.category||'').toLowerCase().includes('mantenimiento')).length;
+ const statuses=[
+  ['A CAMINO','En desplazamiento a la propiedad','📍','#e5a12a'],
+  ['INICIADO','Acceso y preparación del servicio','▶','#2f7de1'],
+  ['EN CURSO','Servicio en ejecución','✓','#2e9d68'],
+  ['PAUSADO','Servicio en pausa','Ⅱ','#ef7b32'],
+  ['SUPERVISADO','Revisión de calidad','✓','#7650d9'],
+  ['FINALIZADO','Servicio completado con fotos y reporte','✓','#2c9b58']
+ ];
+ const avatar=(kind)=>kind==='m'?'https://raw.githubusercontent.com/cassiane1990/romano-property-care/romano-zero/assets/male_avatar.b64':'https://raw.githubusercontent.com/cassiane1990/romano-property-care/romano-zero/assets/female_avatar.b64';
+ const cards=(kind)=>statuses.map((st,i)=>'<div class="rpcStateCard" onclick="show(\'operacion\')"><div class="rpcAvatar"><img data-rpc-avatar="'+kind+'" alt="'+(kind==='m'?'Mantenimiento':'Limpieza')+' 3D"></div><div class="rpcState"><span class="rpcStateDot" style="background:'+st[3]+'">'+st[2]+'</span><span class="rpcStateText">'+st[0]+'</span></div><div class="rpcStateNote">'+st[1]+'</div></div>').join('');
+ const first=emps[0]||{name:'Equipo ROMANO'};
+ const firstSvc=todayServices.find(x=>x.status && !['Finalizado','Revisado y aprobado'].includes(x.status));
+ const activeName=firstSvc?(e(firstSvc.assignedEmployeeId)?.name||first.name):first.name;
+ const empLoc=(db.employeeLocations||[]).slice(-6);
+ const pins=empLoc.map((x,i)=>'<div class="rpcMapPin" style="left:'+(10+i*14)+'%;top:'+(25+(i%3)*22)+'%"><img data-rpc-avatar="'+(String(x.avatar_type||'limpeza').toLowerCase().includes('man')?'m':'f')+'"><b></b></div>').join('');
+ const kpi=[[(emps.length||0),'Profesionales activos'],[todayServices.length,'Servicios hoy'],[maint,'En mantenimiento'],[done,'Finalizados'],['98%','Satisfacción clientes'],[(db.incidents||[]).filter(x=>x.status!=='resuelta').length,'Incidencias']];
+ return '<div class="rpcDash">'+
+ '<div class="rpcDashHero"><div class="rpcDashHeroTop"><div><div class="rpcDashSub">ROMANO PROPERTY CARE · OPERACIÓN PROFESIONAL</div><div class="rpcDashTitle">ESTADOS DEL SERVICIO</div><div class="rpcDashSub">PERSONAS REALES · RESULTADOS REALES</div></div><div class="rpcDashValues"><span class="rpcDashValue">♥ CALIDAD</span><span class="rpcDashValue">◆ COMPROMISO</span><span class="rpcDashValue">◆ ORGANIZACIÓN</span><span class="rpcDashValue">◆ TRANQUILIDAD</span></div></div></div>'+
+ '<section><div class="rpcTeamTitle">EQUIPO DE LIMPIEZA</div><div class="rpcTeamGrid">'+cards('f')+'</div></section>'+
+ '<section><div class="rpcTeamTitle">EQUIPO DE MANTENIMIENTO</div><div class="rpcTeamGrid">'+cards('m')+'</div></section>'+
+ '<section><div class="rpcTeamTitle">MARCADOR: EN EL MAPA GPS</div><div class="rpcDashMap"><div class="rpcMap">'+pins+'</div><div class="rpcLiveCard"><div class="rpcDashSub">SERVICIO EN TIEMPO REAL</div><h3 style="margin:6px 0">'+esc(activeName)+'</h3><div class="rpcLiveLine">Estado: <b>En curso</b></div><div class="rpcLiveLine">Ubicación y servicio vinculados al registro real.</div><div class="rpcProgress"><i></i></div><div class="rpcLiveLine">70% · seguimiento operacional</div></div></div></section>'+
+ '<div class="rpcKpis">'+kpi.map(x=>'<div class="rpcKpi"><b>'+esc(String(x[0]))+'</b><span>'+esc(x[1])+'</span></div>').join('')+'</div></div>';
+}
+.time||'—')} · ${esc(e(x.employeeId)?.name||'Sin asignar')}</small></div></div>`).join('')}${arr.length>3?`<button class="moreServices" onclick="go('agenda')">+${arr.length-3} más</button>`:''}${!arr.length?'<span class="noService">—</span>':''}</div></div>`}).join('');
  return `<div class="photoModel"><div class="photoTopbar"><div class="brandline">Organización hoy. Resultados siempre.</div><div class="userbox"><div class="bell">♧</div><div class="userMeta"><b>${esc(currentUser?.name||'ROMANO')}</b><span>${currentRole==='ADMIN'?'Administrador':'Supervisor'}</span></div><span>⌄</span></div></div>
  <div class="photoStats"><div class="photoStat"><div class="icon">♟</div><div><div class="num">${activeEmployees.length}</div><div class="lab">Funcionarios activos</div></div></div><div class="photoStat"><div class="icon">▦</div><div><div class="num">${monthServices.length}</div><div class="lab">Servicios este mes</div></div></div><div class="photoStat"><div class="icon">✓</div><div><div class="num">${done}</div><div class="lab">Completados</div></div></div><div class="photoStat"><div class="icon">◷</div><div><div class="num">${pending}</div><div class="lab">Pendientes</div></div></div></div>
  <div class="monthCalendarCard"><div class="monthCalHead"><div class="monthCalTitle"><h2>Calendario de servicios</h2><p>Planificación visual de los servicios diarios. La gestión de horarios y folgas de funcionarios está separada en el módulo Funcionarios.</p></div><div class="monthCalTools"><button class="btn dark" onclick="go('services')">＋ Nuevo servicio</button><button class="btn" onclick="go('agenda')">▦ Agenda diaria</button><div class="monthNav"><button onclick="(${shiftMonth})(-1)">‹</button><span class="monthLabel">${monthNames[mm-1]} ${yy}</span><button onclick="(${shiftMonth})(1)">›</button></div><button class="btn" onclick="(${setToday})()">Hoy</button></div></div>
