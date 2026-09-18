@@ -89,6 +89,7 @@ body.rpc-locked .app{display:none!important}
 <div class="rpc-toolbar" style="margin-bottom:12px">
   <button id="rpc-new-service" class="rpc-primary">+ Nuevo servicio</button>
   <button id="rpc-service-request" class="rpc-secondary">+ Solicitud de cliente</button>
+  <button id="rpc-service-requests" class="rpc-secondary">Solicitudes pendientes</button>
 </div>
     <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
       <div style="color:#7b7469;font-size:12px">Serviços reais do PostgreSQL · visíveis segundo o perfil e o RLS.</div>
@@ -140,6 +141,13 @@ body.rpc-locked .app{display:none!important}
       <div class="full" style="display:flex;justify-content:flex-end;gap:8px"><button type="button" class="rpc-secondary" data-close="rpc-request-modal">Cancelar</button><button class="rpc-primary" type="submit">Enviar solicitação</button></div>
     </form>
     <div id="rpc-request-msg" style="font-size:11px;color:#7b7469;margin-top:10px"></div>
+  </div>
+</div>
+
+<div id="rpc-requests-modal" class="rpc-modal hidden">
+  <div class="rpc-modal-box">
+    <div class="rpc-modal-head"><div><h2 class="rpc-modal-title">Solicitações de clientes</h2><div class="rpc-modal-sub">Pedidos reais do backend · aprovação gera um serviço operacional.</div></div><button class="rpc-close" data-close="rpc-requests-modal">Fechar</button></div>
+    <div id="rpc-requests-list"><div class="empty">A carregar…</div></div>
   </div>
 </div>
 <script id="rpc-zero-runtime">
@@ -419,9 +427,47 @@ document.addEventListener('DOMContentLoaded',function(){
   function gate(){try{
     const text=document.querySelector('.lead')?.textContent||'';
     const req=document.querySelector('#rpc-service-request'), create=document.querySelector('#rpc-new-service');
-    if(req&&text.includes('CLIENTE')){req.style.display='inline-flex';if(create)create.style.display='none'}
-    else if(req){req.style.display='none'}
+    const requests=document.querySelector('#rpc-service-requests');
+    if(req&&text.includes('CLIENTE')){req.style.display='inline-flex';if(create)create.style.display='none';if(requests)requests.style.display='none'}
+    else {if(req)req.style.display='none';if(requests)requests.style.display='inline-flex'}
   }catch(e){}}
   setTimeout(gate,700);
 });
+</script>
+<script id="rpc-service-requests-runtime">
+(function(){
+'use strict';
+const sbq=window.supabase?.createClient?.('https://dhzptogrzuqreflcnsnb.supabase.co','sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+if(!sbq)return;
+const qq=s=>document.querySelector(s), ee=s=>String(s??'').replace(/[&<>\"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#039;'}[ch]});
+async function loadReq(){
+ const box=qq('#rpc-requests-list');if(!box)return;box.innerHTML='<div class="empty">A carregar solicitações…</div>';
+ const c=await sbq.rpc('rpc_auth_context');if(c.error)throw c.error;
+ if(!['ADMIN','SUPERVISOR'].includes(c.data?.role)){box.innerHTML='<div class="empty">Sem acesso.</div>';return}
+ const r=await sbq.rpc('rpc_service_requests_admin');if(r.error)throw r.error;const rows=r.data||[];
+ if(!rows.length){box.innerHTML='<div class="empty">Nenhuma solicitação registada.</div>';return}
+ const pids=[...new Set(rows.map(x=>x.property_id).filter(Boolean))],cids=[...new Set(rows.map(x=>x.client_id).filter(Boolean))];
+ const [pr,cl]=await Promise.all([
+   pids.length?sbq.from('rpc_properties').select('id,name,property_code,typology').in('id',pids):Promise.resolve({data:[]}),
+   cids.length?sbq.from('rpc_clients').select('id,name').in('id',cids):Promise.resolve({data:[]})
+ ]);
+ const pm=new Map((pr.data||[]).map(x=>[x.id,x])),cm=new Map((cl.data||[]).map(x=>[x.id,x]));
+ box.innerHTML='<div style="overflow:auto"><table class="rpc-svc-table"><thead><tr><th>Data</th><th>Cliente</th><th>Propriedade</th><th>Pedido</th><th>Estado</th><th>Ação</th></tr></thead><tbody>'+
+ rows.map(function(x){const p=pm.get(x.property_id)||{},c=cm.get(x.client_id)||{};const pending=['PENDIENTE_APROBACION','PENDIENTE','pending'].includes(x.status);return '<tr><td>'+ee(x.requested_date||'—')+' '+ee(String(x.requested_time||'').slice(0,5))+'</td><td>'+ee(c.name||'—')+'</td><td>'+ee(p.name||p.property_code||'—')+'</td><td>'+ee(x.service_type||'—')+'<br><span style="color:#7b7469">'+ee(x.description||'')+'</span></td><td><span class="rpc-svc-status">'+ee(x.status)+'</span></td><td>'+(pending?'<button class="rpc-primary" style="padding:6px 9px" data-approve-request="'+ee(x.id)+'">Aprovar</button>':'—')+'</td></tr>'}).join('')+
+ '</tbody></table></div>';
+ box.querySelectorAll('[data-approve-request]').forEach(function(b){b.addEventListener('click',async function(){
+   b.disabled=true;
+   const x=rows.find(z=>z.id===b.dataset.approveRequest);
+   const p=pm.get(x?.property_id)||{};
+   const a=await sbq.rpc('rpc_approve_service_request',{p_request_id:b.dataset.approveRequest,p_scheduled_date:x?.requested_date||null,p_scheduled_start:x?.requested_time||null,p_employee_id:null,p_supervisor_id:null,p_typology:p?.typology||null,p_expected_minutes:120,p_notes:null});
+   if(a.error){alert(a.error.message);b.disabled=false;return}
+   await loadReq();window.dispatchEvent(new Event('rpc-service-refresh'));
+ })});
+}
+document.addEventListener('DOMContentLoaded',function(){
+ qq('#rpc-service-requests')?.addEventListener('click',async function(){
+   try{const c=await sbq.rpc('rpc_auth_context');if(c.error)throw c.error;if(!['ADMIN','SUPERVISOR'].includes(c.data?.role))return;await loadReq();qq('#rpc-requests-modal')?.classList.remove('hidden')}catch(e){qq('#rpc-services-msg').textContent='Não foi possível carregar solicitações: '+e.message}
+ });
+});
+})();
 </script></body></html>
