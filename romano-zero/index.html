@@ -341,7 +341,7 @@ async function requestService(e){
  const p=props.find(x=>x.id===propertyId);
  if(!p){msg('#rpc-request-msg','Selecione uma propriedade.');return}
  const r=await sbp.from('rpc_service_requests').insert({
-   client_id:ctx.client_id,property_id:propertyId,requested_by:ctx.id||ctx.user_id,
+   client_id:ctx.client_id,property_id:propertyId,requested_by:ctx.user_id,
    service_type:q('#rpc-r-type').value,description:q('#rpc-r-description').value.trim(),
    requested_date:q('#rpc-r-date').value||null,requested_time:q('#rpc-r-time').value||null,
    company_id:ctx.company_id
