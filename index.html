@@ -424,7 +424,33 @@ async function syncAuthClientIntoDb(){if(!currentUser||currentRole!=='CLIENTE')r
 async function ensureCloudStateBootstrap(){if(!rpcSupabase||!currentUser||currentUser.devMode||!currentUser.company_id||currentRole!=='ADMIN'||!navigator.onLine)return false;try{const {data,error}=await rpcSupabase.from('rpc_app_state').select('version').eq('company_id',currentUser.company_id).maybeSingle();if(error)throw error;if(data)return true;const r=await rpcSupabase.from('rpc_app_state').insert({company_id:currentUser.company_id,state:db,version:0,updated_by:currentUser.id,updated_at:new Date().toISOString()}).select('version').single();if(r.error)throw r.error;db.cloudVersion=Number(r.data?.version||0);localStorage.setItem('RPC_V78',JSON.stringify(db));return true}catch(e){console.warn('Cloud bootstrap',e);return false}}
 
 async function syncAuthEmployeeIntoDb(){if(!currentUser||!['FUNCIONARIO','SUPERVISOR'].includes(currentRole))return false;db.employees=db.employees||[];let email=String(currentUser.email||'').toLowerCase(),x=db.employees.find(v=>String(v.email||'').toLowerCase()===email);if(!x){x={id:'AUTH-'+String(currentUser.id||email).replace(/[^a-zA-Z0-9_-]/g,'').slice(0,48)};db.employees.push(x)}let before=JSON.stringify(x);Object.assign(x,{name:currentUser.displayName||currentUser.name||email,role:currentRole,email,active:true});currentUser.employeeId=x.id;sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));return before!==JSON.stringify(x)}
-async function login(ev){ev.preventDefault();let loginValue=q('loginEmail').value.trim().toLowerCase(),pass=q('loginPassword').value;q('authError').style.display='none';try{if(rpcSupabase){let realEmail=TEST_EMAIL_MAP[loginValue]||loginValue;let {data,error}=await rpcSupabase.auth.signInWithPassword({email:realEmail,password:pass});if(!error&&data?.user){await completeMFAIfRequired();let cctx=await directAuthContext(data.user);currentRole=cctx.role;currentUser={id:data.user.id,email:data.user.email,displayName:cctx.display_name,name:cctx.display_name,role:currentRole,company_id:cctx.company_id,aal:data.session?.aal||'aal1'};sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));q('authScreen').style.display='none';applyRoleUI();go(roleHome());toast('Sesión segura iniciada · '+currentRole);await loadCloudState(false);let changed=await syncAuthEmployeeIntoDb();let clientChanged=await syncAuthClientIntoDb();if(changed||clientChanged)save();else await ensureCloudStateBootstrap();await initCloudRealtime();return;}}}catch(err){console.warn('Cloud login:',err);try{await rpcSupabase?.auth.signOut()}catch{}}let a=TEST_ACCOUNTS[loginValue];if(!a||a.password!==pass){q('authError').textContent=err?.message==='PERFIL_NAO_CONFIGURADO'?'El usuario existe, pero su perfil de acceso aún no está configurado.':'No se pudo iniciar sesión. Comprueba correo, contraseña o MFA.';q('authError').style.display='block';return}currentRole=a.role;currentUser={email:loginValue,name:a.name,role:a.role,devMode:true};sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));q('authScreen').style.display='none';applyRoleUI();go(roleHome());toast('Sesión de prueba · '+a.role)}
+async function login(ev){
+ ev.preventDefault();
+ const loginValue=q('loginEmail').value.trim().toLowerCase(), pass=q('loginPassword').value;
+ q('authError').style.display='none';
+ if(!rpcSupabase){q('authError').textContent='Servicio de autenticação no disponible.';q('authError').style.display='block';return}
+ try{
+  const {data,error}=await rpcSupabase.auth.signInWithPassword({email:loginValue,password:pass});
+  if(error||!data?.user) throw error||new Error('LOGIN_INVALIDO');
+  await completeMFAIfRequired();
+  const cctx=await directAuthContext(data.user);
+  currentRole=cctx.role;
+  currentUser={id:data.user.id,email:data.user.email,displayName:cctx.display_name,name:cctx.display_name,role:currentRole,company_id:cctx.company_id,aal:data.session?.aal||'aal1'};
+  sessionStorage.setItem('RPC_V78_SESSION',JSON.stringify(currentUser));
+  q('authScreen').style.display='none';
+  applyRoleUI(); go(roleHome());
+  toast('Sesión segura iniciada · '+currentRole);
+  await loadCloudState(false);
+  const changed=await syncAuthEmployeeIntoDb(), clientChanged=await syncAuthClientIntoDb();
+  if(changed||clientChanged)save(); else await ensureCloudStateBootstrap();
+  await initCloudRealtime();
+ }catch(err){
+  console.warn('Cloud login:',err);
+  try{await rpcSupabase.auth.signOut()}catch{}
+  q('authError').textContent=err?.message==='PERFIL_NAO_CONFIGURADO'?'El usuario existe, pero su perfil de acceso aún no está configurado.':'No se pudo iniciar sesión. Comprueba correo, contraseña o MFA.';
+  q('authError').style.display='block';
+ }
+}
 function roleHome(){if(currentRole==='CLIENTE')return 'dashboard';if(currentRole==='SUPERVISOR')return 'employee';if(currentRole==='FUNCIONARIO')return 'employee';return 'dashboard'}
 function profilePhotoForCurrent(){let email=currentUser?.email||'';db.settings=db.settings||{};db.settings.userProfiles=db.settings.userProfiles||{};return currentUser?.photo||db.settings.userProfiles[email]?.photo||localStorage.getItem('RPC_V78_PROFILE_PHOTO_'+email)||db.settings.profilePhotos?.[currentRole]||''}
 function profileDisplay(){let map={ADMIN:{name:'Administrador',role:'Administrador'},SUPERVISOR:{name:'Supervisor',role:'Supervisor'},FUNCIONARIO:{name:'Funcionario',role:'Funcionario'},CLIENTE:{name:'Cliente',role:'Cliente'}};let d=map[currentRole]||{name:currentUser?.name||'Usuario',role:currentRole||'Usuario'};return {name:currentUser?.displayName||d.name,role:currentUser?.displayRole||d.role,photo:profilePhotoForCurrent()}}
