@@ -363,12 +363,14 @@ async function requestService(e){
  const propertyId=q('#rpc-r-property').value;
  const p=props.find(x=>x.id===propertyId);
  if(!p){msg('#rpc-request-msg','Selecione uma propriedade.');return}
- const r=await sbp.from('rpc_service_requests').insert({
-   client_id:ctx.client_id,property_id:propertyId,requested_by:ctx.user_id,
-   service_type:q('#rpc-r-type').value,description:q('#rpc-r-description').value.trim(),
-   requested_date:q('#rpc-r-date').value||null,requested_time:q('#rpc-r-time').value||null,
-   company_id:ctx.company_id
- }).select('id').single();
+ const r=await sbp.rpc('rpc_create_service_request',{
+   p_property_id:propertyId,
+   p_service_type:q('#rpc-r-type').value,
+   p_description:q('#rpc-r-description').value.trim()||null,
+   p_requested_date:q('#rpc-r-date').value||null,
+   p_requested_time:q('#rpc-r-time').value||null,
+   p_attachments:[]
+ });
  if(r.error){msg('#rpc-request-msg','Erro: '+r.error.message);return}
  msg('#rpc-request-msg','Solicitação enviada e registada.');setTimeout(function(){closeM('rpc-request-modal')},500);
 }
