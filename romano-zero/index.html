@@ -98,6 +98,19 @@ body.rpc-locked .app{display:none!important}
     <div id="rpc-services-msg" style="font-size:11px;color:#7b7469;margin-bottom:10px"></div>
     <div id="rpc-services-list" style="overflow:auto"><div class="empty">A carregar serviços…</div></div>
   </div>
+</div>
+<div id="rpc-workspace" class="section">
+  <div class="section-title">Gestão operacional</div>
+  <div class="card">
+    <div class="rpc-toolbar" style="margin-bottom:14px">
+      <button class="rpc-secondary" data-work="agenda">Agenda</button>
+      <button class="rpc-secondary" data-work="properties">Propriedades</button>
+      <button class="rpc-secondary" data-work="clients">Clientes</button>
+      <button class="rpc-secondary" data-work="team">Equipa</button>
+    </div>
+    <div id="rpc-workspace-msg" style="font-size:11px;color:#7b7469;margin-bottom:10px"></div>
+    <div id="rpc-workspace-body"><div class="empty" style="height:120px">Selecione uma área de gestão.</div></div>
+  </div>
 </div><div class="section"><div class="section-title">Operación en vivo</div><div class="card wide"><div class="empty">La operación real aparecerá aquí cuando el backend y los servicios estén conectados.</div></div></div>
     </section>
   </main>
@@ -471,5 +484,44 @@ document.addEventListener('DOMContentLoaded',function(){
    try{const c=await sbq.rpc('rpc_auth_context');if(c.error)throw c.error;if(!['ADMIN','SUPERVISOR'].includes(c.data?.role))return;await loadReq();qq('#rpc-requests-modal')?.classList.remove('hidden')}catch(e){qq('#rpc-services-msg').textContent='Não foi possível carregar solicitações: '+e.message}
  });
 });
+})();
+</script>
+<script id="rpc-workspace-runtime">
+(function(){
+'use strict';
+const sw=window.supabase?.createClient?.('https://dhzptogrzuqreflcnsnb.supabase.co','sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+if(!sw)return;
+const q=s=>document.querySelector(s), e=s=>String(s??'').replace(/[&<>\"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#039;'}[ch]});
+let ctx=null;
+const role=async()=>{if(ctx)return ctx;const r=await sw.rpc('rpc_auth_context');if(r.error)throw r.error;ctx=r.data;return ctx};
+const today=()=>new Date().toISOString().slice(0,10);
+function table(headers,rows){return '<div style="overflow:auto"><table class="rpc-svc-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>'}
+async function agenda(){
+ const c=await role();const start=today(),d=new Date();d.setDate(d.getDate()+30);const end=d.toISOString().slice(0,10);
+ const r=await sw.rpc('rpc_employee_calendar',{p_start_date:start,p_end_date:end});if(r.error)throw r.error;
+ const rows=r.data||[];if(!rows.length){q('#rpc-workspace-body').innerHTML='<div class="empty" style="height:150px">Sem serviços na agenda dos próximos 30 dias.</div>';return}
+ const pids=[...new Set(rows.map(x=>x.property_id).filter(Boolean))];
+ const pr=pids.length?await sw.from('rpc_properties').select('id,name,property_code').in('id',pids):{data:[]};
+ const pm=new Map((pr.data||[]).map(x=>[x.id,x]));
+ q('#rpc-workspace-body').innerHTML='<div class="rpc-kpi"><span class="rpc-pill">Próximos 30 dias: '+rows.length+' serviços</span><span class="rpc-pill">Perfil: '+e(c.role)+'</span></div>'+
+ table(['Data','Hora','Propriedade','Tipo','Estado','Funcionário'],rows.map(x=>'<tr><td>'+e(x.scheduled_date)+'</td><td>'+e(String(x.scheduled_start||'').slice(0,5))+'</td><td>'+e(pm.get(x.property_id)?.name||pm.get(x.property_id)?.property_code||'—')+'</td><td>'+e([x.category,x.subtype].filter(Boolean).join(' · ')||'—')+'</td><td>'+e(x.status||'—')+'</td><td>'+e(x.assigned_employee_id||'Auto')+'</td></tr>'));
+}
+async function properties(){
+ const c=await role();if(c.role==='FUNCIONARIO'){q('#rpc-workspace-body').innerHTML='<div class="empty" style="height:150px">O funcionário consulta propriedades através dos serviços que lhe foram atribuídos.</div>';return}
+ const r=await sw.from('rpc_properties').select('id,name,property_code,city,address,typology,bedrooms,bathrooms,active').order('name').limit(1000);if(r.error)throw r.error;
+ const rows=r.data||[];q('#rpc-workspace-body').innerHTML=table(['Código','Propriedade','Localização','Tipologia','Quartos','Estado'],rows.map(x=>'<tr><td>'+e(x.property_code||'—')+'</td><td><b>'+e(x.name||'—')+'</b></td><td>'+e([x.city,x.address].filter(Boolean).join(' · ')||'—')+'</td><td>'+e(x.typology||'—')+'</td><td>'+e(x.bedrooms??'—')+'</td><td>'+e(x.active?'Ativa':'Arquivada')+'</td></tr>') )||'<div class="empty">Nenhuma propriedade acessível.</div>';
+}
+async function clients(){
+ const c=await role();if(c.role==='FUNCIONARIO'){q('#rpc-workspace-body').innerHTML='<div class="empty" style="height:150px">O funcionário não tem acesso à base global de clientes.</div>';return}
+ const r=await sw.from('rpc_clients').select('id,name,company_name,email,phone,active').order('name').limit(500);if(r.error)throw r.error;
+ const rows=r.data||[];q('#rpc-workspace-body').innerHTML=table(['Cliente','Empresa','E-mail','Telefone','Estado'],rows.map(x=>'<tr><td><b>'+e(x.name||'—')+'</b></td><td>'+e(x.company_name||'—')+'</td><td>'+e(x.email||'—')+'</td><td>'+e(x.phone||'—')+'</td><td>'+e(x.active?'Ativo':'Arquivado')+'</td></tr>'));
+}
+async function team(){
+ const c=await role();if(!['ADMIN','SUPERVISOR'].includes(c.role)){q('#rpc-workspace-body').innerHTML='<div class="empty" style="height:150px">A equipa é uma área operacional restrita.</div>';return}
+ const r=await sw.rpc('rpc_service_staff');if(r.error)throw r.error;const rows=r.data||[];
+ q('#rpc-workspace-body').innerHTML=table(['Nome','Função','E-mail','Telefone'],rows.map(x=>'<tr><td><b>'+e(x.display_name||'—')+'</b></td><td>'+e(x.role||'—')+'</td><td>'+e(x.email||'—')+'</td><td>'+e(x.phone||'—')+'</td></tr>'));
+}
+async function open(name){q('#rpc-workspace-body').innerHTML='<div class="empty" style="height:150px">A carregar…</div>';q('#rpc-workspace-msg').textContent='';try{if(name==='agenda')await agenda();if(name==='properties')await properties();if(name==='clients')await clients();if(name==='team')await team()}catch(x){q('#rpc-workspace-msg').textContent='Erro: '+x.message;q('#rpc-workspace-body').innerHTML='<div class="empty" style="height:120px">Não foi possível carregar esta área.</div>'}}
+document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('[data-work]').forEach(b=>b.addEventListener('click',()=>open(b.dataset.work)))});
 })();
 </script></body></html>
