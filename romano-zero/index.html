@@ -327,8 +327,10 @@ async function openRequest(){
  if(!requestAllowed()){openCreate();return}
  try{
    const c=ctx.client_id;
-   const mine=props.filter(x=>String(x.client_id)===String(c));
-   fillSelect('#rpc-r-property',mine,'Selecione a propriedade',x=>(x.name||x.property_code||x.id));
+   const pr=await sbp.from('rpc_properties').select('id,client_id,name,property_code,typology').eq('client_id',c).eq('active',true).order('name');
+   if(pr.error)throw pr.error;
+   props=pr.data||[];
+   fillSelect('#rpc-r-property',props,'Selecione a propriedade',x=>(x.name||x.property_code||x.id));
    setToday();openM('rpc-request-modal');
  }catch(e){msg('#rpc-services-msg',e.message)}
 }
@@ -429,7 +431,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const req=document.querySelector('#rpc-service-request'), create=document.querySelector('#rpc-new-service');
     const requests=document.querySelector('#rpc-service-requests');
     if(req&&text.includes('CLIENTE')){req.style.display='inline-flex';if(create)create.style.display='none';if(requests)requests.style.display='none'}
-    else {if(req)req.style.display='none';if(requests)requests.style.display='inline-flex'}
+    else {if(req)req.style.display='none';if(create)create.style.display=text.includes('ADMIN')||text.includes('SUPERVISOR')?'inline-flex':'none';if(requests)requests.style.display=text.includes('ADMIN')||text.includes('SUPERVISOR')?'inline-flex':'none'}
   }catch(e){}}
   setTimeout(gate,700);
 });
