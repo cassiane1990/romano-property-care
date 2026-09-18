@@ -25,6 +25,8 @@
 #rpc-auth .err{background:#f8ebe8;border:1px solid #e6c9c3;color:#80483f;padding:10px;border-radius:10px;font-size:11px;margin:12px 0}
 #rpc-auth .note{font-size:10px;line-height:1.5;margin-top:17px}
 body.rpc-locked .app{display:none!important}
+</style><style id="rpc-service-css">
+.rpc-svc-table{width:100%;border-collapse:collapse;font-size:11px;min-width:760px}.rpc-svc-table th{text-align:left;color:#7b7469;text-transform:uppercase;letter-spacing:.1em;font-size:9px;padding:10px;border-bottom:1px solid #e7dfd3}.rpc-svc-table td{padding:12px 10px;border-bottom:1px solid #eee8df;vertical-align:middle}.rpc-svc-status{display:inline-flex;border-radius:999px;padding:5px 8px;background:#f0ebe3;color:#655a4e;font-size:9px}.rpc-svc-actions{display:flex;gap:5px;flex-wrap:wrap}.rpc-svc-actions button{border:1px solid #e7dfd3;background:#fff;border-radius:7px;padding:5px 7px;font-size:9px;cursor:pointer}.rpc-svc-actions button:hover{border-color:#b9975b}.rpc-svc-actions button[data-danger]{color:#8a5149}
 </style></head>
 <body class="rpc-locked"><div id="rpc-auth" class="hidden">
   <div class="box">
@@ -61,7 +63,18 @@ body.rpc-locked .app{display:none!important}
     <header class="topbar"><div class="crumb">ROMANO PROPERTY CARE · <strong>Dashboard</strong></div><div class="user"><span>Administrador</span><div class="avatar">R</div></div></header>
     <section class="content"><div class="eyebrow">Centro de control</div><h1>Buenos días, Romano</h1><p class="lead">Visión central de la operación, equipo, servicios y actividad de la empresa.</p>
       <div class="grid"><div class="card"><div class="label">Servicios hoy</div><div class="value">—</div></div><div class="card"><div class="label">En operación</div><div class="value">—</div></div><div class="card"><div class="label">Alertas</div><div class="value">—</div></div><div class="card"><div class="label">Solicitudes</div><div class="value">—</div></div></div>
-      <div class="section"><div class="section-title">Operación en vivo</div><div class="card wide"><div class="empty">La operación real aparecerá aquí cuando el backend y los servicios estén conectados.</div></div></div>
+      
+<div id="rpc-services" class="section">
+  <div class="section-title">Serviços</div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+      <div style="color:#7b7469;font-size:12px">Serviços reais do PostgreSQL · visíveis segundo o perfil e o RLS.</div>
+      <button id="rpc-services-refresh" style="border:1px solid #e7dfd3;background:#fff;border-radius:9px;padding:8px 12px;font-size:11px;cursor:pointer">Atualizar</button>
+    </div>
+    <div id="rpc-services-msg" style="font-size:11px;color:#7b7469;margin-bottom:10px"></div>
+    <div id="rpc-services-list" style="overflow:auto"><div class="empty">A carregar serviços…</div></div>
+  </div>
+</div><div class="section"><div class="section-title">Operación en vivo</div><div class="card wide"><div class="empty">La operación real aparecerá aquí cuando el backend y los servicios estén conectados.</div></div></div>
     </section>
   </main>
   <nav class="mobile-nav"><button>⌂<span>Inicio</span></button><button>◈<span>Operación</span></button><button>◷<span>Agenda</span></button><button>◌<span>Chat</span></button><button>☰<span>Menú</span></button></nav>
@@ -151,5 +164,58 @@ body.rpc-locked .app{display:none!important}
     wire();locked();
     try{const s=await client.auth.getSession();if(s.data?.session)await finish()}catch(e){setErr(errText(e))}
   });
+})();
+</script><script id="rpc-services-runtime">
+(function(){
+'use strict';
+const sb0=window.supabase?.createClient?.('https://dhzptogrzuqreflcnsnb.supabase.co','sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+if(!sb0)return;
+let svcRole=null;
+const qsa=s=>document.querySelectorAll(s), qs=s=>document.querySelector(s);
+const esc0=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const status0=s=>({solicitado:'Solicitado',planeado:'Planeado',a_caminho:'A caminho',em_andamento:'Em andamento',pausado:'Pausado',supervisionado:'Supervisionado',finalizado:'Finalizado',aprovado:'Aprovado',rejeitado:'Rejeitado',cancelado:'Cancelado',AGENDADO:'Agendado',A_CAMINO:'A caminho',EM_ANDAMENTO:'Em andamento',CONCLUIDO:'Concluído',APROBADO:'Aprovado',CANCELADO:'Cancelado'}[s]||s||'—');
+function date0(v){return v?new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(v+'T00:00:00')):'—'}
+function actions0(j){
+ const editable=['ADMIN','SUPERVISOR','FUNCIONÁRIO','FUNCIONARIO'].includes(svcRole);
+ if(!editable)return '<span style="font-size:9px;color:#7b7469">Só leitura</span>';
+ const st=j.status;
+ const buttons=[];
+ if(['solicitado','planeado','AGENDADO'].includes(st))buttons.push(['a_caminho','Iniciar deslocação']);
+ if(['a_caminho','A_CAMINO'].includes(st))buttons.push(['em_andamento','Iniciar serviço']);
+ if(['em_andamento','EM_ANDAMENTO'].includes(st))buttons.push(['pausado','Pausar'],['finalizado','Finalizar']);
+ if(st==='pausado')buttons.push(['em_andamento','Retomar']);
+ return '<div class="rpc-svc-actions">'+buttons.map(x=>'<button data-job="'+esc0(j.id)+'" data-status="'+esc0(x[0])+'">'+esc0(x[1])+'</button>').join('')+'</div>';
+}
+async function load0(){
+ const box=qs('#rpc-services-list');if(!box)return;
+ box.innerHTML='<div class="empty">A carregar serviços reais…</div>';
+ const r=await sb0.rpc('rpc_auth_context');if(r.error){box.innerHTML='<div class="empty">Sessão não disponível.</div>';return}
+ svcRole=r.data?.role||null;
+ const {data,error}=await sb0.from('rpc_jobs').select('id,client_id,property_id,category,subtype,typology,scheduled_date,scheduled_start,status,assigned_employee_id,supervisor_id,updated_at').order('scheduled_date',{ascending:false}).order('scheduled_start',{ascending:true}).limit(50);
+ if(error){box.innerHTML='<div class="empty">'+esc0(error.message)+'</div>';return}
+ const rows=data||[];
+ if(!rows.length){box.innerHTML='<div class="empty">Nenhum serviço acessível para este perfil.</div>';return}
+ const pids=[...new Set(rows.map(x=>x.property_id).filter(Boolean))],cids=[...new Set(rows.map(x=>x.client_id).filter(Boolean))];
+ const [pr,cl]=await Promise.all([
+  pids.length?sb0.from('rpc_properties').select('id,name,property_code').in('id',pids):Promise.resolve({data:[]}),
+  cids.length?sb0.from('rpc_clients').select('id,name').in('id',cids):Promise.resolve({data:[]})
+ ]);
+ const pm=new Map((pr.data||[]).map(x=>[x.id,x])),cm=new Map((cl.data||[]).map(x=>[x.id,x]));
+ box.innerHTML='<table class="rpc-svc-table"><thead><tr><th>Data</th><th>Propriedade</th><th>Cliente</th><th>Tipo</th><th>Estado</th><th>Ação</th></tr></thead><tbody>'+
+ rows.map(j=>{const p=pm.get(j.property_id)||{},c=cm.get(j.client_id)||{};return '<tr><td>'+esc0(date0(j.scheduled_date))+'<br><span style="color:#7b7469">'+esc0(String(j.scheduled_start||'').slice(0,5))+'</span></td><td><b>'+esc0(p.name||p.property_code||'—')+'</b></td><td>'+esc0(c.name||'—')+'</td><td>'+esc0([j.category,j.subtype,j.typology].filter(Boolean).join(' · ')||'—')+'</td><td><span class="rpc-svc-status">'+esc0(status0(j.status))+'</span></td><td>'+actions0(j)+'</td></tr>'}).join('')+
+ '</tbody></table>';
+ qsa('#rpc-services-list button[data-job]').forEach(b=>b.addEventListener('click',async()=>{
+  b.disabled=true;const job=b.dataset.job,status=b.dataset.status;
+  const r=await sb0.rpc('rpc_job_set_status',{p_job_id:job,p_status:status,p_notes:null});
+  if(r.error){qs('#rpc-services-msg').textContent='Não foi possível alterar o serviço: '+r.error.message;b.disabled=false;return}
+  qs('#rpc-services-msg').textContent='Estado atualizado no backend.';
+  await load0();
+ }));
+}
+document.addEventListener('DOMContentLoaded',()=>{
+ const btn=qs('#rpc-services-refresh');if(btn)btn.addEventListener('click',()=>load0());
+ const obs=new MutationObserver(()=>{if(document.body.classList.contains('rpc-locked'))return;load0()});
+ const app=document.querySelector('.app');if(app)obs.observe(app,{attributes:true,attributeFilter:['class']});
+});
 })();
 </script></body></html>
