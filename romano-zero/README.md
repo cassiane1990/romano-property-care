@@ -24,3 +24,11 @@ Premium ROMANO PROPERTY CARE identity: ivory/champagne, warm gold, charcoal/blac
 
 ## Important
 This directory is the new project foundation. Existing applications are references only and are not runtime dependencies.
+## Current build state — 18/09/2026
+- Production Supabase project is active and contains the real PostgreSQL/RLS architecture.
+- The dashboard RPC was corrected to use `assigned_employee_id` and now exposes today's services, open services, in-progress services, completed-today, incidents and urgent incidents while preserving finance metrics for ADMIN.
+- The zero frontend now starts behind Supabase Auth and retrieves the authenticated profile/context before showing the application.
+- MFA/AAL2 verification is wired when a verified TOTP factor is required.
+- The zero frontend dashboard reads real backend metrics and real `rpc_jobs` rows; it does not seed demo data.
+- Anonymous execution of SECURITY DEFINER functions in the public API surface has been removed. Authenticated execution remains for controlled application RPCs and must be reviewed function-by-function before final production sign-off.
+
