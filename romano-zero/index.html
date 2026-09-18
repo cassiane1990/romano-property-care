@@ -72,7 +72,7 @@ body.rpc-locked .app{display:none!important}
   const U='https://dhzptogrzuqreflcnsnb.supabase.co';
   const K='sb_publishable_DFmwh4k4-6RWDJnjCRNppA_TFrBkIxN';
   const client=window.supabase.createClient(U,K,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  let context=null,factor=null;
+  let contextData=null,factor=null;
   const el=s=>document.querySelector(s), all=s=>document.querySelectorAll(s);
   const errText=e=>{const m=e?.message||String(e||'');return m.includes('Invalid login credentials')?'E-mail ou palavra-passe incorretos.':m.includes('Email not confirmed')?'O e-mail ainda não foi confirmado.':m};
   const setErr=m=>{el('#rpc-auth-err').textContent=m;el('#rpc-auth-err').classList.remove('hidden')};
@@ -81,7 +81,7 @@ body.rpc-locked .app{display:none!important}
   const fmtMoney=v=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(Number(v||0));
   function locked(){document.body.classList.add('rpc-locked');el('#rpc-auth').classList.remove('hidden')}
   function unlocked(){document.body.classList.remove('rpc-locked');el('#rpc-auth').classList.add('hidden')}
-  async function context(){
+  async function getContext(){
     const r=await client.rpc('rpc_auth_context');if(r.error)throw r.error;
     if(!r.data?.authenticated)throw new Error('Sessão não autenticada.');
     if(!r.data.active)throw new Error('Utilizador inativo.');
@@ -96,10 +96,10 @@ body.rpc-locked .app{display:none!important}
     el('#rpc-login').classList.add('hidden');el('#rpc-mfa').classList.remove('hidden');return false;
   }
   async function finish(){
-    context=await context();
+    contextData=await getContext();
     if(!(await mfaGate()))return;
     unlocked();
-    const name=context.display_name||context.email||'Romano';
+    const name=contextData.display_name||contextData.email||'Romano';
     const avatar=el('.avatar');if(avatar)avatar.textContent=(name[0]||'R').toUpperCase();
     const user=el('.user span');if(user)user.textContent=name;
     const crumb=el('.crumb');if(crumb)crumb.innerHTML='ROMANO PROPERTY CARE · <strong>Dashboard</strong>';
@@ -115,7 +115,7 @@ body.rpc-locked .app{display:none!important}
     const lead=el('.lead');if(lead)lead.textContent='Operação real ligada ao Supabase · '+roleName(x.role);
     const live=el('.empty');if(live)live.textContent='Backend conectado. '+(x.jobs_today??0)+' serviço(s) previsto(s) para hoje.';
     const f=cards.find(c=>(c.querySelector('.label')?.textContent||'').toLowerCase().includes('facturado'));
-    if(context?.role==='ADMIN'){
+    if(contextData?.role==='ADMIN'){
       let section=el('#rpc-finance-live');
       if(!section){
         section=document.createElement('div');section.id='rpc-finance-live';section.className='section';
@@ -144,9 +144,9 @@ body.rpc-locked .app{display:none!important}
     el('#rpc-login').addEventListener('submit',login);el('#rpc-mfa-btn').addEventListener('click',verify);
     const refresh=el('.content button');if(refresh)refresh.addEventListener('click',()=>refreshDashboard().catch(e=>setErr(errText(e))));
     const buttons=all('.nav button');
-    buttons.forEach(b=>b.addEventListener('click',()=>{if(context&&context.role!=='ADMIN'&&b.textContent.includes('Facturación'))return;const n=b.querySelector('span')?.textContent||b.textContent; if(!['Dashboard'].includes(n)){const old=el('.crumb');if(old)old.innerHTML='ROMANO PROPERTY CARE · <strong>'+n+'</strong>'}}));
+    buttons.forEach(b=>b.addEventListener('click',()=>{if(contextData&&contextData.role!=='ADMIN'&&b.textContent.includes('Facturación'))return;const n=b.querySelector('span')?.textContent||b.textContent; if(!['Dashboard'].includes(n)){const old=el('.crumb');if(old)old.innerHTML='ROMANO PROPERTY CARE · <strong>'+n+'</strong>'}}));
   }
-  client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){context=null;locked()}});
+  client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){contextData=null;locked()}});
   document.addEventListener('DOMContentLoaded',async()=>{
     wire();locked();
     try{const s=await client.auth.getSession();if(s.data?.session)await finish()}catch(e){setErr(errText(e))}
